@@ -12,8 +12,8 @@
       >
     </div>
 
-    <div class="mt-4 md:mt-0 md:ml-6 pt-6">
-      <p class="text-lg text-gray-900 font-bold block mt-2 mb-2 leading-tight">
+    <div class="mt-4 md:mt-0 md:ml-6">
+      <p class="text-xl text-gray-900 font-bold pb-4">
         hiroto-k / hiroxto
       </p>
 
