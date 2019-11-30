@@ -5,7 +5,7 @@
         Links
       </h3>
 
-      <h4 class="text-lg text-gray-900 font-bold">
+      <h4 class="text-lg text-teal-500 font-bold">
         Sub domains
       </h4>
 
