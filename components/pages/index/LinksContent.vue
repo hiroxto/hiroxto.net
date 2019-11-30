@@ -1,9 +1,16 @@
 <template>
-  <div class="bg-white md:flex py-6 px-6">
-    <div class="md:flex-shrink-0">
-      <div class="text-lg text-purple-600 font-bold uppercase">
+  <div class="bg-white py-6 px-6">
+    <div>
+      <h3 class="text-xl text-purple-600 font-bold uppercase">
         Links
-      </div>
+      </h3>
+
+      <h4 class="text-lg text-gray-900 font-bold">
+        Sub domains
+      </h4>
+
+      <ul class="list-disc">
+      </ul>
     </div>
   </div>
 </template>
@@ -17,5 +24,4 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-
 </style>
