@@ -11,6 +11,9 @@
 
       <profile-content>
       </profile-content>
+
+      <links-content>
+      </links-content>
     </div>
   </div>
 </template>
@@ -18,10 +21,12 @@
 <script lang="ts">
 import Vue from 'vue';
 import ProfileContent from '~/components/pages/index/ProfileContent';
+import LinksContent from '~/components/pages/index/LinksContent';
 
 export default Vue.extend({
   components: {
     ProfileContent,
+    LinksContent,
   },
 });
 </script>
