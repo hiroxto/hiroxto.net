@@ -8,13 +8,21 @@
       <h2 class="subtitle text-2xl text-gray-800 pb-20">
         Home page of hiroto-k.
       </h2>
+
+      <profile-content>
+      </profile-content>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
+import ProfileContent from '~/components/pages/index/ProfileContent';
+
 export default Vue.extend({
+  components: {
+    ProfileContent,
+  },
 });
 </script>
 
