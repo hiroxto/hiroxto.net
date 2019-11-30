@@ -12,8 +12,8 @@
       <profile-content>
       </profile-content>
 
-      <div class="py-5">
-      </div>
+      <separator size="5">
+      </separator>
 
       <links-content>
       </links-content>
@@ -25,11 +25,13 @@
 import Vue from 'vue';
 import ProfileContent from '~/components/pages/index/ProfileContent';
 import LinksContent from '~/components/pages/index/LinksContent';
+import Separator from '~/components/ui/Separator';
 
 export default Vue.extend({
   components: {
     ProfileContent,
     LinksContent,
+    Separator,
   },
 });
 </script>
