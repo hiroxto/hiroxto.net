@@ -33,5 +33,6 @@
     ]
   },
   "files": [
+    "./types/sfc.d.ts"
   ]
 }
