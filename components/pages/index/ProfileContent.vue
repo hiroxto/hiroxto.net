@@ -1,9 +1,9 @@
 <template>
   <div class="bg-white md:flex py-6 px-6">
     <div class="md:flex-shrink-0">
-      <div class="text-lg text-purple-600 font-bold uppercase pb-4">
+      <h3 class="text-xl text-purple-600 font-bold uppercase pb-4">
         Profile
-      </div>
+      </h3>
 
       <img
         class="rounded-full h-20 w-20"
