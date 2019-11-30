@@ -1,5 +1,5 @@
 <template>
-  <div class="container flex min-h-screen text-left">
+  <div class="container min-h-screen text-left">
     <div class="pt-8">
       <h1 class="title block text-6xl text-gray-800">
         hiroto-k.net
