@@ -5,7 +5,7 @@
         hiroto-k.net
       </h1>
 
-      <h2 class="subtitle text-2xl text-gray-800 pb-8">
+      <h2 class="subtitle text-3xl text-gray-800 pb-8">
         Home page of hiroto-k.
       </h2>
 
