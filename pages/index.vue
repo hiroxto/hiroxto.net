@@ -1,28 +1,13 @@
 <template>
-  <div class="container">
+  <div class="container flex min-h-screen text-left">
     <div>
-      <h1 class="title">
+      <h1 class="title block text-6xl text-gray-800">
         hiroto-k.net
       </h1>
-      <h2 class="subtitle">
-        Code of hiroto-k.net site.
+
+      <h2 class="subtitle text-2xl text-gray-800 pb-20">
+        Home page of hiroto-k.
       </h2>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          class="button--green"
-        >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          class="button--grey"
-        >
-          GitHub
-        </a>
-      </div>
     </div>
   </div>
 </template>
@@ -32,3 +17,18 @@ import Vue from 'vue';
 export default Vue.extend({
 });
 </script>
+
+<style>
+.container {
+  margin: 0 auto;
+}
+
+.title {
+  font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  word-spacing: 2px;
+}
+</style>
