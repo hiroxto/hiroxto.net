@@ -1,5 +1,10 @@
 <template>
-  <div>
+  <div class="pb-8">
+    <div class="bg-white py-6 px-6">
+      <p class="text-base text-black font-bold">
+        © 2019 hiroto-k
+      </p>
+    </div>
   </div>
 </template>
 
