@@ -29,10 +29,10 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import ProfileContent from '~/components/pages/index/ProfileContent';
-import LinksContent from '~/components/pages/index/LinksContent';
-import Separator from '~/components/ui/Separator';
-import PageFooter from '~/components/layouts/PageFooter';
+import ProfileContent from '~/components/ProfileContent.vue';
+import LinksContent from '~/components/LinksContent.vue';
+import Separator from '~/components/Separator.vue';
+import PageFooter from '~/components/PageFooter.vue';
 
 export default Vue.extend({
   components: {
