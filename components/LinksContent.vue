@@ -5,32 +5,22 @@
         Links
       </h3>
 
-      <h4 class="text-lg text-teal-500 font-bold">
-        Sub domains
-      </h4>
-
-      <ul class="list-disc">
-        <li
-          v-for="(subDomainLink, subDomainLinksKey) in subDomainLinks"
-          :key="subDomainLinksKey"
-        >
-          <a
-            v-text="subDomainLink.name"
-            :href="subDomainLink.to"
-          >
-          </a>
-        </li>
-      </ul>
+      <link-list title="Sub domains" links="subDomainLinks">
+      </link-list>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
+import LinkList from './LinkList';
 import { Link } from '~/types';
 
 export default Vue.extend({
   name: 'LinksContent',
+  components: {
+    LinkList,
+  },
   computed: {
     subDomainLinks (): Link[] {
       return [
