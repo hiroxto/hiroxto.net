@@ -1,6 +1,6 @@
 <template>
   <div class="container min-h-screen text-left">
-    <div class="pt-8">
+    <div class="py-8">
       <h1 class="title block text-6xl text-gray-800">
         hiroto-k.net
       </h1>

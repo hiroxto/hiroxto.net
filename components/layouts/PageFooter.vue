@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-8">
+  <div>
     <div class="bg-white py-6 px-6">
       <p class="text-base text-black font-bold">
         © 2019 hiroto-k
