@@ -17,6 +17,12 @@
 
       <links-content>
       </links-content>
+
+      <separator size="5">
+      </separator>
+
+      <page-footer>
+      </page-footer>
     </div>
   </div>
 </template>
@@ -26,12 +32,14 @@ import Vue from 'vue';
 import ProfileContent from '~/components/pages/index/ProfileContent';
 import LinksContent from '~/components/pages/index/LinksContent';
 import Separator from '~/components/ui/Separator';
+import PageFooter from '~/components/layouts/PageFooter';
 
 export default Vue.extend({
   components: {
     ProfileContent,
     LinksContent,
     Separator,
+    PageFooter,
   },
 });
 </script>
