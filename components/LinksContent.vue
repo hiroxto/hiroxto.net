@@ -5,7 +5,7 @@
         Links
       </h3>
 
-      <link-list title="Sub domains" links="subDomainLinks">
+      <link-list title="Sub domains" :links="subDomainLinks">
       </link-list>
     </div>
   </div>
