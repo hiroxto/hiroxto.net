@@ -1,4 +1,4 @@
-<template functional>
+<template>
   <div>
     <h4 v-text="title" class="text-lg text-teal-500 font-bold">
     </h4>
