@@ -5,7 +5,12 @@
         Links
       </h3>
 
-      <link-list title="Sub domains" :links="subDomainLinks">
+      <link-list
+        v-for="(linkList, linkListsKey) in linkLists"
+        :key="linkListsKey"
+        :title="linkList.title"
+        :links="linkList.links"
+      >
       </link-list>
     </div>
   </div>
