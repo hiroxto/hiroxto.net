@@ -10,6 +10,7 @@
         :key="linkListsKey"
         :title="linkList.title"
         :links="linkList.links"
+        class="py-2"
       >
       </link-list>
     </div>
