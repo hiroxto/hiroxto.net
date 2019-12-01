@@ -16,12 +16,29 @@ import Vue from 'vue';
 import LinkList from './LinkList';
 import { Link } from '~/types';
 
+interface LinkListProperty {
+  title: string;
+  links: Link[];
+}
+
 export default Vue.extend({
   name: 'LinksContent',
   components: {
     LinkList,
   },
   computed: {
+    linkLists (): LinkListProperty[] {
+      return [
+        {
+          title: 'SNS, etc..',
+          links: this.otherServiceLinks,
+        },
+        {
+          title: 'Sub domains',
+          links: this.subDomainLinks,
+        },
+      ];
+    },
     otherServiceLinks (): Link[] {
       return [
         {
