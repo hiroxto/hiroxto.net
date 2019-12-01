@@ -22,6 +22,22 @@ export default Vue.extend({
     LinkList,
   },
   computed: {
+    otherServiceLinks (): Link[] {
+      return [
+        {
+          name: 'Twitter (hiroto_k_)',
+          to: 'https://twitter.com/hiroto_k_',
+        },
+        {
+          name: 'GitHub (hiroxto)',
+          to: 'https://github.com/hiroxto',
+        },
+        {
+          name: 'GitLab (hiroxto)',
+          to: 'https://gitlab.com/hiroxto',
+        },
+      ];
+    },
     subDomainLinks (): Link[] {
       return [
         {
