@@ -43,6 +43,10 @@ export default Vue.extend({
           title: 'Sub domains',
           links: this.subDomainLinks,
         },
+        {
+          title: 'Blogs',
+          links: this.blogLinks,
+        },
       ];
     },
     otherServiceLinks (): Link[] {
@@ -69,6 +73,18 @@ export default Vue.extend({
         },
         {
           name: 'train-photo-blog.hiroto-k.net',
+          to: 'https://train-photo-blog.hiroto-k.net/',
+        },
+      ];
+    },
+    blogLinks (): Link[] {
+      return [
+        {
+          name: 'Main blog',
+          to: 'https://hiroto-k.hatenablog.com/',
+        },
+        {
+          name: 'Train photo blog',
           to: 'https://train-photo-blog.hiroto-k.net/',
         },
       ];
