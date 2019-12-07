@@ -1,7 +1,7 @@
 <template>
   <div class="content-base md:flex">
     <div class="md:flex-shrink-0">
-      <h3 class="text-xl text-purple-600 font-bold uppercase pb-4">
+      <h3 class="content-title pb-4">
         Profile
       </h3>
 

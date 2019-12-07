@@ -1,7 +1,7 @@
 <template>
   <div class="content-base">
     <div>
-      <h3 class="text-xl text-purple-600 font-bold uppercase">
+      <h3 class="content-title">
         Links
       </h3>
 
