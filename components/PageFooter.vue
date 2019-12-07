@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="bg-white py-6 px-6">
+    <div class="content-base">
       <p class="text-base text-black font-bold">
         © 2019 hiroto-k
       </p>

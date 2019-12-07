@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white md:flex py-6 px-6">
+  <div class="content-base md:flex">
     <div class="md:flex-shrink-0">
       <h3 class="text-xl text-purple-600 font-bold uppercase pb-4">
         Profile

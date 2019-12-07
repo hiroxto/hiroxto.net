@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white py-6 px-6">
+  <div class="content-base">
     <div>
       <h3 class="text-xl text-purple-600 font-bold uppercase">
         Links
