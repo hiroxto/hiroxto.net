@@ -1,11 +1,11 @@
 <template>
   <div class="container min-h-screen text-left">
     <div class="py-8">
-      <h1 class="title block text-6xl text-gray-800">
+      <h1 class="title text-gray-800 xl:text-6xl lg:text-6xl md:text-6xl sm:text-5xl text-5xl block">
         hiroto-k.net
       </h1>
 
-      <h2 class="subtitle text-3xl text-gray-800 pb-8">
+      <h2 class="subtitle text-gray-800 xl:text-3xl lg:text-3xl md:text-3xl sm:text-2xl text-2xl pb-8">
         Home page of hiroto-k.
       </h2>
 
