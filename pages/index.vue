@@ -42,6 +42,15 @@ import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
 
 export default Vue.extend({
+  head () {
+    return {
+      title: 'hiroto-k.net',
+      titleTemplate: '',
+      meta: [
+        { hid: 'description', name: 'description', content: 'Home page of hiroto-k / hiroxto.' },
+      ],
+    };
+  },
   components: {
     ProfileContent,
     LinksContent,
