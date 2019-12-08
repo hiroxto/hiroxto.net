@@ -4,10 +4,14 @@
 
 @import url('https://fonts.googleapis.com/css?family=Sawarabi+Gothic|Source+Sans+Pro&display=swap');
 
+.font-source-sans-pro {
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
 .content-base {
   @apply bg-white py-6 px-6;
 }
 
 .content-title {
-  @apply text-xl text-purple-600 font-bold uppercase;
+  @apply text-xl text-purple-600 font-bold uppercase font-source-sans-pro;
 }
