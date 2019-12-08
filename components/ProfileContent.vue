@@ -13,7 +13,7 @@
     </div>
 
     <div class="mt-4 md:mt-0 md:ml-6">
-      <p class="text-xl text-gray-900 font-bold pb-4">
+      <p class="text-xl text-gray-900 font-bold pb-4 font-source-sans-pro">
         hiroto-k / hiroxto
       </p>
 
