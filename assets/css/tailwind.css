@@ -2,7 +2,7 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-@import url('https://fonts.googleapis.com/css?family=Sawarabi+Gothic&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Sawarabi+Gothic|Source+Sans+Pro&display=swap');
 
 .content-base {
   @apply bg-white py-6 px-6;
