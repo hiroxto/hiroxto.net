@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="content-base">
-      <p class="text-base text-black font-bold">
+      <p class="text-xl text-black font-bold font-source-sans-pro">
         © 2019 hiroto-k
       </p>
     </div>
