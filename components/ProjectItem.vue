@@ -1,7 +1,7 @@
 <template>
   <div class="rounded shadow-lg bg-blue-100">
     <div class="px-6 py-4">
-      <h4 class="font-bold text-xl mb-2" v-text="project.name">
+      <h4 class="font-bold text-xl mb-2 font-source-sans-pro" v-text="project.name">
       </h4>
 
       <p class="text-gray-700 text-base" v-text="project.description">
@@ -13,7 +13,7 @@
         <a
           v-for="(link, projectLinksKey) in project.links"
           :key="projectLinksKey"
-          class="project-attributes bg-blue-500 rounded"
+          class="project-attributes bg-blue-500 rounded font-source-sans-pro"
           v-text="link.name"
           :href="link.to"
           target="_blank"
@@ -25,7 +25,7 @@
           v-for="(tag, projectTagsKey) in project.tags"
           :key="projectTagsKey"
           v-text="`#${tag}`"
-          class="project-attributes bg-gray-500 rounded-full"
+          class="project-attributes bg-gray-500 rounded-full font-source-sans-pro"
         >
         </span>
       </template>
