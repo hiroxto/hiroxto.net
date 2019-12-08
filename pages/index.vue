@@ -58,7 +58,6 @@ export default Vue.extend({
 }
 
 .title {
-  font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   letter-spacing: 2px;
 }
 
