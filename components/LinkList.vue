@@ -3,10 +3,11 @@
     <h4 v-text="title" class="text-lg text-teal-500 font-bold">
     </h4>
 
-    <ul class="list-disc">
+    <ul class="p-0 relative">
       <li
         v-for="(link, linksKey) in links"
         :key="linksKey"
+        class="links-list-item text-black bg-gray-100 rounded-lg my-2 p-2 leading-snug"
       >
         <a
           v-text="link.name"
@@ -36,3 +37,10 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style scoped>
+  .links-list-item {
+  border-left: solid 0.5rem #ffa44b;
+  list-style-type: none;
+}
+</style>
