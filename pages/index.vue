@@ -44,10 +44,10 @@ import PageFooter from '~/components/PageFooter';
 export default Vue.extend({
   head () {
     return {
-      title: 'hiroto-k.net',
+      title: this.title,
       titleTemplate: '',
       meta: [
-        { hid: 'description', name: 'description', content: 'Home page of hiroto-k / hiroxto.' },
+        { hid: 'description', name: 'description', content: this.subTitle },
       ],
     };
   },
