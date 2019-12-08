@@ -51,6 +51,14 @@ export default Vue.extend({
       ],
     };
   },
+  computed: {
+    title (): string {
+      return 'hiroto-k.net';
+    },
+    subTitle (): string {
+      return 'Home page of hiroto-k / hiroxto.';
+    },
+  },
   components: {
     ProfileContent,
     LinksContent,
