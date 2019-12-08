@@ -1,0 +1,43 @@
+name: Node CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Run yarn install
+        run: yarn install
+        env:
+          CI: true
+
+      - name: Run yarn build
+        run: yarn run build
+        env:
+          CI: true
+
+      - name: Run yarn lint
+        run: yarn run lint
+        env:
+          CI: true
+
+      - name: Slack Notification
+        uses: homoluctus/slatify@v1.5
+        if: always()
+        with:
+          job_name: '*Node CI*'
+          type: ${{ job.status }}
+          icon_emoji: ":octocat:"
+          url: ${{ secrets.SLACK_WEBHOOK }}
