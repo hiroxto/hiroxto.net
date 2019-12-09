@@ -3,7 +3,7 @@
     <h4 v-text="title" class="text-lg text-teal-500 font-bold font-source-sans-pro">
     </h4>
 
-    <ul class="p-0 relative">
+    <ul class="list-none p-0 relative">
       <li
         v-for="(link, linksKey) in links"
         :key="linksKey"
@@ -39,8 +39,7 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-  .links-list-item {
+.links-list-item {
   border-left: solid 0.5rem #ffa44b;
-  list-style-type: none;
 }
 </style>
