@@ -15,6 +15,7 @@ const config: Configuration = {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      { rel: 'apple-touch-icon', sizes: '192x192', href: '/apple-touch-icon.png' },
     ],
   },
 
