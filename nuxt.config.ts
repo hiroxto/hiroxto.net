@@ -45,6 +45,8 @@ const config: Configuration = {
     '@nuxtjs/tailwindcss',
 
     '@nuxt/typescript-build',
+
+    '@nuxtjs/sitemap',
   ],
 
   /*
@@ -57,6 +59,19 @@ const config: Configuration = {
   ** Build configuration
   */
   build: {
+  },
+
+  sitemap: {
+    hostname: 'https://hiroto-k.net',
+    gzip: true,
+    routes: [
+      {
+        url: '/',
+        changefreq: 'yearly',
+        priority: 1,
+        lastmod: '2019-12-10',
+      },
+    ],
   },
 };
 
