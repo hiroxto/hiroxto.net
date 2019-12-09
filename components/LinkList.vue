@@ -12,6 +12,7 @@
         <a
           v-text="link.name"
           :href="link.to"
+          target="_blank"
         >
         </a>
       </li>
