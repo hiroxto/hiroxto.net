@@ -15,6 +15,10 @@ html {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
+.container {
+  margin: 0 auto;
+}
+
 .content-base {
   @apply bg-white py-6 px-6;
 }

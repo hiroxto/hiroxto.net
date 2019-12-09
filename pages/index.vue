@@ -74,10 +74,6 @@ export default Vue.extend({
 </script>
 
 <style>
-.container {
-  margin: 0 auto;
-}
-
 .title {
   letter-spacing: 2px;
 }
