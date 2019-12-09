@@ -63,7 +63,9 @@ const config: Configuration = {
 
   sitemap: {
     hostname: 'https://hiroto-k.net',
-    gzip: true,
+    exclude: [
+      '/404',
+    ],
     routes: [
       {
         url: '/',
