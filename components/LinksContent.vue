@@ -36,7 +36,7 @@ export default Vue.extend({
     linkLists (): LinkListProperty[] {
       return [
         {
-          title: 'SNS, etc..',
+          title: 'SNS, etc...',
           links: this.otherServiceLinks,
         },
         {
