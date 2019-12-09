@@ -59,6 +59,7 @@ const config: Configuration = {
   ** Build configuration
   */
   build: {
+    extractCSS: true,
   },
 
   sitemap: {
