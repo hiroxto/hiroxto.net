@@ -7,7 +7,7 @@
       <li
         v-for="(link, linksKey) in links"
         :key="linksKey"
-        class="links-list-item text-black bg-gray-100 rounded-lg my-2 p-2 leading-snug"
+        class="links-list-item text-black bg-gray-100 rounded-lg shadow-lg my-2 p-2 leading-snug"
       >
         <a
           v-text="link.name"
