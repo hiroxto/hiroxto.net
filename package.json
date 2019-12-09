@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^0.2.5",
+    "@nuxtjs/sitemap": "^2.0.1",
     "nuxt": "^2.0.0"
   },
   "devDependencies": {
