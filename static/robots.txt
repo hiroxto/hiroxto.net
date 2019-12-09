@@ -1,0 +1,3 @@
+User-Agent: *
+Allow: /
+Sitemap: https://hiroto-k.net/sitemap.xml
