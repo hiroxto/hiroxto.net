@@ -1,0 +1,16 @@
+# humans.txt of hiroto-k.net
+
+## PERSONAL
+  Name: hiroxto
+  Location: Japan
+  Site: https://hiroto-k.net/
+  Social:
+    Twitter: http://twitter.com/hiroto_k_
+    GitHub: https://github.com/hiroxto
+
+## SITE
+  Name: hiroto-k.net
+  URL: https://hiroto-k.net/
+  Contents: Home page of hiroto-k / hiroxto.
+  Standards: HTML5, CSS3
+  Language: ja-JP
