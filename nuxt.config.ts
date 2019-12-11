@@ -13,6 +13,7 @@ const config: Configuration = {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: 'Generic description.' },
       { hid: 'robots', name: 'robots', content: 'index,follow' },
+      { hid: 'format-detection', name: 'format-detection', content: 'telephone=no' },
     ],
     link: [
       { rel: 'apple-touch-icon', sizes: '192x192', href: '/apple-touch-icon.png' },
