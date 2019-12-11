@@ -13,6 +13,7 @@
           v-text="link.name"
           :href="link.to"
           target="_blank"
+          rel="noopener noreferrer"
         >
         </a>
       </li>
