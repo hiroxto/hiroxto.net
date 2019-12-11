@@ -7,7 +7,7 @@ const config: Configuration = {
   ** Headers of the page
   */
   head: {
-    titleTemplate: '%s | hiroto-k.net',
+    titleTemplate: '%s - hiroto-k.net',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
