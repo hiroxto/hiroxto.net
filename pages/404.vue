@@ -45,6 +45,10 @@ export default Vue.extend({
   head () {
     return {
       title: this.title,
+      meta: [
+        { hid: 'description', name: 'description', content: `${this.title} - ${this.subtitle}` },
+        { hid: 'robots', name: 'robots', content: 'noindex,nofollow' },
+      ],
     };
   },
   computed: {
