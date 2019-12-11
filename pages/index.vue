@@ -53,6 +53,9 @@ export default Vue.extend({
       meta: [
         { hid: 'description', name: 'description', content: this.subTitle },
       ],
+      link: [
+        { rel: 'canonical', href: '/' },
+      ],
     };
   },
   computed: {
