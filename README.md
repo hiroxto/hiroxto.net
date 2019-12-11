@@ -1,6 +1,6 @@
 # hiroto-k.net
 
-> Code of hiroto-k.net site.
+> Code of www.hiroto-k.net
 
 ## Build Setup
 

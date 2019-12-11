@@ -68,7 +68,7 @@ const config: Configuration = {
   },
 
   sitemap: {
-    hostname: 'https://hiroto-k.net',
+    hostname: 'https://www.hiroto-k.net',
     exclude: [
       '/404',
     ],
