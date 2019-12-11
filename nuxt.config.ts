@@ -12,6 +12,7 @@ const config: Configuration = {
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: 'Generic description.' },
+      { hid: 'robots', name: 'robots', content: 'index,follow' },
     ],
     link: [
       { rel: 'apple-touch-icon', sizes: '192x192', href: '/apple-touch-icon.png' },
