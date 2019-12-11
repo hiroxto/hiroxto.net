@@ -1,5 +1,7 @@
 # hiroto-k.net
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/6f204004-d9bf-4bbb-8aae-d6c9832b92ea/deploy-status)](https://app.netlify.com/sites/hiroto-k-net/deploys)
+
 > Code of www.hiroto-k.net
 
 ## Build Setup
