@@ -36,8 +36,8 @@ export default Vue.extend({
     linkLists (): LinkListProperty[] {
       return [
         {
-          title: 'SNS, etc...',
-          links: this.otherServiceLinks,
+          title: 'Social',
+          links: this.socialServiceLinks,
         },
         {
           title: 'Sub domains',
@@ -49,7 +49,7 @@ export default Vue.extend({
         },
       ];
     },
-    otherServiceLinks (): Link[] {
+    socialServiceLinks (): Link[] {
       return [
         {
           name: 'Twitter (hiroto_k_)',
