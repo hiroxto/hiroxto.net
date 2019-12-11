@@ -14,7 +14,8 @@ const config: Configuration = {
       { hid: 'description', name: 'description', content: 'Generic description.' },
       { hid: 'robots', name: 'robots', content: 'index,follow' },
       { hid: 'format-detection', name: 'format-detection', content: 'telephone=no' },
-      { hid: 'google-site-verification', name: 'google-site-verification', content: 'JtZLyisjURDKETCGeivTJKTDCg5kKbe1tipLhHn_fq8' }
+      { hid: 'google-site-verification', name: 'google-site-verification', content: 'JtZLyisjURDKETCGeivTJKTDCg5kKbe1tipLhHn_fq8' },
+      { hid: 'theme-color', name: 'theme-color', content: '#1B64DF' },
     ],
     link: [
       { rel: 'apple-touch-icon', sizes: '192x192', href: '/apple-touch-icon.png' },
