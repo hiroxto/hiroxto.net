@@ -85,10 +85,10 @@ export default Vue.extend({
           tags: ['Ruby'],
         },
         {
-          name: 'trysail-blog-notification',
+          name: 'blog-notification',
           description: 'ブログの更新をTwitterやSlackで通知する。',
           links: [
-            gitHubLink('hiroxto/trysail-blog-notification'),
+            gitHubLink('hiroxto/blog-notification'),
           ],
           tags: ['Ruby'],
         },
