@@ -2,10 +2,13 @@ FROM node:12.13.1-alpine
 
 WORKDIR /app
 
-ENV TZ "Asia/Tokyo"
 ENV HOST "0.0.0.0"
 
-RUN apk update && \
+RUN apk add --no-cache --update tzdata && \
+    apk upgrade --no-cache && \
+    cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
+    apk del tzdata && \
+    rm -rf /var/cache/apk/* && \
     npm install -g npm yarn
 
 COPY . /app
