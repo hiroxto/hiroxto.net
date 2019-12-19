@@ -8,8 +8,7 @@ RUN apk add --no-cache --update tzdata && \
     apk upgrade --no-cache && \
     cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     apk del tzdata && \
-    rm -rf /var/cache/apk/* && \
-    npm install -g npm yarn
+    rm -rf /var/cache/apk/*
 
 COPY . /app
 
