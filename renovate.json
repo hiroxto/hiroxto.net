@@ -1,0 +1,26 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "timezone": "Asia/Tokyo",
+  "schedule": [
+    "every weekend"
+  ],
+  "packageRules": [
+    {
+      "packagePatterns": [
+        "Dockerfile"
+      ],
+      "enabled": false
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 8am on the first day of the month"
+    ]
+  },
+  "patch": {
+    "automerge": true
+  }
+}
