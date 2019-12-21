@@ -7,7 +7,7 @@
 
       <img
         class="rounded-full h-20 w-20"
-        src="https://avatars2.githubusercontent.com/u/12016555?s=460&v=4"
+        src="/profile.png"
         alt="Profile image"
       >
     </div>
