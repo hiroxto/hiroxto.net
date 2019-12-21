@@ -13,7 +13,7 @@
     "lint:fix": "eslint --fix --ext .js,.ts,.vue --ignore-path .gitignore ."
   },
   "dependencies": {
-    "@nuxt/typescript-runtime": "0.2.10",
+    "@nuxt/typescript-runtime": "0.3.3",
     "@nuxtjs/sitemap": "2.0.1",
     "nuxt": "2.10.2"
   },
