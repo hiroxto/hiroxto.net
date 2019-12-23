@@ -902,31 +902,6 @@
     serve-static "^1.14.1"
     server-destroy "^1.0.1"
 
-"@nuxt/types@0.5.3":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@nuxt/types/-/types-0.5.3.tgz#448910f162e14779dc070fd5fde39cfc1454e2f1"
-  integrity sha512-1jYD4ylM/D9tuMk+iHWPT0IGoPTINmbzWR6eN+UIlUDnu6M/mNF9gZljykfg3DnXSX1A4n/5VaixkXp3O2hXSw==
-  dependencies:
-    "@types/autoprefixer" "^9.6.1"
-    "@types/babel__core" "^7.1.3"
-    "@types/compression" "^1.0.1"
-    "@types/connect" "^3.4.32"
-    "@types/etag" "^1.8.0"
-    "@types/express" "^4.17.2"
-    "@types/file-loader" "^4.2.0"
-    "@types/html-minifier" "^3.5.3"
-    "@types/less" "^3.0.1"
-    "@types/node" "^12.12.14"
-    "@types/node-sass" "^4.11.0"
-    "@types/optimize-css-assets-webpack-plugin" "^5.0.1"
-    "@types/pug" "^2.0.4"
-    "@types/serve-static" "^1.13.3"
-    "@types/terser-webpack-plugin" "^2.2.0"
-    "@types/webpack" "^4.41.0"
-    "@types/webpack-bundle-analyzer" "^2.13.3"
-    "@types/webpack-dev-middleware" "^2.0.3"
-    "@types/webpack-hot-middleware" "^2.16.5"
-
 "@nuxt/types@0.5.7":
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/@nuxt/types/-/types-0.5.7.tgz#ec989a7e2071bdcc60f68010df9ee1b5bba54037"
@@ -951,16 +926,16 @@
     "@types/webpack-dev-middleware" "^2.0.3"
     "@types/webpack-hot-middleware" "^2.25.0"
 
-"@nuxt/typescript-build@0.3.10":
-  version "0.3.10"
-  resolved "https://registry.yarnpkg.com/@nuxt/typescript-build/-/typescript-build-0.3.10.tgz#01b2fee9191542fe05d5ec8ed7ec3742e5435201"
-  integrity sha512-5A5NrkNu4yB1JZuqVDEkW9gq4KyvgVEtbzPhB2dxlPKTp/tirB9FE5mFhczkEJCULTEiuQLiSvnb9nenHiashw==
+"@nuxt/typescript-build@0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@nuxt/typescript-build/-/typescript-build-0.5.2.tgz#df649db628951b06e035e5c36f7bee9b0eba2a53"
+  integrity sha512-8FKtt+0bU+6TxWdcY/G7a3OK/lXh1oSqDJLEGqrkj41ObK3HXO3a1LsfgZpgxIHJL5Y+mmuLvhMXRmbVZSjN7g==
   dependencies:
-    "@nuxt/types" "0.5.3"
-    consola "^2.11.0"
+    "@nuxt/types" "0.5.7"
+    consola "^2.11.1"
     fork-ts-checker-webpack-plugin "^3.1.1"
     ts-loader "^6.2.1"
-    typescript "~3.6"
+    typescript "~3.7"
 
 "@nuxt/typescript-runtime@0.3.3":
   version "0.3.3"
@@ -1193,7 +1168,7 @@
   dependencies:
     "@types/express" "*"
 
-"@types/connect@*", "@types/connect@^3.4.32":
+"@types/connect@*":
   version "3.4.32"
   resolved "https://registry.yarnpkg.com/@types/connect/-/connect-3.4.32.tgz#aa0e9616b9435ccad02bc52b5b454ffc2c70ba28"
   integrity sha512-4r8qa0quOvh7lGD0pre62CAb1oni1OO6ecJLGCezTmhQ8Fz50Arx9RUszryR8KlgK6avuSXvviL6yWyViQABOg==
@@ -1227,7 +1202,7 @@
     "@types/node" "*"
     "@types/range-parser" "*"
 
-"@types/express@*", "@types/express@^4.17.2":
+"@types/express@*":
   version "4.17.2"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.2.tgz#a0fb7a23d8855bac31bc01d5a58cadd9b2173e6c"
   integrity sha512-5mHFNyavtLoJmnusB8OKJ5bshSzw+qkMIBAobLrIM48HJvunFva9mOa6aBwh64lBFyNwBbs0xiEFuj4eU/NjCA==
@@ -1281,7 +1256,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@^12.0.2", "@types/node@^12.12.14":
+"@types/node@*", "@types/node@^12.0.2":
   version "12.12.14"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.14.tgz#1c1d6e3c75dba466e0326948d56e8bd72a1903d2"
   integrity sha512-u/SJDyXwuihpwjXy7hOOghagLEV1KdAST6syfnOk6QZAMzZuWZqXy5aYYZbh8Jdpd4escVFP0MvftHNDb9pruA==
@@ -1379,14 +1354,6 @@
     "@types/memory-fs" "*"
     "@types/webpack" "*"
     loglevel "^1.6.2"
-
-"@types/webpack-hot-middleware@^2.16.5":
-  version "2.16.5"
-  resolved "https://registry.yarnpkg.com/@types/webpack-hot-middleware/-/webpack-hot-middleware-2.16.5.tgz#5271eada42f34670a7ae79ddb6f1c419a19c985f"
-  integrity sha512-41qSQeyRGZkWSi366jMQVsLo5fdLT8EgmvHNoBwcCtwZcHrQk6An6tD+ZfC0zMdNHzVEFlzQvT2mTte8zDxqNw==
-  dependencies:
-    "@types/connect" "*"
-    "@types/webpack" "*"
 
 "@types/webpack-hot-middleware@^2.25.0":
   version "2.25.0"
@@ -8395,11 +8362,6 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
-
-typescript@~3.6:
-  version "3.6.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.6.4.tgz#b18752bb3792bc1a0281335f7f6ebf1bbfc5b91d"
-  integrity sha512-unoCll1+l+YK4i4F8f22TaNVPRHcD9PA3yCuZ8g5e0qGqlVlJ/8FSateOLLSagn+Yg5+ZwuPkL8LFUc0Jcvksg==
 
 typescript@~3.7:
   version "3.7.4"
