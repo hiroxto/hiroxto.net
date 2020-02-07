@@ -14,6 +14,7 @@
           :href="link.to"
           target="_blank"
           rel="noopener noreferrer"
+          class="links-list-item-link"
         >
         </a>
       </li>
@@ -40,8 +41,19 @@ export default Vue.extend({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .links-list-item {
   border-left: solid 0.5rem #ffa44b;
+}
+
+.links-list-item-link {
+  &:hover {
+    color: #1B64DF;
+  }
+
+  &:active {
+    background-color: #7f828b;
+    color: #ffffff;
+  }
 }
 </style>
