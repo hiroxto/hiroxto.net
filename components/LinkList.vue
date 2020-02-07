@@ -42,6 +42,8 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+$link-opacity: 0.6;
+
 .links-list-item {
   border-left: solid 0.5rem #ffa44b;
 }
@@ -49,11 +51,13 @@ export default Vue.extend({
 .links-list-item-link {
   &:hover {
     color: #1B64DF;
+    opacity: $link-opacity;
   }
 
   &:active {
     background-color: #7f828b;
     color: #ffffff;
+    opacity: $link-opacity;
   }
 }
 </style>
