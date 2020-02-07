@@ -13,7 +13,7 @@
         <a
           v-for="(link, projectLinksKey) in project.links"
           :key="projectLinksKey"
-          class="project-attributes bg-blue-500 rounded font-source-sans-pro"
+          class="project-attributes project-link-item bg-blue-500 rounded font-source-sans-pro"
           v-text="link.name"
           :href="link.to"
           target="_blank"
@@ -57,8 +57,21 @@ export default Vue.extend({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+$link-opacity: 0.6;
+
 .project-attributes {
   @apply text-sm text-white font-semibold inline-block px-3 py-1 mr-2 mb-2;
+}
+
+.project-link-item {
+  &:hover {
+    opacity: $link-opacity;
+  }
+
+  &:active {
+    background-color: #38c3e1;
+    opacity: $link-opacity;
+  }
 }
 </style>
