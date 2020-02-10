@@ -67,22 +67,18 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { createComponent, computed } from '@vue/composition-api';
 import ProfileItem from './ProfileItem';
 
-export default Vue.extend({
+export default createComponent({
   name: 'ProfileContent',
   components: {
     ProfileItem,
   },
-  computed: {
-    names (): string {
-      return 'hiroto-k / hiroxto';
-    },
-    joinSeparator (): string {
-      return ', ';
-    },
-    likes (): string {
+  setup () {
+    const name = computed<string>(() => 'hiroto-k / hiroxto');
+    const joinSeparator = ', ';
+    const likes = computed<string>(() => {
       return [
         'プログラミング',
         'アニメ',
@@ -91,9 +87,9 @@ export default Vue.extend({
         '写真',
         'ラーメン',
         'etc...',
-      ].join(this.joinSeparator);
-    },
-    programming (): string {
+      ].join(joinSeparator);
+    });
+    const programming = computed<string>(() => {
       return [
         'PHP',
         'Ruby',
@@ -101,9 +97,9 @@ export default Vue.extend({
         'Laravel',
         'Vue.js',
         'Nuxt.js',
-      ].join(this.joinSeparator);
-    },
-    voiceActorNames (): string[] {
+      ].join(joinSeparator);
+    });
+    const voiceActorNames = computed<string[]>(() => {
       return [
         '大橋彩香',
         '安齋由香里',
@@ -113,7 +109,14 @@ export default Vue.extend({
       ].map((name: string): string => {
         return `${name}さん`;
       });
-    },
+    });
+
+    return {
+      name,
+      likes,
+      programming,
+      voiceActorNames,
+    };
   },
 });
 </script>
