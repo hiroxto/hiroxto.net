@@ -4,9 +4,13 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropOptions } from 'vue';
+import { createComponent, computed } from '@vue/composition-api';
 
-export default Vue.extend({
+interface Props {
+  size: string;
+}
+
+export default createComponent({
   name: 'Separator',
   props: {
     size: {
@@ -15,11 +19,12 @@ export default Vue.extend({
       default () {
         return '5';
       },
-    } as PropOptions<string>,
+    },
   },
-  computed: {
-    className (): string {
-      const pyClassName = `py-${this.size}`;
+  setup (props: Props) {
+    const size = computed<string>(() => props.size);
+    const className = computed<string>(() => {
+      const pyClassName = `py-${size.value}`;
       const allowClasses = [
         'py-0',
         'py-1',
@@ -43,7 +48,11 @@ export default Vue.extend({
       ];
 
       return allowClasses.includes(pyClassName) ? pyClassName : 'py-5';
-    },
+    });
+
+    return {
+      className,
+    };
   },
 });
 </script>
