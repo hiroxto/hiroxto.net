@@ -16,7 +16,7 @@ export default createComponent({
     size: {
       type: String,
       required: false,
-      default () {
+      default (): string {
         return '5';
       },
     },
