@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { createComponent, computed } from '@vue/composition-api';
 import ProjectItem from './ProjectItem';
 import { Link, Project } from '~/types';
 
@@ -34,31 +34,13 @@ const gitHubLink = (repo: string): Link => {
   };
 };
 
-export default Vue.extend({
+export default createComponent({
   name: 'ProjectsContent',
   components: {
     ProjectItem,
   },
-  computed: {
-    projectsLength (): number {
-      return this.projects.length;
-    },
-    projectSplitUnit (): number {
-      return 2;
-    },
-    splitProjects (): Project[][] {
-      const projects = this.projects;
-      const projectsLength = this.projectsLength;
-      const splitUnit = this.projectSplitUnit;
-      const splitProject: Project[][] = [];
-
-      for (let i = 0; i < projectsLength; i += splitUnit) {
-        splitProject.push(projects.slice(i, i + splitUnit));
-      }
-
-      return splitProject;
-    },
-    projects (): Project[] {
+  setup () {
+    const projects = computed<Project[]>((): Project[] => {
       return [
         {
           name: 'alt-tl',
@@ -137,7 +119,26 @@ export default Vue.extend({
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
         },
       ];
-    },
+    });
+
+    const projectsLength = computed<number>((): number => projects.value.length);
+    const projectSplitUnit = computed<number>((): number => 2);
+    const splitProjects = computed<Project[][]>((): Project[][] => {
+      const projectsValue = projects.value;
+      const projectsLengthValue = projectsLength.value;
+      const projectSplitUnitValue = projectSplitUnit.value;
+      const splitProject: Project[][] = [];
+
+      for (let i = 0; i < projectsLengthValue; i += projectSplitUnitValue) {
+        splitProject.push(projectsValue.slice(i, i + projectSplitUnitValue));
+      }
+
+      return splitProject;
+    });
+
+    return {
+      splitProjects,
+    };
   },
 });
 </script>
