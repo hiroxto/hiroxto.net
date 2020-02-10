@@ -38,12 +38,6 @@ export default createComponent({
       },
     },
   },
-  setup (props: Props) {
-    return {
-      title: props.title,
-      singleText: props.singleText,
-    };
-  },
 });
 </script>
 
