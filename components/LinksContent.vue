@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { createComponent, computed } from '@vue/composition-api';
 import LinkList from './LinkList';
 import { Link } from '~/types';
 
@@ -27,29 +27,13 @@ interface LinkListProperty {
   links: Link[];
 }
 
-export default Vue.extend({
+export default createComponent({
   name: 'LinksContent',
   components: {
     LinkList,
   },
-  computed: {
-    linkLists (): LinkListProperty[] {
-      return [
-        {
-          title: 'Social',
-          links: this.socialServiceLinks,
-        },
-        {
-          title: 'Sub domains',
-          links: this.subDomainLinks,
-        },
-        {
-          title: 'Blogs',
-          links: this.blogLinks,
-        },
-      ];
-    },
-    socialServiceLinks (): Link[] {
+  setup () {
+    const socialServiceLinks = computed<Link[]>((): Link[] => {
       return [
         {
           name: 'Twitter (hiroto_k_)',
@@ -64,8 +48,9 @@ export default Vue.extend({
           to: 'https://gitlab.com/hiroxto',
         },
       ];
-    },
-    subDomainLinks (): Link[] {
+    });
+
+    const subDomainLinks = computed<Link[]>((): Link[] => {
       return [
         {
           name: 'utils.hiroto-k.net',
@@ -76,8 +61,9 @@ export default Vue.extend({
           to: 'https://train-photo-blog.hiroto-k.net/',
         },
       ];
-    },
-    blogLinks (): Link[] {
+    });
+
+    const blogLinks = computed<Link[]>((): Link[] => {
       return [
         {
           name: 'Main blog',
@@ -88,7 +74,28 @@ export default Vue.extend({
           to: 'https://train-photo-blog.hiroto-k.net/',
         },
       ];
-    },
+    });
+
+    const linkLists = computed((): LinkListProperty[] => {
+      return [
+        {
+          title: 'Social',
+          links: socialServiceLinks.value,
+        },
+        {
+          title: 'Sub domains',
+          links: subDomainLinks.value,
+        },
+        {
+          title: 'Blogs',
+          links: blogLinks.value,
+        },
+      ];
+    });
+
+    return {
+      linkLists,
+    };
   },
 });
 </script>
