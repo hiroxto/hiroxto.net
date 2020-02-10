@@ -23,20 +23,31 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropOptions } from 'vue';
+import { createComponent } from '@vue/composition-api';
 import { Link } from '~/types';
 
-export default Vue.extend({
+interface Props {
+  title: string;
+  links: Link[];
+}
+
+export default createComponent({
   name: 'LinkList',
   props: {
     title: {
       type: String,
       required: true,
-    } as PropOptions<string>,
+    },
     links: {
       type: Array,
       required: true,
-    } as PropOptions<Link[]>,
+    },
+  },
+  setup (props: Props) {
+    return {
+      title: props.title,
+      links: props.links,
+    };
   },
 });
 </script>
