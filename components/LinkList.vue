@@ -43,12 +43,6 @@ export default createComponent({
       required: true,
     },
   },
-  setup (props: Props) {
-    return {
-      title: props.title,
-      links: props.links,
-    };
-  },
 });
 </script>
 
