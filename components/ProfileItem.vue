@@ -17,21 +17,32 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropOptions } from 'vue';
+import { createComponent } from '@vue/composition-api';
 
-export default Vue.extend({
+interface Props {
+  title: string;
+  singleText: boolean;
+}
+
+export default createComponent({
   name: 'ProfileItem',
   props: {
     title: {
       type: String,
       required: true,
-    } as PropOptions<string>,
+    },
     singleText: {
       type: Boolean,
       default (): boolean {
         return false;
       },
-    } as PropOptions<boolean>,
+    },
+  },
+  setup (props: Props) {
+    return {
+      title: props.title,
+      singleText: props.singleText,
+    };
   },
 });
 </script>
