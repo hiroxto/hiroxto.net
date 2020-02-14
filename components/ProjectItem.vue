@@ -35,24 +35,30 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropOptions } from 'vue';
+import { createComponent, computed } from '@vue/composition-api';
 import { Project } from '~/types';
 
-export default Vue.extend({
+interface Props {
+  project: Project;
+}
+
+export default createComponent({
   name: 'ProjectItem',
   props: {
     project: {
       type: Object,
       required: true,
-    } as PropOptions<Project>,
+    },
   },
-  computed: {
-    hasLinks (): boolean {
-      return this.project.links !== null;
-    },
-    hasTags (): boolean {
-      return this.project.tags !== null;
-    },
+  setup (props: Props) {
+    const project = props.project;
+    const hasLinks = computed<boolean>(() => project.links !== null);
+    const hasTags = computed<boolean>(() => project.tags !== null);
+
+    return {
+      hasLinks,
+      hasTags,
+    };
   },
 });
 </script>

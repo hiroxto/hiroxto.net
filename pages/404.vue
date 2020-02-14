@@ -37,11 +37,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { createComponent, computed } from '@vue/composition-api';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
 
-export default Vue.extend({
+export default createComponent({
   head () {
     return {
       title: this.title,
@@ -51,13 +51,14 @@ export default Vue.extend({
       ],
     };
   },
-  computed: {
-    title (): string {
-      return '404 Not Found';
-    },
-    subtitle (): string {
-      return 'hiroto-k.net';
-    },
+  setup () {
+    const title = computed<string>(() => '404 Not Found');
+    const subtitle = computed<string>(() => 'hiroto-k.net');
+
+    return {
+      title,
+      subtitle,
+    };
   },
   components: {
     Separator,

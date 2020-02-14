@@ -38,14 +38,14 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
 import ProfileContent from '~/components/ProfileContent';
 import LinksContent from '~/components/LinksContent';
 import ProjectsContent from '~/components/ProjectsContent';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
+import { createComponent, computed } from '@vue/composition-api';
 
-export default Vue.extend({
+export default createComponent({
   head () {
     return {
       title: this.title,
@@ -58,13 +58,14 @@ export default Vue.extend({
       ],
     };
   },
-  computed: {
-    title (): string {
-      return 'hiroto-k.net';
-    },
-    subTitle (): string {
-      return 'Home page of hiroto-k / hiroxto.';
-    },
+  setup () {
+    const title = computed(() => 'hiroto-k.net');
+    const subTitle = computed(() => 'Home page of hiroto-k / hiroxto.');
+
+    return {
+      title,
+      subTitle,
+    };
   },
   components: {
     ProfileContent,
