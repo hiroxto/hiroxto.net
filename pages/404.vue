@@ -37,11 +37,11 @@
 </template>
 
 <script lang="ts">
-import { createComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@vue/composition-api';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
 
-export default createComponent({
+export default defineComponent({
   head () {
     return {
       title: this.title,
