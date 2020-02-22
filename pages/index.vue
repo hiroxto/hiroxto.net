@@ -43,9 +43,9 @@ import LinksContent from '~/components/LinksContent';
 import ProjectsContent from '~/components/ProjectsContent';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
-import { createComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@vue/composition-api';
 
-export default createComponent({
+export default defineComponent({
   head () {
     return {
       title: this.title,

@@ -4,13 +4,13 @@
 </template>
 
 <script lang="ts">
-import { createComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@vue/composition-api';
 
 interface Props {
   size: string;
 }
 
-export default createComponent({
+export default defineComponent({
   name: 'Separator',
   props: {
     size: {

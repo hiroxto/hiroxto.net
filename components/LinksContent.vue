@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { createComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@vue/composition-api';
 import LinkList from './LinkList';
 import { Link } from '~/types';
 
@@ -27,7 +27,7 @@ interface LinkListProperty {
   links: Link[];
 }
 
-export default createComponent({
+export default defineComponent({
   name: 'LinksContent',
   components: {
     LinkList,

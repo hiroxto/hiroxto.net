@@ -17,14 +17,14 @@
 </template>
 
 <script lang="ts">
-import { createComponent } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 
 interface Props {
   title: string;
   singleText: boolean;
 }
 
-export default createComponent({
+export default defineComponent({
   name: 'ProfileItem',
   props: {
     title: {

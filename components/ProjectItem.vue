@@ -35,14 +35,14 @@
 </template>
 
 <script lang="ts">
-import { createComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@vue/composition-api';
 import { Project } from '~/types';
 
 interface Props {
   project: Project;
 }
 
-export default createComponent({
+export default defineComponent({
   name: 'ProjectItem',
   props: {
     project: {
