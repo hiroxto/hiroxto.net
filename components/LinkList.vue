@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { createComponent } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 import { Link } from '~/types';
 
 interface Props {
@@ -31,7 +31,7 @@ interface Props {
   links: Link[];
 }
 
-export default createComponent({
+export default defineComponent({
   name: 'LinkList',
   props: {
     title: {

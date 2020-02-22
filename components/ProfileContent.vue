@@ -67,10 +67,10 @@
 </template>
 
 <script lang="ts">
-import { createComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@vue/composition-api';
 import ProfileItem from './ProfileItem';
 
-export default createComponent({
+export default defineComponent({
   name: 'ProfileContent',
   components: {
     ProfileItem,
