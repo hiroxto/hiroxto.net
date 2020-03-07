@@ -26,7 +26,7 @@ interface LinkListProperty {
 }
 
 export default defineComponent({
-  name: 'LinksContent',
+  name: 'LinksSection',
   components: {
     LinkList,
   },

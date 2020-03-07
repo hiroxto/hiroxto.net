@@ -19,8 +19,8 @@
       <separator size="5">
       </separator>
 
-      <links-content>
-      </links-content>
+      <links-section>
+      </links-section>
 
       <separator size="5">
       </separator>
@@ -39,7 +39,7 @@
 
 <script lang="ts">
 import ProfileSection from '../components/ProfileSection.vue';
-import LinksContent from '~/components/LinksContent';
+import LinksSection from '../components/LinksSection.vue';
 import ProjectsContent from '~/components/ProjectsContent';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
@@ -69,7 +69,7 @@ export default defineComponent({
   },
   components: {
     ProfileSection,
-    LinksContent,
+    LinksSection,
     ProjectsContent,
     Separator,
     PageFooter,
