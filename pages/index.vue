@@ -38,9 +38,9 @@
 </template>
 
 <script lang="ts">
-import ProfileSection from '../components/ProfileSection.vue';
-import LinksSection from '../components/LinksSection.vue';
-import ProjectsSection from '../components/ProjectsSection.vue';
+import ProfileSection from '~/components/ProfileSection';
+import LinksSection from '~/components/LinksSection';
+import ProjectsSection from '~/components/ProjectsSection';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
 import { defineComponent, computed } from '@vue/composition-api';
