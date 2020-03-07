@@ -126,6 +126,14 @@ export default defineComponent({
           ],
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
         },
+        {
+          name: 'gas-campaign-calendar',
+          description: 'スプレッドシートに入れた各種還元のキャンペーンをカレンダーに入れるスクリプト',
+          links: [
+            gitHubLink('hiroxto/gas-campaign-calendar'),
+          ],
+          tags: ['TypeScript', 'Google Apps Script'],
+        },
       ];
     });
 
