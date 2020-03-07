@@ -13,20 +13,20 @@
       >
       </h2>
 
-      <profile-content>
-      </profile-content>
+      <profile-section>
+      </profile-section>
 
       <separator size="5">
       </separator>
 
-      <links-content>
-      </links-content>
+      <links-section>
+      </links-section>
 
       <separator size="5">
       </separator>
 
-      <projects-content>
-      </projects-content>
+      <projects-section>
+      </projects-section>
 
       <separator size="5">
       </separator>
@@ -38,9 +38,9 @@
 </template>
 
 <script lang="ts">
-import ProfileContent from '~/components/ProfileContent';
-import LinksContent from '~/components/LinksContent';
-import ProjectsContent from '~/components/ProjectsContent';
+import ProfileSection from '~/components/ProfileSection';
+import LinksSection from '~/components/LinksSection';
+import ProjectsSection from '~/components/ProjectsSection';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
 import { defineComponent, computed } from '@vue/composition-api';
@@ -68,9 +68,9 @@ export default defineComponent({
     };
   },
   components: {
-    ProfileContent,
-    LinksContent,
-    ProjectsContent,
+    ProfileSection,
+    LinksSection,
+    ProjectsSection,
     Separator,
     PageFooter,
   },

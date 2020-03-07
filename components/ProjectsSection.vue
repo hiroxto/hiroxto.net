@@ -1,25 +1,23 @@
 <template>
-  <div class="content-base">
-    <div>
-      <h3 class="content-title">
-        Projects
-      </h3>
+  <section class="content-base">
+    <h3 class="content-title">
+      Projects
+    </h3>
 
-      <div
-        v-for="(splitProject, splitProjectsKey) in splitProjects"
-        :key="splitProjectsKey"
-        class="lg:flex mb-4"
+    <div
+      v-for="(splitProject, splitProjectsKey) in splitProjects"
+      :key="splitProjectsKey"
+      class="lg:flex mb-4"
+    >
+      <project-item
+        v-for="(project, projectsKey) in splitProject"
+        :key="projectsKey"
+        :project="project"
+        class="lg:w-1/2 sm:w-full mx-2 my-4"
       >
-        <project-item
-          v-for="(project, projectsKey) in splitProject"
-          :key="projectsKey"
-          :project="project"
-          class="lg:w-1/2 sm:w-full mx-2 my-4"
-        >
-        </project-item>
-      </div>
+      </project-item>
     </div>
-  </div>
+  </section>
 </template>
 
 <script lang="ts">
@@ -35,7 +33,7 @@ const gitHubLink = (repo: string): Link => {
 };
 
 export default defineComponent({
-  name: 'ProjectsContent',
+  name: 'ProjectsSection',
   components: {
     ProjectItem,
   },
