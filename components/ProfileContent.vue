@@ -1,5 +1,5 @@
 <template>
-  <div class="content-base md:flex">
+  <section class="content-base md:flex">
     <div class="md:flex-shrink-0">
       <h3 class="content-title pb-4">
         Profile
@@ -63,7 +63,7 @@
         4日間連続で昼夜に食べられるくらいには好きです。(朝からラーメンとか、5日連続ラーメンとかは普通に嫌。)
       </profile-item>
     </div>
-  </div>
+  </section>
 </template>
 
 <script lang="ts">
