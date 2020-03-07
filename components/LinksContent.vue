@@ -1,5 +1,5 @@
 <template>
-  <div class="content-base">
+  <section class="content-base">
     <div>
       <h3 class="content-title">
         Links
@@ -14,7 +14,7 @@
       >
       </link-list>
     </div>
-  </div>
+  </section>
 </template>
 
 <script lang="ts">
