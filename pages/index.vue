@@ -13,8 +13,8 @@
       >
       </h2>
 
-      <profile-content>
-      </profile-content>
+      <profile-section>
+      </profile-section>
 
       <separator size="5">
       </separator>
@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import ProfileContent from '~/components/ProfileContent';
+import ProfileSection from '../components/ProfileSection.vue';
 import LinksContent from '~/components/LinksContent';
 import ProjectsContent from '~/components/ProjectsContent';
 import Separator from '~/components/Separator';
@@ -68,7 +68,7 @@ export default defineComponent({
     };
   },
   components: {
-    ProfileContent,
+    ProfileSection,
     LinksContent,
     ProjectsContent,
     Separator,

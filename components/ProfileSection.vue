@@ -71,7 +71,7 @@ import { defineComponent, computed } from '@vue/composition-api';
 import ProfileItem from './ProfileItem';
 
 export default defineComponent({
-  name: 'ProfileContent',
+  name: 'ProfileSection',
   components: {
     ProfileItem,
   },
