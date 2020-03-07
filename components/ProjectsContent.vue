@@ -1,5 +1,5 @@
 <template>
-  <div class="content-base">
+  <section class="content-base">
     <div>
       <h3 class="content-title">
         Projects
@@ -19,7 +19,7 @@
         </project-item>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script lang="ts">
