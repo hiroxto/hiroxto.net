@@ -1,19 +1,17 @@
 <template>
   <section class="content-base">
-    <div>
-      <h3 class="content-title">
-        Links
-      </h3>
+    <h3 class="content-title">
+      Links
+    </h3>
 
-      <link-list
-        v-for="(linkList, linkListsKey) in linkLists"
-        :key="linkListsKey"
-        :title="linkList.title"
-        :links="linkList.links"
-        class="py-2"
-      >
-      </link-list>
-    </div>
+    <link-list
+      v-for="(linkList, linkListsKey) in linkLists"
+      :key="linkListsKey"
+      :title="linkList.title"
+      :links="linkList.links"
+      class="py-2"
+    >
+    </link-list>
   </section>
 </template>
 
