@@ -33,7 +33,7 @@ const gitHubLink = (repo: string): Link => {
 };
 
 export default defineComponent({
-  name: 'ProjectsContent',
+  name: 'ProjectsSection',
   components: {
     ProjectItem,
   },
