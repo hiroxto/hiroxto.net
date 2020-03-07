@@ -111,6 +111,14 @@ export default defineComponent({
           tags: ['Ruby'],
         },
         {
+          name: 'hiroto-k.net',
+          description: 'www.hiroto-k.net のコード',
+          links: [
+            gitHubLink('hiroxto/hiroto-k.net'),
+          ],
+          tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
+        },
+        {
           name: 'utils.hiroto-k.net',
           description: '色々なユーティリティサイト',
           links: [
