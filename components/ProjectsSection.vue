@@ -109,12 +109,28 @@ export default defineComponent({
           tags: ['Ruby'],
         },
         {
+          name: 'hiroto-k.net',
+          description: 'www.hiroto-k.net のコード',
+          links: [
+            gitHubLink('hiroxto/hiroto-k.net'),
+          ],
+          tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
+        },
+        {
           name: 'utils.hiroto-k.net',
           description: '色々なユーティリティサイト',
           links: [
             gitHubLink('hiroxto/utils.hiroto-k.net'),
           ],
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
+        },
+        {
+          name: 'gas-campaign-calendar',
+          description: 'スプレッドシートに入れた各種還元のキャンペーンをカレンダーに入れるスクリプト',
+          links: [
+            gitHubLink('hiroxto/gas-campaign-calendar'),
+          ],
+          tags: ['TypeScript', 'Google Apps Script'],
         },
       ];
     });
