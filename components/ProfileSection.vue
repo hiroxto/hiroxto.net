@@ -24,7 +24,7 @@
         <p class="profile-item-text" v-text="programming">
         </p>
         <p class="profile-item-text">
-          普段はPHPとRubyを書きつつ、JavaScript/TypeScriptを使ったVue.jsやNuxt.jsも書きます。
+          普段はPHPとRubyを書きつつ, JavaScript/TypeScriptを使ったVue.jsやNuxt.jsも書きます。
         </p>
         <p class="profile-item-text">
           エディタはVSCodeとJetBrains系のIDEを使ってます。
@@ -37,7 +37,7 @@
 
       <profile-item title="声優">
         <p class="profile-item-text">
-          言うほど声優オタクではありませんが、主に以下の方々が好きです。
+          言うほど声優オタクではありませんが, 主に以下の方々が好きです。
         </p>
 
         <ul class="list-disc ml-5">
@@ -60,7 +60,7 @@
       </profile-item>
 
       <profile-item title="ラーメン" :single-text="true">
-        4日間連続で昼夜に食べられるくらいには好きです。(朝からラーメンとか、5日連続ラーメンとかは普通に嫌。)
+        4日間連続で昼夜に食べられるくらいには好きです。(朝からラーメンとか, 5日連続ラーメンとかは普通に嫌。)
       </profile-item>
     </div>
   </section>
