@@ -132,6 +132,14 @@ export default defineComponent({
           ],
           tags: ['TypeScript', 'Google Apps Script'],
         },
+        {
+          name: 'epgstation-slack-notification',
+          description: 'EPGStation の通知を Slack に送るコマンドラインツール',
+          links: [
+            gitHubLink('hiroxto/epgstation-slack-notification'),
+          ],
+          tags: ['Go'],
+        },
       ];
     });
 
