@@ -121,6 +121,10 @@ export default defineComponent({
           description: '色々なユーティリティサイト',
           links: [
             gitHubLink('hiroxto/utils.hiroto-k.net'),
+            {
+              name: 'utils.hiroto-k.net',
+              to: 'https://utils.hiroto-k.net/',
+            },
           ],
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
         },
@@ -129,6 +133,10 @@ export default defineComponent({
           description: 'スプレッドシートに入れた各種還元のキャンペーンをカレンダーに入れるスクリプト',
           links: [
             gitHubLink('hiroxto/gas-campaign-calendar'),
+            {
+              name: 'Blog article',
+              to: 'https://hiroto-k.hatenablog.com/entry/2020/02/27/190000',
+            },
           ],
           tags: ['TypeScript', 'Google Apps Script'],
         },
