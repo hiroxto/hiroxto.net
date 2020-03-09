@@ -129,6 +129,10 @@ export default defineComponent({
           description: 'スプレッドシートに入れた各種還元のキャンペーンをカレンダーに入れるスクリプト',
           links: [
             gitHubLink('hiroxto/gas-campaign-calendar'),
+            {
+              name: 'Blog article',
+              to: 'https://hiroto-k.hatenablog.com/entry/2020/02/27/190000',
+            },
           ],
           tags: ['TypeScript', 'Google Apps Script'],
         },
