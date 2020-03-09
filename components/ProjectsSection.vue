@@ -121,6 +121,10 @@ export default defineComponent({
           description: '色々なユーティリティサイト',
           links: [
             gitHubLink('hiroxto/utils.hiroto-k.net'),
+            {
+              name: 'utils.hiroto-k.net',
+              to: 'https://utils.hiroto-k.net/',
+            },
           ],
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
         },
