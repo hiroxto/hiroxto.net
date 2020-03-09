@@ -81,7 +81,7 @@ const config: Configuration = {
         url: '/',
         changefreq: 'yearly',
         priority: 1,
-        lastmod: '2019-12-10',
+        lastmod: '2020-03-10',
       },
     ],
   },
