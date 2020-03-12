@@ -1,13 +1,13 @@
 <template>
   <section>
-    <h4 v-text="title" class="text-lg text-teal-500 font-bold font-source-sans-pro">
+    <h4 v-text="title" class="links-list-title font-source-sans-pro">
     </h4>
 
     <ul class="list-none p-0 relative">
       <li
         v-for="(link, linksKey) in links"
         :key="linksKey"
-        class="links-list-item text-black bg-gray-100 rounded-lg shadow-lg my-2 p-2 leading-snug"
+        class="links-list-item"
       >
         <a
           v-text="link.name"
@@ -49,7 +49,12 @@ export default defineComponent({
 <style lang="scss" scoped>
 $link-opacity: 0.6;
 
+.links-list-title {
+  @apply text-lg text-teal-500 font-bold;
+}
+
 .links-list-item {
+  @apply text-black bg-gray-100 rounded-lg shadow-lg my-2 p-2 leading-snug;
   border-left: solid 0.5rem #ffa44b;
 }
 
