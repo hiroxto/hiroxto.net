@@ -1,6 +1,6 @@
 <template>
   <footer class="content-base">
-    <p class="text-xl text-black font-bold font-source-sans-pro">
+    <p class="footer-text font-source-sans-pro">
       © 2019 hiroto-k
     </p>
   </footer>
@@ -13,3 +13,9 @@ export default defineComponent({
   name: 'PageFooter',
 });
 </script>
+
+<style lang="scss" scoped>
+.footer-text {
+  @apply text-xl text-black font-bold;
+}
+</style>
