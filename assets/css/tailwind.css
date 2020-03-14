@@ -46,4 +46,8 @@ html {
   .root-container {
     @apply bg-gray-900;
   }
+
+  .page-title, .page-subtitle {
+    @apply text-gray-400;
+  }
 }
