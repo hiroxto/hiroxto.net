@@ -13,7 +13,7 @@
       >
       </h2>
 
-      <div class="content-base font-source-sans-pro">
+      <div class="section-container font-source-sans-pro">
         <p class="content-text">
           Sorry.
           This page doesn't exist.
@@ -21,7 +21,7 @@
 
         <p class="content-text">
           Please
-          <nuxt-link to="/" class="text-green-600">
+          <nuxt-link to="/" class="text-green-600 hover:text-green-300">
             back to top page.
           </nuxt-link>
         </p>
