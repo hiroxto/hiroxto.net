@@ -54,4 +54,8 @@ html {
   .section-container {
     @apply bg-gray-800;
   }
+
+  .section-title {
+    @apply text-pink-500;
+  }
 }
