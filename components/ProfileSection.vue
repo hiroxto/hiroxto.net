@@ -6,14 +6,14 @@
       </h3>
 
       <img
-        class="rounded-full h-20 w-20"
+        class="profile-image"
         src="/profile.png"
         alt="Profile image"
       >
     </div>
 
     <div class="mt-4 md:mt-0 md:ml-6">
-      <p class="text-2xl text-gray-900 font-bold pb-4 font-source-sans-pro" v-text="name">
+      <p class="profile-name font-source-sans-pro" v-text="name">
       </p>
 
       <profile-item title="Likes" :single-text="true">
@@ -83,6 +83,12 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.profile-image {
+  @apply rounded-full h-20 w-20;
+}
 
+.profile-name {
+  @apply text-2xl text-gray-900 font-bold pb-4;
+}
 </style>
