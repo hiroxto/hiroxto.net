@@ -41,3 +41,9 @@ html {
 .section-title {
   @apply text-xl text-purple-600 font-bold uppercase font-source-sans-pro;
 }
+
+@media (prefers-color-scheme: dark) {
+  .root-container {
+    @apply bg-gray-900;
+  }
+}
