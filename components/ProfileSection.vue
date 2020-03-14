@@ -1,7 +1,7 @@
 <template>
-  <section class="content-base md:flex">
+  <section class="section-container md:flex">
     <div class="md:flex-shrink-0">
-      <h3 class="content-title pb-4">
+      <h3 class="section-title pb-4">
         Profile
       </h3>
 
