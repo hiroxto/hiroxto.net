@@ -1,19 +1,19 @@
 <template>
-  <div class="rounded shadow-lg bg-blue-100">
-    <div class="px-6 py-4">
-      <h4 class="font-bold text-xl mb-2 font-source-sans-pro" v-text="project.name">
+  <div class="project-item-container">
+    <div class="project-info">
+      <h4 class="project-name font-source-sans-pro" v-text="project.name">
       </h4>
 
-      <p class="text-gray-700 text-base" v-text="project.description">
+      <p class="project-description" v-text="project.description">
       </p>
     </div>
 
-    <div class="px-6 py-4">
+    <div class="project-links">
       <template v-if="hasLinks">
         <a
           v-for="(link, projectLinksKey) in project.links"
           :key="projectLinksKey"
-          class="project-attributes project-link-item bg-blue-500 rounded font-source-sans-pro"
+          class="project-attributes project-link-item font-source-sans-pro"
           v-text="link.name"
           :href="link.to"
           target="_blank"
@@ -26,7 +26,7 @@
           v-for="(tag, projectTagsKey) in project.tags"
           :key="projectTagsKey"
           v-text="`#${tag}`"
-          class="project-attributes bg-gray-500 rounded-full font-source-sans-pro"
+          class="project-attributes project-tag-item font-source-sans-pro"
         >
         </span>
       </template>
@@ -66,11 +66,29 @@ export default defineComponent({
 <style lang="scss" scoped>
 $link-opacity: 0.6;
 
+.project-item-container {
+  @apply rounded shadow-lg bg-blue-100;
+}
+
+.project-info, .project-links {
+  @apply px-6 py-4;
+}
+
+.project-name {
+  @apply font-bold text-xl mb-2;
+}
+
+.project-description {
+  @apply text-gray-700 text-base;
+}
+
 .project-attributes {
   @apply text-sm text-white font-semibold inline-block px-3 py-1 mr-2 mb-2;
 }
 
 .project-link-item {
+  @apply bg-blue-500 rounded;
+
   &:hover {
     opacity: $link-opacity;
   }
@@ -79,5 +97,9 @@ $link-opacity: 0.6;
     background-color: #38c3e1;
     opacity: $link-opacity;
   }
+}
+
+.project-tag-item{
+  @apply bg-gray-500 rounded-full;
 }
 </style>

@@ -15,26 +15,29 @@ html {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
-.container {
-  margin: 0 auto;
+.root-container {
+  @apply w-full max-h-full mx-auto px-6 bg-indigo-100;
 }
 
-.content-base {
+.container {
+  margin: 0 auto;
+  @apply min-h-screen text-left;
+}
+
+.page-title {
+  letter-spacing: 2px;
+  @apply text-gray-800 block;
+}
+
+.page-subtitle {
+  word-spacing: 2px;
+  @apply text-gray-800 pb-8;
+}
+
+.section-container {
   @apply bg-white py-6 px-6;
 }
 
-.content-title {
+.section-title {
   @apply text-xl text-purple-600 font-bold uppercase font-source-sans-pro;
-}
-
-.profile-item {
-  @apply mb-2;
-}
-
-.profile-item-title {
-  @apply text-xl text-gray-900 font-medium my-1;
-}
-
-.profile-item-text {
-  @apply text-gray-600;
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-h-full mx-auto px-6 bg-indigo-100">
+  <div class="root-container">
     <nuxt>
     </nuxt>
   </div>

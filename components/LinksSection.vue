@@ -1,6 +1,6 @@
 <template>
-  <section class="content-base">
-    <h3 class="content-title">
+  <section class="section-container">
+    <h3 class="section-title">
       Links
     </h3>
 

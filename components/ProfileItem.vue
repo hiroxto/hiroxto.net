@@ -41,6 +41,16 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.profile-item {
+  @apply mb-2;
+}
 
+.profile-item-title {
+  @apply text-xl text-gray-900 font-medium my-1;
+}
+
+.profile-item-text {
+  @apply text-gray-600;
+}
 </style>

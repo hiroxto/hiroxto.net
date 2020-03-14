@@ -1,5 +1,5 @@
 <template>
-  <div class="container min-h-screen text-left">
+  <div class="container">
     <div class="py-8">
       <h1
         class="text-gray-800 xl:text-4xl lg:text-4xl md:text-4xl sm:text-3xl text-3xl font-source-sans-pro"
@@ -13,7 +13,7 @@
       >
       </h2>
 
-      <div class="content-base font-source-sans-pro">
+      <div class="section-container font-source-sans-pro">
         <p class="content-text">
           Sorry.
           This page doesn't exist.
@@ -21,7 +21,7 @@
 
         <p class="content-text">
           Please
-          <nuxt-link to="/" class="text-green-600">
+          <nuxt-link to="/" class="text-green-600 hover:text-green-300">
             back to top page.
           </nuxt-link>
         </p>
@@ -67,7 +67,7 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .content-text {
   @apply text-lg text-black;
 }
