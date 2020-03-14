@@ -50,4 +50,8 @@ html {
   .page-title, .page-subtitle {
     @apply text-gray-400;
   }
+
+  .section-container {
+    @apply bg-gray-800;
+  }
 }
