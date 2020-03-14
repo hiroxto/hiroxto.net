@@ -70,4 +70,16 @@ $link-opacity: 0.6;
     opacity: $link-opacity;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .links-list-item {
+    @apply bg-gray-600 text-gray-300;
+  }
+
+  .links-list-item-link {
+    &:active {
+      background-color: #000000;
+    }
+  }
+}
 </style>
