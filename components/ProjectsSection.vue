@@ -7,13 +7,13 @@
     <div
       v-for="(splitProject, splitProjectsKey) in splitProjects"
       :key="splitProjectsKey"
-      class="lg:flex mb-4"
+      class="projects-list lg:flex"
     >
       <project-item
         v-for="(project, projectsKey) in splitProject"
         :key="projectsKey"
         :project="project"
-        class="lg:w-1/2 sm:w-full mx-2 my-4"
+        class="project-item lg:w-1/2 sm:w-full"
       >
       </project-item>
     </div>
@@ -172,3 +172,13 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.projects-list {
+  @apply mb-4;
+}
+
+.project-item {
+  @apply mx-2 my-4;
+}
+</style>
