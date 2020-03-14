@@ -67,7 +67,7 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .content-text {
   @apply text-lg text-black;
 }
