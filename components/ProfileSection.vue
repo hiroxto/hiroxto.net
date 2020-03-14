@@ -91,4 +91,10 @@ export default defineComponent({
 .profile-name {
   @apply text-2xl text-gray-900 font-bold pb-4;
 }
+
+@media (prefers-color-scheme: dark) {
+  .profile-name {
+    @apply text-gray-300;
+  }
+}
 </style>
