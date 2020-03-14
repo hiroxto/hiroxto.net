@@ -21,6 +21,7 @@ html {
 
 .container {
   margin: 0 auto;
+  @apply min-h-screen text-left;
 }
 
 .page-title {

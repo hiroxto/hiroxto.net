@@ -1,5 +1,5 @@
 <template>
-  <div class="container min-h-screen text-left">
+  <div class="container">
     <div class="py-8">
       <h1
         class="page-title xl:text-6xl lg:text-6xl md:text-6xl sm:text-5xl text-5xl font-source-sans-pro"
