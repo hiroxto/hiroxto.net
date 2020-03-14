@@ -2,13 +2,13 @@
   <div class="container min-h-screen text-left">
     <div class="py-8">
       <h1
-        class="title xl:text-6xl lg:text-6xl md:text-6xl sm:text-5xl text-5xl font-source-sans-pro"
+        class="page-title xl:text-6xl lg:text-6xl md:text-6xl sm:text-5xl text-5xl font-source-sans-pro"
         v-text="title"
       >
       </h1>
 
       <h2
-        class="subtitle xl:text-3xl lg:text-3xl md:text-3xl sm:text-2xl text-2xl font-source-sans-pro"
+        class="page-subtitle xl:text-3xl lg:text-3xl md:text-3xl sm:text-2xl text-2xl font-source-sans-pro"
         v-text="subTitle"
       >
       </h2>
@@ -78,13 +78,4 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.title {
-  letter-spacing: 2px;
-  @apply text-gray-800 block;
-}
-
-.subtitle {
-  word-spacing: 2px;
-  @apply text-gray-800 pb-8;
-}
 </style>

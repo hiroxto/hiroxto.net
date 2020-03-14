@@ -19,6 +19,16 @@ html {
   margin: 0 auto;
 }
 
+.page-title {
+  letter-spacing: 2px;
+  @apply text-gray-800 block;
+}
+
+.page-subtitle {
+  word-spacing: 2px;
+  @apply text-gray-800 pb-8;
+}
+
 .section-container {
   @apply bg-white py-6 px-6;
 }
