@@ -73,7 +73,7 @@ $link-opacity: 0.6;
 
 @media (prefers-color-scheme: dark) {
   .links-list-item {
-    @apply bg-gray-600 text-gray-300;
+    @apply bg-gray-700 text-gray-300;
   }
 
   .links-list-item-link {
