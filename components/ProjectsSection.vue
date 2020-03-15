@@ -74,7 +74,7 @@ export default defineComponent({
         },
         {
           name: 'console-wrapper',
-          description: 'symfony/consoleのラッパー',
+          description: 'symfony/console のラッパー',
           links: [
             gitHubLink('hiroxto/console-wrapper'),
             {
