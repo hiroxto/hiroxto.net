@@ -5,7 +5,7 @@
   Location: Japan
   Site: https://www.hiroto-k.net/
   Social:
-    Twitter: http://twitter.com/hiroto_k_
+    Twitter: http://twitter.com/hiroxto
     GitHub: https://github.com/hiroxto
 
 ## SITE
