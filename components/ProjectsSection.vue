@@ -90,7 +90,7 @@ export default defineComponent({
         },
         {
           name: 'php-string-builder',
-          description: 'PHP用のString builder',
+          description: 'PHP 用の String builder',
           links: [
             gitHubLink('hiroxto/php-string-builder'),
             {
