@@ -1,7 +1,7 @@
 # humans.txt of hiroto-k.net
 
 ## PERSONAL
-  Name: hiroxto
+  Name: hiroto-k / hiroxto
   Location: Japan
   Site: https://www.hiroto-k.net/
   Social:
