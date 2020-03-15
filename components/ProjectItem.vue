@@ -119,5 +119,9 @@ $link-opacity: 0.6;
   .project-link-item {
     @apply bg-blue-600;
   }
+
+  .project-tag-item {
+    @apply bg-gray-600;
+  }
 }
 </style>
