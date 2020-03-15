@@ -66,7 +66,7 @@ export default defineComponent({
         },
         {
           name: 'blog-notification',
-          description: 'ブログの更新をTwitterやSlackで通知する。',
+          description: 'ブログの更新をTwitterやSlackで通知する',
           links: [
             gitHubLink('hiroxto/blog-notification'),
           ],
