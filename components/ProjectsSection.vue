@@ -50,7 +50,7 @@ export default defineComponent({
         },
         {
           name: 'anime-push',
-          description: 'アニメやラジオの放送時間をTwitterやSlackで通知する',
+          description: 'アニメやラジオの放送時間を Twitter や Slack で通知する',
           links: [
             gitHubLink('hiroxto/anime-push'),
           ],
