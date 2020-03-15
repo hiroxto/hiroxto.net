@@ -58,7 +58,7 @@ export default defineComponent({
         },
         {
           name: 'anime-push-pg-plugin',
-          description: 'anime-pushでPostgreSQLを使うプラグイン',
+          description: 'anime-push で PostgreSQL を使うプラグイン',
           links: [
             gitHubLink('hiroxto/anime-push-pg-plugin'),
           ],
