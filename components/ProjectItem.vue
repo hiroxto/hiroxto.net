@@ -117,7 +117,7 @@ $link-opacity: 0.6;
   }
 
   .project-link-item {
-    @apply bg-blue-700;
+    @apply bg-blue-600;
   }
 }
 </style>
