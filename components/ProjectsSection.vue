@@ -42,7 +42,7 @@ export default defineComponent({
       return [
         {
           name: 'alt-tl',
-          description: 'Twitterの statuses/home_timeline の代替リストを作る。',
+          description: 'Twitterの statuses/home_timeline の代替リストを作る',
           links: [
             gitHubLink('hiroxto/alt-tl'),
           ],
