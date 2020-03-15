@@ -102,7 +102,7 @@ export default defineComponent({
         },
         {
           name: 'itunes-playlist-converter',
-          description: 'iTunesのプレイリストをDAP向けに変換。',
+          description: 'iTunes のプレイリストを DAP 向けに変換',
           links: [
             gitHubLink('hiroxto/itunes-playlist-converter'),
           ],
