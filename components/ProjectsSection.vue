@@ -42,7 +42,7 @@ export default defineComponent({
       return [
         {
           name: 'alt-tl',
-          description: 'Twitterの statuses/home_timeline の代替リストを作る。',
+          description: 'Twitterの statuses/home_timeline の代替リストを作る',
           links: [
             gitHubLink('hiroxto/alt-tl'),
           ],
@@ -50,7 +50,7 @@ export default defineComponent({
         },
         {
           name: 'anime-push',
-          description: 'アニメやラジオの放送時間をTwitterやSlackで通知する。',
+          description: 'アニメやラジオの放送時間を Twitter や Slack で通知する',
           links: [
             gitHubLink('hiroxto/anime-push'),
           ],
@@ -58,7 +58,7 @@ export default defineComponent({
         },
         {
           name: 'anime-push-pg-plugin',
-          description: 'anime-pushでPostgreSQLを使うプラグイン',
+          description: 'anime-push で PostgreSQL を使うプラグイン',
           links: [
             gitHubLink('hiroxto/anime-push-pg-plugin'),
           ],
@@ -66,7 +66,7 @@ export default defineComponent({
         },
         {
           name: 'blog-notification',
-          description: 'ブログの更新をTwitterやSlackで通知する。',
+          description: 'ブログの更新を Twitter や Slack で通知する',
           links: [
             gitHubLink('hiroxto/blog-notification'),
           ],
@@ -74,7 +74,7 @@ export default defineComponent({
         },
         {
           name: 'console-wrapper',
-          description: 'symfony/consoleのラッパー',
+          description: 'symfony/console のラッパー',
           links: [
             gitHubLink('hiroxto/console-wrapper'),
             {
@@ -90,7 +90,7 @@ export default defineComponent({
         },
         {
           name: 'php-string-builder',
-          description: 'PHP用のString builder',
+          description: 'PHP 用の String builder',
           links: [
             gitHubLink('hiroxto/php-string-builder'),
             {
@@ -102,7 +102,7 @@ export default defineComponent({
         },
         {
           name: 'itunes-playlist-converter',
-          description: 'iTunesのプレイリストをDAP向けに変換。',
+          description: 'iTunes のプレイリストを DAP 向けに変換',
           links: [
             gitHubLink('hiroxto/itunes-playlist-converter'),
           ],
