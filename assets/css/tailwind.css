@@ -48,7 +48,7 @@ html {
   }
 
   .page-title, .page-subtitle {
-    @apply text-gray-400;
+    @apply text-gray-100;
   }
 
   .section-container {
