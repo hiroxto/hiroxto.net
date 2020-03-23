@@ -30,6 +30,10 @@ jobs:
         env:
           CI: true
 
+      - run: "yarn run lint:style"
+        env:
+          CI: true
+
       - name: Slack Notification
         uses: homoluctus/slatify@v1.5
         if: always()
