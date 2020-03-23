@@ -18,4 +18,10 @@ export default defineComponent({
 .footer-text {
   @apply text-xl text-black font-bold;
 }
+
+@media (prefers-color-scheme: dark) {
+  .footer-text {
+    @apply text-gray-300;
+  }
+}
 </style>

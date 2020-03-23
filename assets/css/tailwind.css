@@ -41,3 +41,21 @@ html {
 .section-title {
   @apply text-xl text-purple-600 font-bold uppercase font-source-sans-pro;
 }
+
+@media (prefers-color-scheme: dark) {
+  .root-container {
+    @apply bg-gray-900;
+  }
+
+  .page-title, .page-subtitle {
+    @apply text-gray-100;
+  }
+
+  .section-container {
+    @apply bg-gray-800;
+  }
+
+  .section-title {
+    @apply text-pink-500;
+  }
+}

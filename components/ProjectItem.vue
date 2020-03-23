@@ -102,4 +102,26 @@ $link-opacity: 0.6;
 .project-tag-item{
   @apply bg-gray-500 rounded-full;
 }
+
+@media (prefers-color-scheme: dark) {
+  .project-item-container {
+    @apply bg-gray-700;
+  }
+
+  .project-name {
+    @apply text-gray-300;
+  }
+
+  .project-description {
+    @apply text-gray-500;
+  }
+
+  .project-link-item {
+    @apply bg-blue-600;
+  }
+
+  .project-tag-item {
+    @apply bg-gray-600;
+  }
+}
 </style>

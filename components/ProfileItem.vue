@@ -53,4 +53,14 @@ export default defineComponent({
 .profile-item-text {
   @apply text-gray-600;
 }
+
+@media (prefers-color-scheme: dark) {
+  .profile-item-title {
+    @apply text-gray-300;
+  }
+
+  .profile-item-text {
+    @apply text-gray-500;
+  }
+}
 </style>
