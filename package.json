@@ -9,8 +9,8 @@
     "build": "nuxt-ts build",
     "start": "nuxt-ts start",
     "generate": "nuxt-ts generate",
-    "lint": "eslint --ext .js,.ts,.vue --ignore-path .gitignore .",
-    "lint:fix": "eslint --fix --ext .js,.ts,.vue --ignore-path .gitignore .",
+    "lint:es": "eslint --ext .js,.ts,.vue --ignore-path .gitignore .",
+    "lint:es:fix": "eslint --fix --ext .js,.ts,.vue --ignore-path .gitignore .",
     "lint:style": "stylelint ./**/*.css ./**/*.scss ./**/*.vue --ignore-pattern .gitignore",
     "lint:style:fix": "stylelint --fix ./**/*.css ./**/*.scss ./**/*.vue --ignore-pattern .gitignore"
   },
