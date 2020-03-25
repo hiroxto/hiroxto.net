@@ -12,6 +12,14 @@
       "on sunday"
     ]
   },
+  "pin": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": [
+      "every weekday",
+      "every weekend"
+    ]
+  },
   "patch": {
     "automerge": true
   }
