@@ -70,7 +70,8 @@ $link-opacity: 0.6;
   @apply rounded shadow-lg bg-blue-100;
 }
 
-.project-info, .project-links {
+.project-info,
+.project-links {
   @apply px-6 py-4;
 }
 
@@ -99,7 +100,7 @@ $link-opacity: 0.6;
   }
 }
 
-.project-tag-item{
+.project-tag-item {
   @apply bg-gray-500 rounded-full;
 }
 

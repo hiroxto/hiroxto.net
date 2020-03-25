@@ -55,18 +55,19 @@ $link-opacity: 0.6;
 
 .links-list-item {
   @apply text-black bg-gray-100 rounded-lg shadow-lg my-2 p-2 leading-snug;
+
   border-left: solid 0.5rem #ffa44b;
 }
 
 .links-list-item-link {
   &:hover {
-    color: #1B64DF;
+    color: #1b64df;
     opacity: $link-opacity;
   }
 
   &:active {
     background-color: #7f828b;
-    color: #ffffff;
+    color: #fff;
     opacity: $link-opacity;
   }
 }
@@ -78,7 +79,7 @@ $link-opacity: 0.6;
 
   .links-list-item-link {
     &:active {
-      background-color: #000000;
+      background-color: #000;
     }
   }
 }
