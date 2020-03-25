@@ -26,7 +26,7 @@ jobs:
         env:
           CI: true
 
-      - run: yarn run lint
+      - run: "yarn run lint:es"
         env:
           CI: true
 
