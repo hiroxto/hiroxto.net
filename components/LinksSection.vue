@@ -34,8 +34,8 @@ export default defineComponent({
     const socialServiceLinks = computed<Link[]>((): Link[] => {
       return [
         {
-          name: 'Twitter (hiroto_k_)',
-          to: 'https://twitter.com/hiroto_k_',
+          name: 'Twitter (hiroxto)',
+          to: 'https://twitter.com/hiroxto',
         },
         {
           name: 'GitHub (hiroxto)',
