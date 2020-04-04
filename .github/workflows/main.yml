@@ -18,6 +18,19 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        env:
+          cache-name: cache-node_modules
+        with:
+          path: node_modules
+          key: hiroto-k-net-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            hiroto-k-net-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+            hiroto-k-net-build-${{ env.cache-name }}-
+            hiroto-k-net-build-
+            hiroto-k-net-
+
       - run: yarn install
         env:
           CI: true
