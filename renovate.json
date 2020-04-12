@@ -3,14 +3,20 @@
     "config:base"
   ],
   "timezone": "Asia/Tokyo",
-  "schedule": [
-    "on saturday"
-  ],
+  "npm": {
+    "enabled": true,
+    "schedule": [
+      "on saturday"
+    ],
+    "patch": {
+      "automerge": true
+    }
+  },
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true,
     "schedule": [
-      "on sunday"
+      "before 10am on the 20th day of the month"
     ]
   },
   "pin": {
@@ -20,8 +26,5 @@
       "every weekday",
       "every weekend"
     ]
-  },
-  "patch": {
-    "automerge": true
   }
 }
