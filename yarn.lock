@@ -1129,13 +1129,15 @@
     consola "^2.10.1"
     eslint-loader "^3.0.0"
 
-"@nuxtjs/sitemap@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@nuxtjs/sitemap/-/sitemap-2.1.0.tgz#3f3825f1b41bb57a96b20c8e2e58ace7c1396c4f"
-  integrity sha512-kK5LXU0Ku8gBuPRpYO33TR0bdaVbil3Z8J3ZQFcglsa3kvewNSds3YOxo0F0adi/7djFjgNw0mHRAWthlxl4Tw==
+"@nuxtjs/sitemap@2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@nuxtjs/sitemap/-/sitemap-2.2.1.tgz#a00b528e361673b3f2651a0f1ee4081e89f9c6fd"
+  integrity sha512-GrXTueBaSQgAuBbUrGcKu37VbZBOZ4omHqk8FfthK71R26vp9LWUcqlRbuQaIrAYynjSfSPxaLpX8opUwO1nKw==
   dependencies:
     async-cache "^1.1.0"
     consola "^2.11.3"
+    etag "^1.8.1"
+    fresh "^0.5.2"
     fs-extra "^8.1.0"
     is-https "^1.0.0"
     lodash.unionby "^4.8.0"
