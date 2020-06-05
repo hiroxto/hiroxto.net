@@ -1011,30 +1011,6 @@
     "@types/webpack-dev-middleware" "^3.7.0"
     "@types/webpack-hot-middleware" "^2.25.2"
 
-"@nuxt/types@0.7.6":
-  version "0.7.6"
-  resolved "https://registry.yarnpkg.com/@nuxt/types/-/types-0.7.6.tgz#ebdda482abd0f976a9931e99de60801f20d6cc78"
-  integrity sha512-gFrV+htEMHN5PRG63ofXDFzk1eQSvpyrkAE4QeHc4pIgx2I0ydVleNP9QeafNQIG8Lk2VyU7yYJJRnRb5LFoNw==
-  dependencies:
-    "@types/autoprefixer" "^9.7.2"
-    "@types/babel__core" "^7.1.7"
-    "@types/compression" "^1.7.0"
-    "@types/connect" "^3.4.33"
-    "@types/etag" "^1.8.0"
-    "@types/file-loader" "^4.2.0"
-    "@types/html-minifier" "^3.5.3"
-    "@types/less" "^3.0.1"
-    "@types/node" "^12.12.39"
-    "@types/node-sass" "^4.11.1"
-    "@types/optimize-css-assets-webpack-plugin" "^5.0.1"
-    "@types/pug" "^2.0.4"
-    "@types/serve-static" "^1.13.3"
-    "@types/terser-webpack-plugin" "^2.2.0"
-    "@types/webpack" "^4.41.13"
-    "@types/webpack-bundle-analyzer" "^2.13.3"
-    "@types/webpack-dev-middleware" "^3.7.1"
-    "@types/webpack-hot-middleware" "^2.25.3"
-
 "@nuxt/types@0.7.7":
   version "0.7.7"
   resolved "https://registry.yarnpkg.com/@nuxt/types/-/types-0.7.7.tgz#819bfbb08a27af2eca9c66fefdf87e6ec5c9548b"
@@ -1177,17 +1153,17 @@
     consola "^2.11.3"
     eslint-loader "^4.0.2"
 
-"@nuxtjs/sitemap@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@nuxtjs/sitemap/-/sitemap-2.3.0.tgz#ca032b84f54a6570123305098b2b9a7821f4ab29"
-  integrity sha512-mSh0vc8HuJHMOm8ifKIKXxGETDq+Oc7MgwWVeq20AEfblNQUOWFLv+bYqh8BkxvuXc2/488zMrKhWOfwzasQOA==
+"@nuxtjs/sitemap@2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@nuxtjs/sitemap/-/sitemap-2.3.1.tgz#b9f7c4969d123b0c4f83e5218a0136e00232fef1"
+  integrity sha512-t/wJk4waFZri/jMUzTQKXWqEyqqHxVY6XyRlrCTu3ipaRH2ApeUnM5BYuEW4mTQC3i8yHEdzM6Ap+K7XRTQPWg==
   dependencies:
     async-cache "^1.1.0"
-    consola "^2.12.1"
+    consola "^2.12.2"
     etag "^1.8.1"
     fresh "^0.5.2"
     fs-extra "^8.1.0"
-    is-https "^1.0.0"
+    is-https "^2.0.2"
     lodash.unionby "^4.8.0"
     minimatch "^3.0.4"
     sitemap "^4.1.1"
@@ -1402,7 +1378,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.0.tgz#30d2d09f623fe32cde9cb582c7a6eda2788ce4a8"
   integrity sha512-WE4IOAC6r/yBZss1oQGM5zs2D7RuKR6Q+w+X2SouPofnWn+LbCqClRyhO3ZE7Ix8nmFgo/oVuuE01cJT2XB13A==
 
-"@types/node@12.12.42", "@types/node@^12.12.39", "@types/node@^12.12.42":
+"@types/node@12.12.42", "@types/node@^12.12.42":
   version "12.12.42"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.42.tgz#d0d1149336bd07540dd1ea576692829d575dec34"
   integrity sha512-R/9QdYFLL9dE9l5cWWzWIZByVGFd7lk7JVOJ7KD+E1SJ4gni7XJRLz9QTjyYQiHIqEAgku9VgxdLjMlhhUaAFg==
@@ -3056,10 +3032,10 @@ consola@^2.10.0, consola@^2.10.1, consola@^2.11.3, consola@^2.6.0, consola@^2.9.
   resolved "https://registry.yarnpkg.com/consola/-/consola-2.11.3.tgz#f7315836224c143ac5094b47fd4c816c2cd1560e"
   integrity sha512-aoW0YIIAmeftGR8GSpw6CGQluNdkWMWh3yEFjH/hmynTYnMtibXszii3lxCXmk8YxJtI3FAK5aTiquA5VH68Gw==
 
-consola@^2.12.1:
-  version "2.12.1"
-  resolved "https://registry.yarnpkg.com/consola/-/consola-2.12.1.tgz#88e9311a02cb88a7f6f9488239dd30b6ba99cbb0"
-  integrity sha512-aEkkju9ZcEa9y2MhzNhfmTUws/CEZZ0LKu0FxftSU3HygPfVMMIMSYyYct+xBN6XNRhsaDZjw2HAv3m2ammXSA==
+consola@^2.12.2:
+  version "2.12.2"
+  resolved "https://registry.yarnpkg.com/consola/-/consola-2.12.2.tgz#9610f158e7b0a9ecc8f8bb0c4fc8e7c52bf41d05"
+  integrity sha512-c9mzemrAk57s3UIjepn8KKkuEH5fauMdot5kFSJUnqHcnApVS9Db8Rbv5AZ1Iz6lXzaGe9z1crQXhJtGX4h/Og==
 
 console-browserify@^1.1.0:
   version "1.2.0"
@@ -5367,10 +5343,10 @@ is-hexadecimal@^1.0.0:
   resolved "https://registry.yarnpkg.com/is-hexadecimal/-/is-hexadecimal-1.0.4.tgz#cc35c97588da4bd49a8eedd6bc4082d44dcb23a7"
   integrity sha512-gyPJuv83bHMpocVYoqof5VDiZveEoGoFL8m3BXNb2VW8Xs+rz9kqO8LOQ5DH6EsuvilT1ApazU0pyl+ytbPtlw==
 
-is-https@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/is-https/-/is-https-1.0.0.tgz#9c1dde000dc7e7288edb983bef379e498e7cb1bf"
-  integrity sha512-1adLLwZT9XEXjzhQhZxd75uxf0l+xI9uTSFaZeSESjL3E1eXSPpO+u5RcgqtzeZ1KCaNvtEwZSTO2P4U5erVqQ==
+is-https@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/is-https/-/is-https-2.0.2.tgz#7009d303c72580f15897d5c063d6b6bc1f838fef"
+  integrity sha512-UfUCKVQH/6PQRCh5Qk9vNu4feLZiFmV/gr8DjbtJD0IrCRIDTA6E+d/AVFGPulI5tqK5W45fYbn1Nir1O99rFw==
 
 is-nan@^1.2.1:
   version "1.3.0"
