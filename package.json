@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@nuxt/types": "0.7.7",
-    "@nuxt/typescript-build": "0.6.6",
+    "@nuxt/typescript-build": "1.0.2",
     "@nuxtjs/eslint-module": "2.0.0",
     "@nuxtjs/tailwindcss": "2.0.0",
     "@types/node": "12.12.44",
