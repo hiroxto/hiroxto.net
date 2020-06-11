@@ -56,6 +56,13 @@ const config: Configuration = {
     '@nuxt/typescript-build',
 
     '@nuxtjs/sitemap',
+
+    ['@nuxtjs/google-adsense', {
+      id: 'ca-pub-5741599380163249',
+      pageLevelAds: true,
+      analyticsUacct: 'UA-73752623-5',
+      analyticsDomainName: 'hiroto-k.net',
+    }],
   ],
 
   /*
