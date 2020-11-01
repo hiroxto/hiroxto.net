@@ -48,7 +48,7 @@ jobs:
           CI: true
 
       - name: Slack Notification
-        uses: homoluctus/slatify@v1.5
+        uses: homoluctus/slatify@v1.6
         if: always()
         with:
           job_name: '*${{ github.workflow }}*'
