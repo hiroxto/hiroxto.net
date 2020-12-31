@@ -18,7 +18,7 @@
     "@nuxt/typescript-runtime": "2.0.0",
     "@nuxtjs/sitemap": "2.4.0",
     "nuxt": "2.14.12",
-    "ts-node": "9.0.0"
+    "ts-node": "9.1.1"
   },
   "devDependencies": {
     "@nuxt/types": "2.14.12",
