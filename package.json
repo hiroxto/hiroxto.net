@@ -15,7 +15,7 @@
     "lint:style:fix": "stylelint --fix ./**/*.css ./**/*.scss ./**/*.vue --ignore-pattern .gitignore"
   },
   "dependencies": {
-    "@nuxt/typescript-runtime": "2.0.0",
+    "@nuxt/typescript-runtime": "2.0.1",
     "@nuxtjs/sitemap": "2.4.0",
     "nuxt": "2.14.12",
     "ts-node": "9.1.1"
