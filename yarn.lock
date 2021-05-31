@@ -9788,9 +9788,9 @@ table@^6.0.4, table@^6.0.7:
     strip-ansi "^6.0.0"
 
 tailwind-config-viewer@^1.5.0:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/tailwind-config-viewer/-/tailwind-config-viewer-1.5.1.tgz#c8ba81593ae8bc64d3625be983ebcf25aea3cc30"
-  integrity sha512-vlrZjC+sJMgtj5Pz9GsJsJMVVWi1Pv/F3xU54OuOHM8fD+Pb8KSB3Ja2lFVD8KN//wsvkpuJST8OctbApb3mMw==
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/tailwind-config-viewer/-/tailwind-config-viewer-1.6.0.tgz#a4bd718e7502253dc2f1218ed8a329d6f66cd975"
+  integrity sha512-ASAYmyC2Lj/7Ik81z/31j3Q6Ru8aozajTtOTCZSJvy9z9S42NYbbXgYk3xFAvawLwHNneOgsfQhwEwoVH7bm7w==
   dependencies:
     "@koa/router" "^9.0.1"
     commander "^6.0.0"
