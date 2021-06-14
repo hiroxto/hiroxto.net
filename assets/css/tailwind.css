@@ -1,7 +1,6 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-
 @import url('https://fonts.googleapis.com/css?family=Sawarabi+Gothic|Source+Sans+Pro&display=swap');
 
 html {
@@ -21,16 +20,19 @@ html {
 
 .container {
   margin: 0 auto;
+
   @apply min-h-screen text-left;
 }
 
 .page-title {
   letter-spacing: 2px;
+
   @apply text-gray-800 block;
 }
 
 .page-subtitle {
   word-spacing: 2px;
+
   @apply text-gray-800 pb-8;
 }
 
@@ -47,7 +49,8 @@ html {
     @apply bg-gray-900;
   }
 
-  .page-title, .page-subtitle {
+  .page-title,
+  .page-subtitle {
     @apply text-gray-100;
   }
 
