@@ -53,7 +53,7 @@ export default defineComponent({
     ProfileItem,
   },
   setup () {
-    const name = computed<string>(() => 'hiroto-k / hiroxto');
+    const name = computed<string>(() => 'hiroxto');
     const joinSeparator = ', ';
     const likes = computed<string>(() => {
       return [

@@ -109,10 +109,10 @@ export default defineComponent({
           tags: ['Ruby'],
         },
         {
-          name: 'hiroto-k.net',
-          description: 'www.hiroto-k.net のコード',
+          name: 'hiroxto.net',
+          description: 'www.hiroxto.net のコード',
           links: [
-            gitHubLink('hiroxto/hiroto-k.net'),
+            gitHubLink('hiroxto/hiroxto.net'),
           ],
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
         },
