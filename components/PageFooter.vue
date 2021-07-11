@@ -1,7 +1,7 @@
 <template>
   <footer class="section-container">
     <p class="footer-text font-source-sans-pro">
-      © 2019 hiroto-k / hiroxto
+      © 2019 hiroxto
     </p>
   </footer>
 </template>

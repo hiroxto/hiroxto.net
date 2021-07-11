@@ -3,7 +3,7 @@ version: '3'
 services:
   nuxt:
     build: .
-    image: hiroto-k-net-nuxt
+    image: hiroxto-net-nuxt
     tty: true
     command: yarn run dev
     volumes:

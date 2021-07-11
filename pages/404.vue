@@ -53,7 +53,7 @@ export default defineComponent({
   },
   setup () {
     const title = computed<string>(() => '404 Not Found');
-    const subtitle = computed<string>(() => 'hiroto-k.net');
+    const subtitle = computed<string>(() => 'hiroxto.net');
 
     return {
       title,

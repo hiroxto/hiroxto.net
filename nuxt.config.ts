@@ -7,7 +7,7 @@ const config: NuxtConfig = {
   ** Headers of the page
   */
   head: {
-    titleTemplate: '%s - hiroto-k.net',
+    titleTemplate: '%s - hiroxto.net',
     htmlAttrs: {
       lang: 'ja',
     },
@@ -72,7 +72,7 @@ const config: NuxtConfig = {
   },
 
   sitemap: {
-    hostname: 'https://www.hiroto-k.net',
+    hostname: 'https://www.hiroxto.net',
     exclude: [
       '/404',
     ],

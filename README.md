@@ -1,9 +1,9 @@
-# hiroto-k.net
+# hiroxto.net
 
-![GitHub Actions Node CI Status](https://github.com/hiroxto/hiroto-k.net/workflows/Node%20CI/badge.svg)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/6f204004-d9bf-4bbb-8aae-d6c9832b92ea/deploy-status)](https://app.netlify.com/sites/hiroto-k-net/deploys)
+![GitHub Actions Node CI Status](https://github.com/hiroxto/hiroxto.net/workflows/Node%20CI/badge.svg)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/6f204004-d9bf-4bbb-8aae-d6c9832b92ea/deploy-status)](https://app.netlify.com/sites/hiroxto.net/deploys)
 
-> Code of www.hiroto-k.net
+> Code of www.hiroxto.net
 
 ## Build Setup
 

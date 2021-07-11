@@ -59,8 +59,8 @@ export default defineComponent({
     };
   },
   setup () {
-    const title = computed(() => 'hiroto-k.net');
-    const subTitle = computed(() => 'Home page of hiroto-k / hiroxto.');
+    const title = computed(() => 'hiroxto.net');
+    const subTitle = computed(() => 'Home page of hiroxto.');
 
     return {
       title,
