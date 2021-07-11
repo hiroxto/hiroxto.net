@@ -7,7 +7,7 @@ const config: NuxtConfig = {
   ** Headers of the page
   */
   head: {
-    titleTemplate: '%s - hiroto-k.net',
+    titleTemplate: '%s - hiroxto.net',
     htmlAttrs: {
       lang: 'ja',
     },
