@@ -51,12 +51,12 @@ export default defineComponent({
     const subDomainLinks = computed<Link[]>((): Link[] => {
       return [
         {
-          name: 'utils.hiroto-k.net',
-          to: 'https://utils.hiroto-k.net/',
+          name: 'utils.hiroxto.net',
+          to: 'https://utils.hiroxto.net/',
         },
         {
-          name: 'train-photo-blog.hiroto-k.net',
-          to: 'https://train-photo-blog.hiroto-k.net/',
+          name: 'train-photo-blog.hiroxto.net',
+          to: 'https://train-photo-blog.hiroxto.net/',
         },
       ];
     });
@@ -69,7 +69,7 @@ export default defineComponent({
         },
         {
           name: 'Train photo blog',
-          to: 'https://train-photo-blog.hiroto-k.net/',
+          to: 'https://train-photo-blog.hiroxto.net/',
         },
       ];
     });

@@ -117,13 +117,13 @@ export default defineComponent({
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
         },
         {
-          name: 'utils.hiroto-k.net',
+          name: 'utils.hiroxto.net',
           description: '色々なユーティリティサイト',
           links: [
-            gitHubLink('hiroxto/utils.hiroto-k.net'),
+            gitHubLink('hiroxto/utils.hiroxto.net'),
             {
-              name: 'utils.hiroto-k.net',
-              to: 'https://utils.hiroto-k.net/',
+              name: 'utils.hiroxto.net',
+              to: 'https://utils.hiroxto.net/',
             },
           ],
           tags: ['Vue.js', 'Nuxt.js', 'TypeScript'],
