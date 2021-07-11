@@ -72,7 +72,7 @@ const config: NuxtConfig = {
   },
 
   sitemap: {
-    hostname: 'https://www.hiroto-k.net',
+    hostname: 'https://www.hiroxto.net',
     exclude: [
       '/404',
     ],
