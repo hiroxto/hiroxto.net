@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed, PropType } from '@vue/composition-api';
 import { Project } from '~/types';
 
 interface Props {
@@ -46,7 +46,7 @@ export default defineComponent({
   name: 'ProjectItem',
   props: {
     project: {
-      type: Object,
+      type: Object as PropType<Project>,
       required: true,
     },
   },
