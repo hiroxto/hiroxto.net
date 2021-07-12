@@ -38,6 +38,10 @@ export default defineComponent({
           to: 'https://twitter.com/hiroxto',
         },
         {
+          name: 'Scrapbox',
+          to: 'https://scrapbox.io/hiroxto/',
+        },
+        {
           name: 'GitHub (hiroxto)',
           to: 'https://github.com/hiroxto',
         },
@@ -64,7 +68,7 @@ export default defineComponent({
     const blogLinks = computed<Link[]>((): Link[] => {
       return [
         {
-          name: 'Main blog',
+          name: 'Blog',
           to: 'https://hiroto-k.hatenablog.com/',
         },
         {
