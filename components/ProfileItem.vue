@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'ProfileItem',
@@ -27,7 +27,7 @@ export default defineComponent({
       required: true,
     },
     singleText: {
-      type: Boolean as PropType<boolean>,
+      type: Boolean,
       default (): boolean {
         return false;
       },
