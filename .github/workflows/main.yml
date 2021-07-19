@@ -55,3 +55,43 @@ jobs:
           type: ${{ job.status }}
           icon_emoji: ":octocat:"
           url: ${{ secrets.SLACK_WEBHOOK }}
+
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Ubuntu Version
+        run: cat /etc/os-release
+
+      - name: Docker Version
+        run: docker version
+
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node_modules
+        with:
+          path: node_modules
+          key: hiroxto-net-docker-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            hiroxto-net-docker-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+            hiroxto-net-docker-${{ env.cache-name }}-
+            hiroxto-net-docker-
+            hiroxto-net-
+
+      - run: docker-compose build
+      - run: docker-compose run --rm app yarn install
+      - run: docker-compose run --rm app yarn run build
+      - run: "docker-compose run --rm app yarn run lint:es"
+      - run: "docker-compose run --rm app yarn run lint:style"
+
+      - name: Slack Notification
+        uses: homoluctus/slatify@v1.6
+        if: failure()
+        with:
+          job_name: '*${{ github.workflow }}*'
+          type: ${{ job.status }}
+          icon_emoji: ":octocat:"
+          url: ${{ secrets.SLACK_WEBHOOK }}
