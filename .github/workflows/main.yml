@@ -82,10 +82,10 @@ jobs:
             hiroxto-net-
 
       - run: docker-compose build
-      - run: docker-compose run --rm app yarn install
-      - run: docker-compose run --rm app yarn run build
-      - run: "docker-compose run --rm app yarn run lint:es"
-      - run: "docker-compose run --rm app yarn run lint:style"
+      - run: docker-compose run --rm nuxt yarn install
+      - run: docker-compose run --rm nuxt yarn run build
+      - run: "docker-compose run --rm nuxt yarn run lint:es"
+      - run: "docker-compose run --rm nuxt yarn run lint:style"
 
       - name: Slack Notification
         uses: homoluctus/slatify@v1.6
