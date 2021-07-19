@@ -83,6 +83,7 @@ jobs:
 
       - run: docker-compose build
       - run: docker-compose run --rm nuxt yarn install
+      - run: docker-compose run --rm nuxt npm rebuild node-sass
       - run: docker-compose run --rm nuxt yarn run build
       - run: "docker-compose run --rm nuxt yarn run lint:es"
       - run: "docker-compose run --rm nuxt yarn run lint:style"
