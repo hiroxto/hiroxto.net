@@ -4,12 +4,10 @@ WORKDIR /app
 
 ENV HOST "0.0.0.0"
 
-RUN apk add --no-cache --update tzdata avahi-dev && \
-    apk add --no-cache --virtual .gyp python make g++ && \
-    apk upgrade --no-cache && \
-    cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
-    apk del tzdata && \
-    rm -rf /var/cache/apk/*
+RUN apt update -y && \
+    apt install -y --no-install-recommends tzdata g++ make python && \
+    apt-get clean && \
+    rm -rf /var/lib/opt/lists/*
 
 COPY . /app
 
