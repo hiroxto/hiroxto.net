@@ -54,6 +54,8 @@ const config: NuxtConfig = {
 
     '@nuxt/typescript-build',
 
+    '@nuxtjs/composition-api/module',
+
     '@nuxtjs/sitemap',
   ],
 
