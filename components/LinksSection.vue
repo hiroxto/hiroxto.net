@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@nuxtjs/composition-api';
 import LinkList from './LinkList';
 import { Link } from '~/types';
 

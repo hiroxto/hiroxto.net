@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed } from '@nuxtjs/composition-api';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
 
