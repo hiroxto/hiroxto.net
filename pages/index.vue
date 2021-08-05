@@ -43,24 +43,24 @@ import LinksSection from '~/components/LinksSection';
 import ProjectsSection from '~/components/ProjectsSection';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
-import { defineComponent, computed } from '@nuxtjs/composition-api';
+import { defineComponent, computed, useMeta } from '@nuxtjs/composition-api';
 
 export default defineComponent({
-  head () {
-    return {
-      title: this.title,
+  head: {},
+  setup () {
+    const title = computed(() => 'hiroxto.net');
+    const subTitle = computed(() => 'Home page of hiroxto.');
+
+    useMeta(() => ({
+      title: title.value,
       titleTemplate: '',
       meta: [
-        { hid: 'description', name: 'description', content: this.subTitle },
+        { hid: 'description', name: 'description', content: subTitle.value },
       ],
       link: [
         { rel: 'canonical', href: '/' },
       ],
-    };
-  },
-  setup () {
-    const title = computed(() => 'hiroxto.net');
-    const subTitle = computed(() => 'Home page of hiroxto.');
+    }));
 
     return {
       title,
