@@ -3,4 +3,4 @@
   command = "yarn run generate"
 
 [build.environment]
-  NODE_VERSION = "12.18.1"
+  NODE_VERSION = "14.17.4"
