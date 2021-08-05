@@ -37,27 +37,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed, useMeta } from '@nuxtjs/composition-api';
 import Separator from '~/components/Separator';
 import PageFooter from '~/components/PageFooter';
 
 export default defineComponent({
-  head () {
-    return {
-      title: this.title,
-      meta: [
-        { hid: 'description', name: 'description', content: `${this.title} - ${this.subtitle}` },
-        { hid: 'robots', name: 'robots', content: 'noindex,nofollow' },
-      ],
-    };
-  },
+  head: {},
   setup () {
     const title = computed<string>(() => '404 Not Found');
     const subtitle = computed<string>(() => 'hiroxto.net');
+    const description = computed<string>(() => `${title.value} - ${subtitle.value}`);
+
+    useMeta(() => ({
+      title: title.value,
+      meta: [
+        { hid: 'description', name: 'description', content: description.value },
+        { hid: 'robots', name: 'robots', content: 'noindex,nofollow' },
+      ],
+    }));
 
     return {
       title,
       subtitle,
+      description,
     };
   },
   components: {

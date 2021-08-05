@@ -41,7 +41,6 @@ const config: NuxtConfig = {
   ** Plugins to load before mounting the App
   */
   plugins: [
-    '~/plugins/composition-api.ts',
   ],
 
   /*
@@ -54,6 +53,8 @@ const config: NuxtConfig = {
     '@nuxtjs/tailwindcss',
 
     '@nuxt/typescript-build',
+
+    '@nuxtjs/composition-api/module',
 
     '@nuxtjs/sitemap',
   ],
