@@ -4,11 +4,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@nuxtjs/composition-api';
-
-interface Props {
-  size: string;
-}
+import { defineComponent, computed, PropType } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   name: 'Separator',
@@ -19,9 +15,9 @@ export default defineComponent({
       default (): string {
         return '5';
       },
-    },
+    } as PropType<string>,
   },
-  setup (props: Props) {
+  setup (props) {
     const size = computed<string>(() => props.size);
     const className = computed<string>(() => {
       const pyClassName = `py-${size.value}`;

@@ -38,19 +38,15 @@
 import { defineComponent, computed, PropType } from '@nuxtjs/composition-api';
 import { Project } from '~/types';
 
-interface Props {
-  project: Project;
-}
-
 export default defineComponent({
   name: 'ProjectItem',
   props: {
     project: {
-      type: Object as PropType<Project>,
+      type: Object,
       required: true,
-    },
+    } as PropType<Project>,
   },
-  setup (props: Props) {
+  setup (props) {
     const project = props.project;
     const hasLinks = computed<boolean>(() => project.links !== null);
     const hasTags = computed<boolean>(() => project.tags !== null);

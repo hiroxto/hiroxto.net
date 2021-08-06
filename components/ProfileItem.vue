@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@nuxtjs/composition-api';
+import { defineComponent, PropType } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   name: 'ProfileItem',
@@ -25,13 +25,13 @@ export default defineComponent({
     title: {
       type: String,
       required: true,
-    },
+    } as PropType<string>,
     singleText: {
       type: Boolean,
       default (): boolean {
         return false;
       },
-    },
+    } as PropType<boolean>,
   },
 });
 </script>
