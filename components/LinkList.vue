@@ -32,11 +32,11 @@ export default defineComponent({
     title: {
       type: String,
       required: true,
-    },
+    } as PropType<string>,
     links: {
-      type: Array as PropType<Link[]>,
+      type: Array,
       required: true,
-    },
+    } as PropType<Link[]>,
   },
 });
 </script>
