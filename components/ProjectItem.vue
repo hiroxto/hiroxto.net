@@ -46,9 +46,9 @@ export default defineComponent({
   name: 'ProjectItem',
   props: {
     project: {
-      type: Object as PropType<Project>,
+      type: Object,
       required: true,
-    },
+    } as PropType<Project>,
   },
   setup (props: Props) {
     const project = props.project;
