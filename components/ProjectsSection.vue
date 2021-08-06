@@ -167,6 +167,9 @@ export default defineComponent({
     });
 
     return {
+      projects,
+      projectsLength,
+      projectSplitUnit,
       splitProjects,
     };
   },
