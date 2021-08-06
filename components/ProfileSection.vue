@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@nuxtjs/composition-api';
+import { defineComponent, computed, ref } from '@nuxtjs/composition-api';
 import ProfileItem from './ProfileItem';
 
 export default defineComponent({
@@ -54,14 +54,14 @@ export default defineComponent({
   },
   setup () {
     const name = computed<string>(() => 'hiroxto');
-    const joinSeparator = ', ';
+    const joinSeparator = ref(', ');
     const likes = computed<string>(() => {
       return [
         'プログラミング',
         'アニメ',
         'ラーメン',
         'etc...',
-      ].join(joinSeparator);
+      ].join(joinSeparator.value);
     });
     const programming = computed<string>(() => {
       return [
@@ -71,13 +71,14 @@ export default defineComponent({
         'Laravel',
         'Vue.js',
         'Nuxt.js',
-      ].join(joinSeparator);
+      ].join(joinSeparator.value);
     });
 
     return {
       name,
       likes,
       programming,
+      joinSeparator,
     };
   },
 });

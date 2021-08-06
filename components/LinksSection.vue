@@ -96,6 +96,9 @@ export default defineComponent({
     });
 
     return {
+      socialServiceLinks,
+      subDomainLinks,
+      blogLinks,
       linkLists,
     };
   },
