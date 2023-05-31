@@ -2,14 +2,14 @@ module.exports = {
     root: true,
     parserOptions: {
         parser: '@typescript-eslint/parser',
-        extraFileExtensions: [".svelte"],
+        extraFileExtensions: ['.svelte'],
     },
     overrides: [
         {
-            files: ["*.svelte"],
-            parser: "svelte-eslint-parser",
+            files: ['*.svelte'],
+            parser: 'svelte-eslint-parser',
             parserOptions: {
-                parser: "@typescript-eslint/parser",
+                parser: '@typescript-eslint/parser',
             },
         },
     ],
@@ -19,7 +19,7 @@ module.exports = {
     extends: [
         'plugin:@typescript-eslint/recommended',
         'plugin:promise/recommended',
-        "plugin:svelte/recommended",
+        'plugin:svelte/recommended',
         'standard',
     ],
     plugins: [
@@ -33,8 +33,8 @@ module.exports = {
         'no-new': 'off',
         indent: ['error', 4],
         'quote-props': ['error', 'as-needed'],
-        'promise/catch-or-return': ['error', {allowThen: true, terminationMethod: ['catch', 'asCallback', 'finally']}],
-        '@typescript-eslint/array-type': ['error', {default: 'array'}],
+        'promise/catch-or-return': ['error', { allowThen: true, terminationMethod: ['catch', 'asCallback', 'finally'] }],
+        '@typescript-eslint/array-type': ['error', { default: 'array' }],
         '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
     },
 };
