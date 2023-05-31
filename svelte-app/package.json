@@ -9,7 +9,7 @@
         "start": "sirv public --no-clear",
         "check": "svelte-check",
         "lint:es": "eslint --ext .js,.ts,.svelte --ignore-path .gitignore .",
-        "lint:es:fix": "eslint --ext .js,.ts,.svelte --ignore-path .gitignore ."
+        "lint:es:fix": "eslint --fix --ext .js,.ts,.svelte --ignore-path .gitignore ."
     },
     "devDependencies": {
         "@rollup/plugin-commonjs": "^24.0.0",
