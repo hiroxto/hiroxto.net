@@ -1,6 +1,6 @@
 [build]
-  publish = "dist"
-  command = "yarn run generate"
+publish = "public"
+command = "yarn run build"
 
 [build.environment]
-  NODE_VERSION = "14.17.4"
+NODE_VERSION = "20.2.0"
