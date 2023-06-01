@@ -1,12 +1,12 @@
-FROM node:16.15.0-slim
+FROM node:18.16.0-slim
 
 WORKDIR /app
 
 ENV HOST "0.0.0.0"
 
 RUN apt update -y && \
-    apt install -y --no-install-recommends tzdata g++ make python && \
-    apt-get clean && \
+    apt install -y --no-install-recommends tzdata && \
+    apt clean && \
     rm -rf /var/lib/opt/lists/*
 
 COPY . /app
