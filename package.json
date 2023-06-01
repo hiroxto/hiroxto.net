@@ -42,7 +42,7 @@
         "svelte-check": "^3.0.0",
         "svelte-preprocess": "^5.0.0",
         "tslib": "^2.5.0",
-        "typescript": "^4.9.0"
+        "typescript": "^5.0.0"
     },
     "dependencies": {
         "sirv-cli": "^2.0.0"
