@@ -11,6 +11,6 @@
 ## SITE
   Name: hiroxto.net
   URL: https://www.hiroxto.net/
-  Contents: Home page of hiroxto.
+  Contents: Website of hiroxto.
   Standards: HTML5, CSS3
   Language: ja-JP
