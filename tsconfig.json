@@ -1,38 +1,11 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "lib": [
-      "esnext",
-      "esnext.asynciterable",
-      "dom"
+    "extends": "@tsconfig/svelte/tsconfig.json",
+    "include": [
+        "src/**/*"
     ],
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "allowJs": true,
-    "sourceMap": true,
-    "strict": false,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
-    "noImplicitThis": true,
-    "allowSyntheticDefaultImports": true,
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "~/*": [
-        "./*"
-      ],
-      "@/*": [
-        "./*"
-      ]
-    },
-    "types": [
-      "@types/node",
-      "@nuxt/types"
+    "exclude": [
+        "node_modules/*",
+        "__sapper__/*",
+        "public/*"
     ]
-  },
-  "files": [
-    "./types/sfc.d.ts"
-  ]
 }

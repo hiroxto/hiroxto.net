@@ -1,5 +1,5 @@
 {
-  "extends": [
-    "github>hiroxto/renovate-config"
-  ]
+    "extends": [
+        "github>hiroxto/renovate-config"
+    ]
 }
