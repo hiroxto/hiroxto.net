@@ -8,8 +8,8 @@
         "dev": "rollup -c -w",
         "start": "sirv public --no-clear",
         "check": "svelte-check",
-        "lint:es": "eslint --ext .js,.ts,.svelte --ignore-path .gitignore .",
-        "lint:es:fix": "eslint --fix --ext .js,.ts,.svelte --ignore-path .gitignore .",
+        "lint:es": "eslint --ext .js,.ts,.svelte --ignore-path .gitignore svelte-app",
+        "lint:es:fix": "eslint --fix --ext .js,.ts,.svelte --ignore-path .gitignore svelte-app",
         "lint:style": "stylelint ./**/*.css ./**/*.scss ./**/*.svelte --ignore-pattern .gitignore",
         "lint:style:fix": "stylelint --fix ./**/*.css ./**/*.scss ./**/*.svelte --ignore-pattern .gitignore"
     },
