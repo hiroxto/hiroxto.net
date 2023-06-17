@@ -133,3 +133,16 @@ dist
 
 # Svelte build outputs
 /public/build/
+
+
+/build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+/public
+/.netlify
