@@ -11,8 +11,8 @@
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
         "lint:es": "eslint --ext .js,.ts,.svelte --ignore-path .gitignore .",
         "lint:es:fix": "eslint --fix --ext .js,.ts,.svelte --ignore-path .gitignore .",
-        "lint:style": "stylelint ./src/*.{css,scss,svelte} --ignore-pattern .gitignore",
-        "lint:style:fix": "stylelint --fix ./src/*.{css,scss,svelte} --ignore-pattern .gitignore"
+        "lint:style": "stylelint ./src/**/*.{css,scss,svelte} --ignore-pattern .gitignore",
+        "lint:style:fix": "stylelint --fix ./src/**/*.{css,scss,svelte} --ignore-pattern .gitignore"
     },
     "devDependencies": {
         "@sveltejs/adapter-auto": "^2.1.0",
