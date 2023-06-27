@@ -736,10 +736,10 @@ camelcase@^5.3.1:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-5.3.1.tgz#e3c9b31569e106811df242f715725a1f4c494320"
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
-carbon-components-svelte@^0.75.0:
-  version "0.75.1"
-  resolved "https://registry.yarnpkg.com/carbon-components-svelte/-/carbon-components-svelte-0.75.1.tgz#3cb70fe57869d220303deda52188fbcf38ede20e"
-  integrity sha512-q1aCDbUW9U8NJMLj/FesL9E2ymqWONWlGDEKoawRtVK7XvsD5ynK1amu2l3cs5mFvagLnkVAcSmyzyTAaie5ug==
+carbon-components-svelte@^0.76.0:
+  version "0.76.0"
+  resolved "https://registry.yarnpkg.com/carbon-components-svelte/-/carbon-components-svelte-0.76.0.tgz#4ca86a91967a604ebb86579a9f2a24690d7d5972"
+  integrity sha512-/QUjyxtnpd/bjvak92F7uO/2Pypl+0nex+GdpgPfXAQiEpBdarUkb7yS8MOT/s0tLdWcOqSOzLH1erblPnpybQ==
   dependencies:
     flatpickr "4.6.9"
 
