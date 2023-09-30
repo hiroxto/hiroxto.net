@@ -29,22 +29,22 @@
         {
             key: 'GitHub',
             value: 'hiroxto',
-            linkTo: "https://github.com/hiroxto",
+            linkTo: 'https://github.com/hiroxto',
         },
         {
             key: 'GitLab',
             value: 'hiroxto',
-            linkTo: "https://gitlab.com/hiroxto",
+            linkTo: 'https://gitlab.com/hiroxto',
         },
         {
             key: 'Twitter',
             value: '@hiroxto',
-            linkTo: "https://twitter.com/hiroxto",
+            linkTo: 'https://twitter.com/hiroxto',
         },
         {
             key: 'Scrapbox',
             value: 'hiroxto',
-            linkTo: "https://scrapbox.io/hiroxto/",
+            linkTo: 'https://scrapbox.io/hiroxto/',
         },
         {
             key: 'Blog (not active)',
@@ -54,12 +54,12 @@
         {
             key: 'Qiita (not used)',
             value: 'hiroxto',
-            linkTo: "https://qiita.com/hiroxto",
+            linkTo: 'https://qiita.com/hiroxto',
         },
         {
             key: 'Zenn (not used)',
             value: 'hiroxto',
-            linkTo: "https://zenn.dev/hiroxto",
+            linkTo: 'https://zenn.dev/hiroxto',
         },
     ];
     const subdomainLinks = [
