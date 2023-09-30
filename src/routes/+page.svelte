@@ -11,22 +11,55 @@
         ListItem,
     } from 'carbon-components-svelte';
 
-    const socialLinks = [
+    interface Profile {
+        key: string;
+        value: string;
+        linkTo?: string;
+    }
+
+    const profiles: Profile[] = [
         {
-            text: 'Twitter (hiroxto)',
-            href: 'https://twitter.com/hiroxto',
+            key: 'Name',
+            value: 'hiroxto',
         },
         {
-            text: 'Scrapbox',
-            href: 'https://scrapbox.io/hiroxto/',
+            key: 'Job',
+            value: 'Software Engineer (Server Side Engineer)',
         },
         {
-            text: 'GitHub (hiroxto)',
-            href: 'https://github.com/hiroxto',
+            key: 'GitHub',
+            value: 'hiroxto',
+            linkTo: "https://github.com/hiroxto",
         },
         {
-            text: 'GitLab (hiroxto)',
-            href: 'https://gitlab.com/hiroxto',
+            key: 'GitLab',
+            value: 'hiroxto',
+            linkTo: "https://gitlab.com/hiroxto",
+        },
+        {
+            key: 'Twitter',
+            value: '@hiroxto',
+            linkTo: "https://twitter.com/hiroxto",
+        },
+        {
+            key: 'Scrapbox',
+            value: 'hiroxto',
+            linkTo: "https://scrapbox.io/hiroxto/",
+        },
+        {
+            key: 'Blog (not active)',
+            value: 'Blog (not active)',
+            linkTo: 'https://hiroto-k.hatenablog.com/',
+        },
+        {
+            key: 'Qiita (not used)',
+            value: 'hiroxto',
+            linkTo: "https://qiita.com/hiroxto",
+        },
+        {
+            key: 'Zenn (not used)',
+            value: 'hiroxto',
+            linkTo: "https://zenn.dev/hiroxto",
         },
     ];
     const subdomainLinks = [
@@ -37,16 +70,6 @@
         {
             text: 'swarm-checkin-regulation-checker.hiroxto.net',
             href: 'https://swarm-checkin-regulation-checker.hiroxto.net/',
-        },
-    ];
-    const blogLinks = [
-        {
-            text: 'Scrapbox',
-            href: 'https://scrapbox.io/hiroxto/',
-        },
-        {
-            text: 'Blog (not active)',
-            href: 'https://hiroto-k.hatenablog.com/',
         },
     ];
 </script>
@@ -60,18 +83,24 @@
             <Row>
                 <Column>
                     <h1 class="page-title">hiroxto.net</h1>
-                    <p class="page-subtitle">Website of hiroxto</p>
                 </Column>
             </Row>
 
             <Row>
                 <Column>
                     <h2>Profile</h2>
-                    <h3>Name</h3>
-                    <p class="text-2xl" style="display: inline; vertical-align: top">hiroxto</p>
-
-                    <h3>Others</h3>
-                    <p class="text">Now writing...</p>
+                    {#each profiles as profile}
+                        <p class="text">
+                            {#if profile.linkTo == null}
+                                {profile.key}: {profile.value}
+                            {:else}
+                                {profile.key}:
+                                <OutboundLink href="{profile.linkTo}" size="lg">
+                                    {profile.value}
+                                </OutboundLink>
+                            {/if}
+                        </p>
+                    {/each}
                 </Column>
             </Row>
 
@@ -79,19 +108,7 @@
 
             <Row>
                 <Column>
-                    <h2>Links</h2>
-                    <div class="links">
-                        <h3>Social</h3>
-                        <UnorderedList>
-                            {#each socialLinks as socialLink}
-                                <ListItem>
-                                    <OutboundLink href="{socialLink.href}" size="lg">
-                                        {socialLink.text}
-                                    </OutboundLink>
-                                </ListItem>
-                            {/each}
-                        </UnorderedList>
-                    </div>
+                    <h2>Others</h2>
 
                     <div class="links">
                         <h3>Subdomains</h3>
@@ -100,19 +117,6 @@
                                 <ListItem>
                                     <OutboundLink href="{subdomainLink.href}" size="lg">
                                         {subdomainLink.text}
-                                    </OutboundLink>
-                                </ListItem>
-                            {/each}
-                        </UnorderedList>
-                    </div>
-
-                    <div class="links">
-                        <h3>Blogs</h3>
-                        <UnorderedList native>
-                            {#each blogLinks as blogLink}
-                                <ListItem>
-                                    <OutboundLink href="{blogLink.href}" size="lg">
-                                        {blogLink.text}
                                     </OutboundLink>
                                 </ListItem>
                             {/each}
@@ -128,20 +132,6 @@
 <style>
     .page-title {
         font-size: 2.6rem;
-    }
-
-    .page-subtitle {
-        font-size: 1.5rem;
-    }
-
-    .profile-image {
-        width: 10rem;
-        height: auto;
-        border-radius: 50%;
-    }
-
-    .text-2xl {
-        font-size: 1.7rem;
     }
 
     .text {
