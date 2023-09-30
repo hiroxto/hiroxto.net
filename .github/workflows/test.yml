@@ -33,6 +33,7 @@ jobs:
 
             -   run: docker-compose build
             -   run: docker-compose run --rm app yarn install
+            -   run: docker-compose run --rm app yarn run prepare
             -   run: "docker-compose run --rm app yarn run lint:es"
             -   run: "docker-compose run --rm app yarn run lint:style"
             -   run: docker-compose run --rm app yarn run build
