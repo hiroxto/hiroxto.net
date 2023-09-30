@@ -38,19 +38,11 @@
             text: 'swarm-checkin-regulation-checker.hiroxto.net',
             href: 'https://swarm-checkin-regulation-checker.hiroxto.net/',
         },
-        {
-            text: 'train-photo-blog.hiroxto.net',
-            href: 'https://train-photo-blog.hiroxto.net/',
-        },
     ];
     const blogLinks = [
         {
             text: 'Scrapbox',
             href: 'https://scrapbox.io/hiroxto/',
-        },
-        {
-            text: 'Train photo blog',
-            href: 'https://train-photo-blog.hiroxto.net/',
         },
         {
             text: 'Blog (not active)',
