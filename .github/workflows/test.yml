@@ -11,7 +11,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
 
             -   name: Ubuntu Version
                 run: cat /etc/os-release
@@ -31,17 +31,9 @@ jobs:
                         app-${{ env.cache-name }}-
                         app-
 
-            -   run: docker-compose build
-            -   run: docker-compose run --rm app yarn install
-            -   run: "docker-compose run --rm app yarn run lint:es"
-            -   run: "docker-compose run --rm app yarn run lint:style"
-            -   run: docker-compose run --rm app yarn run build
-
-            -   name: Slack Notification
-                uses: homoluctus/slatify@v1.6
-                if: failure()
-                with:
-                    job_name: '*${{ github.workflow }}*'
-                    type: ${{ job.status }}
-                    icon_emoji: ":octocat:"
-                    url: ${{ secrets.SLACK_WEBHOOK }}
+            -   run: docker compose build
+            -   run: docker compose run --rm app yarn install
+            -   run: docker compose run --rm app yarn run prepare
+            -   run: "docker compose run --rm app yarn run lint:es"
+            -   run: "docker compose run --rm app yarn run lint:style"
+            -   run: docker compose run --rm app yarn run build
