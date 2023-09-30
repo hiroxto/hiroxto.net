@@ -68,10 +68,7 @@
                 <Column>
                     <h2>Profile</h2>
                     <h3>Name</h3>
-                    <div style="display: inline">
-                        <p class="text-2xl" style="display: inline; vertical-align: top">hiroxto</p>
-                        <img src="profile.png" alt="Profile icon" class="profile-image" style="display: inline"/>
-                    </div>
+                    <p class="text-2xl" style="display: inline; vertical-align: top">hiroxto</p>
 
                     <h3>Others</h3>
                     <p class="text">Now writing...</p>
