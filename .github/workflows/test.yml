@@ -7,33 +7,34 @@ on:
     pull_request:
 
 jobs:
-    docker:
+    test:
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@v5
+            -   uses: actions/checkout@v4
 
-            -   name: Ubuntu Version
-                run: cat /etc/os-release
-
-            -   name: Docker Version
-                run: docker version
+            -   name: Setup mise
+                uses: jdx/mise-action@v3
 
             -   name: Cache node_modules
                 uses: actions/cache@v4
-                env:
-                    cache-name: cache-node_modules
                 with:
                     path: node_modules
-                    key: app-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+                    key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
                     restore-keys: |
-                        app-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
-                        app-${{ env.cache-name }}-
-                        app-
+                        ${{ runner.os }}-yarn-
 
-            -   run: docker compose build
-            -   run: docker compose run --rm app yarn install
-            -   run: docker compose run --rm app yarn run prepare
-            -   run: "docker compose run --rm app yarn run lint:es"
-            -   run: "docker compose run --rm app yarn run lint:style"
-            -   run: docker compose run --rm app yarn run build
+            -   name: Install dependencies
+                run: yarn install
+
+            -   name: Prepare
+                run: yarn run prepare
+
+            -   name: Lint javascript and svelte
+                run: yarn run lint:es
+
+            -   name: Lint style
+                run: yarn run lint:style
+
+            -   name: Build
+                run: yarn run build
