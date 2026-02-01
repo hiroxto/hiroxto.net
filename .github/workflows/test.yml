@@ -30,11 +30,11 @@ jobs:
             -   name: Prepare
                 run: npm run prepare
 
-            -   name: Lint javascript and svelte
-                run: npm run lint:es
+            -   name: Lint
+                run: npm run lint
 
-            -   name: Lint style
-                run: npm run lint:style
+            -   name: Format
+                run: npm run format
 
             -   name: Build
                 run: npm run build
