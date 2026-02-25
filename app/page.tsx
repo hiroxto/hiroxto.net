@@ -1,3 +1,4 @@
+import { Anchor, Container, Divider, List, Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
 
 interface Profile {
@@ -65,7 +66,7 @@ const subdomainLinks = [
 
 function ExternalLinkIcon() {
     return (
-        <div className="bx--link__icon">
+        <span className="external-link-icon" aria-hidden="true">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 32 32"
@@ -78,72 +79,69 @@ function ExternalLinkIcon() {
                 <path d="M26,28H6a2.0027,2.0027,0,0,1-2-2V6A2.0027,2.0027,0,0,1,6,4H16V6H6V26H26V16h2V26A2.0027,2.0027,0,0,1,26,28Z" />
                 <path d="M20 2L20 4 26.586 4 18 12.586 19.414 14 28 5.414 28 12 30 12 30 2 20 2z" />
             </svg>
-        </div>
+        </span>
     );
 }
 
 function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
     return (
-        <a className="bx--link bx--link--lg" href={href} target="_blank" rel="noreferrer noopener">
+        <Anchor className="external-link" href={href} target="_blank" rel="noreferrer noopener">
             {children} <ExternalLinkIcon />
-        </a>
+        </Anchor>
     );
 }
 
 export default function HomePage() {
     return (
-        <div>
-            <header className="bx--header">
-                <a className="bx--header__name" href="/">
+        <div className="page-root">
+            <header className="site-header">
+                <a className="site-header-name" href="/">
                     hiroxto.net
                 </a>
             </header>
 
-            <main className="bx--content">
-                <div className="bx--grid">
-                    <div className="bx--row">
-                        <div className="bx--col">
-                            <h1 className="page-title">hiroxto.net</h1>
-                        </div>
-                    </div>
+            <main className="site-content">
+                <Container size="lg" className="page-container">
+                    <Stack gap="xl">
+                        <Title order={1} className="page-title">
+                            hiroxto.net
+                        </Title>
 
-                    <div className="bx--row">
-                        <div className="bx--col">
-                            <h2>Profile</h2>
-                            {profiles.map((profile) => (
-                                <p key={profile.key} className="text">
-                                    {profile.linkTo == null ? (
-                                        `${profile.key}: ${profile.value}`
-                                    ) : (
-                                        <>
-                                            {profile.key}:{' '}
-                                            <ExternalLink href={profile.linkTo}>{profile.value}</ExternalLink>
-                                        </>
-                                    )}
-                                </p>
-                            ))}
-                        </div>
-                    </div>
+                        <section>
+                            <Title order={2}>Profile</Title>
+                            <Stack gap={4} mt="sm">
+                                {profiles.map((profile) => (
+                                    <Text key={profile.key} className="text">
+                                        {profile.linkTo == null ? (
+                                            `${profile.key}: ${profile.value}`
+                                        ) : (
+                                            <>
+                                                {profile.key}:{' '}
+                                                <ExternalLink href={profile.linkTo}>{profile.value}</ExternalLink>
+                                            </>
+                                        )}
+                                    </Text>
+                                ))}
+                            </Stack>
+                        </section>
 
-                    <hr />
+                        <Divider />
 
-                    <div className="bx--row">
-                        <div className="bx--col">
-                            <h2>Others</h2>
-
-                            <div className="links">
-                                <h3>Subdomains</h3>
-                                <ul className="bx--list--unordered">
-                                    {subdomainLinks.map((subdomainLink) => (
-                                        <li key={subdomainLink.href} className="bx--list__item">
-                                            <ExternalLink href={subdomainLink.href}>{subdomainLink.text}</ExternalLink>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <section className="links">
+                            <Title order={2}>Others</Title>
+                            <Title order={3} mt="sm">
+                                Subdomains
+                            </Title>
+                            <List listStyleType="disc" withPadding mt={6}>
+                                {subdomainLinks.map((subdomainLink) => (
+                                    <List.Item key={subdomainLink.href}>
+                                        <ExternalLink href={subdomainLink.href}>{subdomainLink.text}</ExternalLink>
+                                    </List.Item>
+                                ))}
+                            </List>
+                        </section>
+                    </Stack>
+                </Container>
             </main>
         </div>
     );
