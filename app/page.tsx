@@ -1,4 +1,4 @@
-import { Anchor, Container, Divider, List, Stack, Text, Title } from '@mantine/core';
+import { Anchor, Container, Divider, List, ListItem, Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
 
 interface Profile {
@@ -134,9 +134,9 @@ export default function HomePage() {
                             </Title>
                             <List listStyleType="disc" withPadding mt={6}>
                                 {subdomainLinks.map((subdomainLink) => (
-                                    <List.Item key={subdomainLink.href}>
+                                    <ListItem key={subdomainLink.href}>
                                         <ExternalLink href={subdomainLink.href}>{subdomainLink.text}</ExternalLink>
-                                    </List.Item>
+                                    </ListItem>
                                 ))}
                             </List>
                         </section>
