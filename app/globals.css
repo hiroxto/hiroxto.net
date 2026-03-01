@@ -1,0 +1,55 @@
+.page-root {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #161616;
+}
+
+.site-header {
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    background: #161616;
+    border-bottom: 1px solid #393939;
+}
+
+.site-header-name {
+    color: #f4f4f4;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.site-content {
+    padding: 2rem 0;
+}
+
+.page-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.page-title {
+    font-size: 2.6rem;
+}
+
+.text {
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    vertical-align: baseline;
+}
+
+.external-link-icon {
+    display: inline-flex;
+    align-items: center;
+}
+
+.links {
+    padding-bottom: 1rem;
+}
