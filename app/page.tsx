@@ -22,11 +22,6 @@ const profiles: Profile[] = [
         linkTo: 'https://github.com/hiroxto',
     },
     {
-        key: 'GitLab',
-        value: 'hiroxto',
-        linkTo: 'https://gitlab.com/hiroxto',
-    },
-    {
         key: 'Twitter',
         value: '@hiroxto',
         linkTo: 'https://twitter.com/hiroxto',
@@ -35,21 +30,6 @@ const profiles: Profile[] = [
         key: 'Scrapbox',
         value: 'hiroxto',
         linkTo: 'https://scrapbox.io/hiroxto/',
-    },
-    {
-        key: 'Blog (not active)',
-        value: 'Blog (not active)',
-        linkTo: 'https://hiroto-k.hatenablog.com/',
-    },
-    {
-        key: 'Qiita (not used)',
-        value: 'hiroxto',
-        linkTo: 'https://qiita.com/hiroxto',
-    },
-    {
-        key: 'Zenn (not used)',
-        value: 'hiroxto',
-        linkTo: 'https://zenn.dev/hiroxto',
     },
 ];
 
