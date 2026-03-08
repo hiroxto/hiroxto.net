@@ -1,6 +1,6 @@
 import { Anchor, Container, Divider, List, ListItem, Stack, Text, Title } from '@mantine/core';
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import type {Metadata} from "next";
 
 interface Profile {
     key: string;
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
     return (
-        <div className="page-root">
+        <div className="bg-white py-8 text-[#161616]">
             <Container size="lg">
                 <Stack gap="xl">
                     <Title order={1}>hiroxto.net</Title>
