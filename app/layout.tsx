@@ -3,16 +3,22 @@ import './globals.css';
 import { MantineProvider } from '@mantine/core';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-
-export const metadata: Metadata = {
-    title: {
-        template: '%s | hiroxto.net',
-        default: 'hiroxto.net',
-    },
-};
+import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
 interface RootLayoutProps {
     children: ReactNode;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+    const requestOrigin = await getRequestOrigin();
+
+    return {
+        metadataBase: requestOrigin,
+        title: {
+            template: '%s | hiroxto.net',
+            default: 'hiroxto.net',
+        },
+    };
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {

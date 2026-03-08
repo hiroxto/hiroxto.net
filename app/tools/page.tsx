@@ -1,10 +1,10 @@
 import { Container, Group, List, ListItem, Stack, Text, Title } from '@mantine/core';
 import type { Metadata } from 'next';
 import { InternalLink } from '@/components/common/internal-link';
+import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
 const title = 'ツール一覧';
 const description = 'hiroxto.netで公開しているツール一覧';
-const pageUrl = 'https://www.hiroxto.net/tools';
 
 const tools = [
     {
@@ -13,16 +13,21 @@ const tools = [
     },
 ] as const;
 
-export const metadata: Metadata = {
-    title,
-    description,
-    openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+    const requestOrigin = await getRequestOrigin();
+    const pageUrl = new URL('/tools', requestOrigin);
+
+    return {
         title,
         description,
-        url: pageUrl,
-        type: 'website',
-    },
-};
+        openGraph: {
+            title,
+            description,
+            url: pageUrl,
+            type: 'website',
+        },
+    };
+}
 
 export default function ToolsPage() {
     return (
