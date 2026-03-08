@@ -7,16 +7,17 @@ import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { TrainNumberCalc } from '@/lib/train-number-calc/train-number-calc';
 
+const trainNumberValueSchema = z
+    .string()
+    .regex(/^\d+$/, '列車番号は数字のみで入力してください。')
+    .refine((value) => !value.startsWith('0'), '先頭を0にすることはできません。')
+    .refine((value) => {
+        const parsed = Number.parseInt(value, 10);
+        return parsed >= 1 && parsed <= 9999;
+    }, '列車番号は1〜9999の範囲で入力してください。');
+
 const trainNumberSchema = z.object({
-    trainNumber: z
-        .string()
-        .min(1, '列車番号を入力してください。')
-        .regex(/^\d+$/, '列車番号は数字のみで入力してください。')
-        .refine((value) => !value.startsWith('0'), '先頭を0にすることはできません。')
-        .refine((value) => {
-            const parsed = Number.parseInt(value, 10);
-            return parsed >= 1 && parsed <= 9999;
-        }, '列車番号は1〜9999の範囲で入力してください。'),
+    trainNumber: z.union([z.literal(''), trainNumberValueSchema]),
 });
 
 type TrainNumberFormValues = z.infer<typeof trainNumberSchema>;
