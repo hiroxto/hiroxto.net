@@ -1,6 +1,6 @@
 'use client';
 
-import { ColorInput, Container, Group, Radio, Slider, Stack, Text, TextInput, Title } from '@mantine/core';
+import { ColorInput, Container, Group, Radio, Slider, Stack, Text, Textarea, Title } from '@mantine/core';
 import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { useState } from 'react';
 import { InternalLink } from '@/components/common/internal-link';
@@ -46,10 +46,11 @@ export function QrCodeGenPage() {
                     <section>
                         <Stack gap="xl">
                             <Stack gap="md">
-                                <TextInput
+                                <Textarea
                                     label="埋め込む値"
                                     placeholder="値を入力"
                                     value={value}
+                                    resize="vertical"
                                     onChange={(event) => setValue(event.currentTarget.value)}
                                 />
 
