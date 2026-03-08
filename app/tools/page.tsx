@@ -8,6 +8,10 @@ const description = 'hiroxto.netで公開しているツール一覧';
 
 const tools = [
     {
+        href: '/tools/cl-sound',
+        title: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生',
+    },
+    {
         href: '/tools/train-number-calc',
         title: '列車番号から列車種別を計算',
     },
