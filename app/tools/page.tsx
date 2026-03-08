@@ -15,6 +15,10 @@ const tools = [
         href: '/tools/train-number-calc',
         title: '列車番号から列車種別を計算',
     },
+    {
+        href: '/tools/qr-code-gen',
+        title: 'QRコード生成',
+    },
 ] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
