@@ -1,5 +1,6 @@
-import { Anchor, Container, Group, List, ListItem, Stack, Text, Title } from '@mantine/core';
+import { Container, Group, List, ListItem, Stack, Text, Title } from '@mantine/core';
 import type { Metadata } from 'next';
+import { InternalLink } from '@/components/common/internal-link';
 
 const title = 'ツール一覧';
 const description = 'hiroxto.netで公開しているツール一覧';
@@ -30,7 +31,9 @@ export default function ToolsPage() {
                 <Stack gap="lg">
                     <header>
                         <Group gap="sm">
-                            <Anchor href="/">トップページ</Anchor>
+                            <InternalLink href="/">トップページ</InternalLink>
+                            <Text c="dimmed">/</Text>
+                            <InternalLink href="/tools">ツール一覧</InternalLink>
                         </Group>
                     </header>
 
@@ -42,7 +45,7 @@ export default function ToolsPage() {
                         <List listStyleType="disc" withPadding>
                             {tools.map((tool) => (
                                 <ListItem key={tool.href}>
-                                    <Anchor href={tool.href}>{tool.title}</Anchor>
+                                    <InternalLink href={tool.href}>{tool.title}</InternalLink>
                                 </ListItem>
                             ))}
                         </List>

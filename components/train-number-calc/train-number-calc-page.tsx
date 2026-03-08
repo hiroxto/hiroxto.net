@@ -1,10 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Anchor, Badge, Code, Container, Group, List, ListItem, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Badge, Code, Container, Group, List, ListItem, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { InternalLink } from '@/components/common/internal-link';
 import { TrainNumberCalc } from '@/lib/train-number-calc/train-number-calc';
 
 const trainNumberValueSchema = z
@@ -51,9 +52,9 @@ export function TrainNumberCalcPage() {
                 <Stack gap="xl">
                     <header>
                         <Group gap="sm">
-                            <Anchor href="/">トップページ</Anchor>
+                            <InternalLink href="/">トップページ</InternalLink>
                             <Text c="dimmed">/</Text>
-                            <Anchor href="/tools">ツール一覧</Anchor>
+                            <InternalLink href="/tools">ツール一覧</InternalLink>
                         </Group>
                     </header>
 
