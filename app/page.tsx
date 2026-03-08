@@ -1,6 +1,7 @@
 import { Anchor, Container, Divider, List, ListItem, Stack, Text, Title } from '@mantine/core';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { InternalLink } from '@/components/common/internal-link';
 
 interface Profile {
     key: string;
@@ -86,6 +87,15 @@ export default function HomePage() {
 
                     <section>
                         <Title order={2}>Others</Title>
+                        <Title order={3} mt="sm">
+                            Tools
+                        </Title>
+                        <List listStyleType="disc" withPadding mt={6}>
+                            <ListItem>
+                                <InternalLink href="/tools">ツール一覧</InternalLink>
+                            </ListItem>
+                        </List>
+
                         <Title order={3} mt="sm">
                             Subdomains
                         </Title>
