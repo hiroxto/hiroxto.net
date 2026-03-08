@@ -7,6 +7,7 @@
         "dev": "next dev --hostname 0.0.0.0",
         "build": "next build",
         "preview": "opennextjs-cloudflare preview",
+        "test": "vitest run",
         "check": "tsc --noEmit",
         "lint": "biome check .",
         "lint:fix": "biome check --write .",
@@ -24,14 +25,18 @@
         "tailwindcss": "^4.2.1",
         "tslib": "^2.5.0",
         "typescript": "^5.0.0",
+        "vitest": "^4.0.18",
         "wrangler": "^4.68.1"
     },
     "dependencies": {
+        "@hookform/resolvers": "^5.2.2",
         "@mantine/core": "^8.3.15",
         "@mantine/hooks": "^8.3.15",
         "@opennextjs/cloudflare": "^1.17.1",
         "next": "^16.1.6",
         "react": "^19.2.4",
-        "react-dom": "^19.2.4"
+        "react-dom": "^19.2.4",
+        "react-hook-form": "^7.71.2",
+        "zod": "^4.3.6"
     }
 }
