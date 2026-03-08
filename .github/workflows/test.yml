@@ -25,10 +25,7 @@ jobs:
                         ${{ runner.os }}-node-
 
             -   name: Install dependencies
-                run: npm install
-
-            -   name: Prepare
-                run: npm run prepare
+                run: npm ci
 
             -   name: Lint
                 run: npm run lint
@@ -36,5 +33,8 @@ jobs:
             -   name: Format
                 run: npm run format
 
+            -   name: Type Check
+                run: npm run check
+
             -   name: Build
-                run: npm run build
+                run: npm run build:cf

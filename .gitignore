@@ -131,18 +131,11 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Svelte build outputs
-/public/build/
-
-
 /build
-/.svelte-kit
 /package
-.env
 .env.*
 !.env.example
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
-
-/public
 .idea
+
+next-env.d.ts
+.open-next
