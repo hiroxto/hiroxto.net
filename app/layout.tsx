@@ -5,17 +5,9 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-    title: 'hiroxto.net',
-    description: 'Code of www.hiroxto.net',
-    openGraph: {
-        title: 'hiroxto.net',
-    },
-    twitter: {
-        card: 'summary',
-    },
-    robots: {
-        index: false,
-        nocache: true,
+    title: {
+        template: '%s | hiroxto.net',
+        default: 'hiroxto.net',
     },
 };
 

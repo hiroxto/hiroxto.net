@@ -1,5 +1,6 @@
 import { Anchor, Container, Divider, List, ListItem, Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
+import type {Metadata} from "next";
 
 interface Profile {
     key: string;
@@ -51,6 +52,10 @@ function ExternalLink({ href, children }: { href: string; children: ReactNode })
         </Anchor>
     );
 }
+
+export const metadata: Metadata = {
+    description: 'hiroxto.net',
+};
 
 export default function HomePage() {
     return (
