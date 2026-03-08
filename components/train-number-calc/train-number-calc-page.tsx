@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Badge, Code, Container, List, ListItem, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Anchor, Badge, Code, Container, Group, List, ListItem, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -49,6 +49,14 @@ export function TrainNumberCalcPage() {
         <div className="bg-white py-8 text-[#161616]">
             <Container size="md">
                 <Stack gap="xl">
+                    <header>
+                        <Group gap="sm">
+                            <Anchor href="/">トップページ</Anchor>
+                            <Text c="dimmed">/</Text>
+                            <Anchor href="/tools">ツール一覧</Anchor>
+                        </Group>
+                    </header>
+
                     <section>
                         <Title order={1}>列車番号から列車種別を計算</Title>
                         <Text mt="xs">
