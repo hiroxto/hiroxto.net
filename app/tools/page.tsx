@@ -4,7 +4,7 @@ import { InternalLink } from '@/components/common/internal-link';
 
 const title = 'ツール一覧';
 const description = 'hiroxto.netで公開しているツール一覧';
-const pageUrl = 'https://hiroxto.net/tools';
+const pageUrl = 'https://www.hiroxto.net/tools';
 
 const tools = [
     {
