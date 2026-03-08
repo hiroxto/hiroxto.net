@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { InternalLink } from '@/components/common/internal-link';
-import { TrainNumberCalc } from '@/lib/train-number-calc/train-number-calc';
+import { calcTrainNumberType } from '@/lib/train-number-calc/train-number-calc';
 
 const trainNumberValueSchema = z
     .string()
@@ -43,7 +43,7 @@ export function TrainNumberCalcPage() {
         if (!parseResult.success) {
             return null;
         }
-        return new TrainNumberCalc(parseResult.data.trainNumber).calc();
+        return calcTrainNumberType(parseResult.data.trainNumber);
     }, [value]);
 
     return (
