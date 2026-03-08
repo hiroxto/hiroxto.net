@@ -45,13 +45,7 @@ const getFreightType = (splitNumber: number[]): TrainNumberType | null => {
     const isSpecial = isFreightSpecialNumber(splitNumber);
 
     if (splitNumber[1] === 0) {
-        return splitNumber[2] <= 6
-            ? isSpecial
-                ? '臨高速貨A'
-                : '高速貨A'
-            : isSpecial
-              ? '臨高速貨B'
-              : '高速貨B';
+        return splitNumber[2] <= 6 ? (isSpecial ? '臨高速貨A' : '高速貨A') : isSpecial ? '臨高速貨B' : '高速貨B';
     }
 
     if ((splitNumber[0] <= 1 || isSpecial) && splitNumber[2] === 5) {
