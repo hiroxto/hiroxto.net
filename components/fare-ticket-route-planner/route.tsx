@@ -1,20 +1,25 @@
 'use client';
 
-import { Autocomplete, CloseButton, Input } from '@mantine/core';
 import type { KeyboardEvent } from 'react';
-import styles from '@/components/fare-ticket-route-planner/fare-ticket-route-planner.module.css';
+import { useShallow } from 'zustand/react/shallow';
+import { RouteRow } from '@/components/fare-ticket-route-planner/route-row';
+import { SectionTitle } from '@/components/fare-ticket-route-planner/section-title';
 import { useInputSettingStore } from '@/components/fare-ticket-route-planner/stores/input-setting-store';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 import { lineToStations, stationToLines } from '@/lib/fare-ticket-route-planner/route-complete';
 
 export function RouteEditor() {
-    const routes = useRouteStateStore((state) => state.routes);
-    const addRoute = useRouteStateStore((state) => state.addRoute);
-    const updateLine = useRouteStateStore((state) => state.updateLine);
-    const updateStation = useRouteStateStore((state) => state.updateStation);
-    const deleteRoute = useRouteStateStore((state) => state.deleteRoute);
-    const departure = useRouteStateStore((state) => state.departure);
-    const destination = useRouteStateStore((state) => state.destination);
+    const { routes, addRoute, updateLine, updateStation, deleteRoute, departure, destination } = useRouteStateStore(
+        useShallow((state) => ({
+            routes: state.routes,
+            addRoute: state.addRoute,
+            updateLine: state.updateLine,
+            updateStation: state.updateStation,
+            deleteRoute: state.deleteRoute,
+            departure: state.departure,
+            destination: state.destination,
+        })),
+    );
     const useComplete = useInputSettingStore((state) => state.useComplete);
 
     const handleKeyDown = (index: number, event: KeyboardEvent<HTMLInputElement>) => {
@@ -70,70 +75,26 @@ export function RouteEditor() {
 
     return (
         <>
-            <h2 className={styles.sectionTitle}>経路</h2>
+            <SectionTitle>経路</SectionTitle>
             {routes.map((route, index) => {
                 const stationError = getStationError(index, route.station);
 
                 return (
-                    <div className="grid grid-cols-12" key={route.id}>
-                        <div className="col-span-12 xl:col-span-1">
-                            <p>経路{index + 1}</p>
-                        </div>
-                        <div className="col-span-12 xl:col-span-5">
-                            {useComplete ? (
-                                <Autocomplete
-                                    label="路線"
-                                    placeholder="路線"
-                                    className="xl:w-3/4"
-                                    value={route.line}
-                                    data={getLineCompletes(index)}
-                                    onChange={(value) => updateLine(index, value)}
-                                    onKeyDown={(event) => handleKeyDown(index, event)}
-                                />
-                            ) : (
-                                <Input.Wrapper label="路線" className="xl:w-3/4">
-                                    <Input
-                                        placeholder="路線"
-                                        value={route.line}
-                                        onChange={(event) => updateLine(index, event.target.value)}
-                                        onKeyDown={(event) => handleKeyDown(index, event)}
-                                    />
-                                </Input.Wrapper>
-                            )}
-                        </div>
-                        <div className="col-span-11 xl:col-span-5">
-                            {useComplete ? (
-                                <Autocomplete
-                                    label="接続駅"
-                                    placeholder="接続駅"
-                                    className="xl:w-3/4"
-                                    value={route.station}
-                                    data={getStationCompletes(index)}
-                                    error={stationError}
-                                    onChange={(value) => {
-                                        updateStation(index, value);
-                                        if (value.trim() !== '' && index === routes.length - 1) {
-                                            addRoute(-1);
-                                        }
-                                    }}
-                                    onKeyDown={(event) => handleKeyDown(index, event)}
-                                />
-                            ) : (
-                                <Input.Wrapper label="接続駅" className="xl:w-3/4" error={stationError}>
-                                    <Input
-                                        placeholder="接続駅"
-                                        value={route.station}
-                                        error={stationError != null}
-                                        onChange={(event) => updateStation(index, event.target.value)}
-                                        onKeyDown={(event) => handleKeyDown(index, event)}
-                                    />
-                                </Input.Wrapper>
-                            )}
-                        </div>
-                        <div className="col-span-1 xl:col-span-1">
-                            <CloseButton onClick={() => deleteRoute(index)} tabIndex={-1} />
-                        </div>
-                    </div>
+                    <RouteRow
+                        key={route.id}
+                        route={route}
+                        index={index}
+                        useComplete={useComplete}
+                        stationError={stationError}
+                        lineCompletes={getLineCompletes(index)}
+                        stationCompletes={getStationCompletes(index)}
+                        onAddRoute={addRoute}
+                        onUpdateLine={updateLine}
+                        onUpdateStation={updateStation}
+                        onDeleteRoute={deleteRoute}
+                        onHandleKeyDown={handleKeyDown}
+                        isLastRow={index === routes.length - 1}
+                    />
                 );
             })}
         </>

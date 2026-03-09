@@ -1,345 +1,385 @@
 'use client';
 
-import { Button, Grid, Modal, Select } from '@mantine/core';
+import { Button, type ButtonProps, Grid, Modal, Select } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { ConfirmationModal, useConfirmationModal } from '@/components/fare-ticket-route-planner/confirmation-modal';
 import styles from '@/components/fare-ticket-route-planner/fare-ticket-route-planner.module.css';
 import { SoundButton } from '@/components/fare-ticket-route-planner/sound-button';
 import { useInputSettingStore } from '@/components/fare-ticket-route-planner/stores/input-setting-store';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 import { useSavedRouteStore } from '@/components/fare-ticket-route-planner/stores/saved-route-store';
+import type { SoundType } from '@/components/fare-ticket-route-planner/use-sound';
+
+interface ControlButtonDefinition {
+    key: string;
+    label: string;
+    span?: number;
+    offset?: number;
+    variant?: ButtonProps['variant'];
+    color?: ButtonProps['color'];
+    soundType?: SoundType;
+    disabled?: boolean;
+    href?: string;
+    onClick?: () => void;
+}
+
+interface ModalState {
+    opened: boolean;
+    onClose: () => void;
+}
+
+function GridActionButton({ definition }: { definition: ControlButtonDefinition }) {
+    const { key: _key, label, span = 3, offset, href, soundType = 'click', onClick, ...buttonProps } = definition;
+
+    return (
+        <Grid.Col span={span} offset={offset}>
+            {href == null || onClick != null ? (
+                <SoundButton
+                    {...buttonProps}
+                    className={styles.button}
+                    onClick={onClick ?? (() => {})}
+                    soundType={soundType}
+                    fullWidth
+                >
+                    {label}
+                </SoundButton>
+            ) : (
+                <Button {...buttonProps} className={styles.button} component={Link} href={href} fullWidth>
+                    {label}
+                </Button>
+            )}
+        </Grid.Col>
+    );
+}
+
+function CalendarModal({
+    modalState,
+    calendarValue,
+    onChange,
+}: {
+    modalState: ModalState;
+    calendarValue: Date | null;
+    onChange: (newValue: string | Date | null) => void;
+}) {
+    return (
+        <Modal opened={modalState.opened} onClose={modalState.onClose} title="カレンダー入力" size="auto">
+            <DatePicker
+                value={calendarValue}
+                onChange={onChange}
+                firstDayOfWeek={0}
+                locale="ja"
+                level="month"
+                minDate={new Date()}
+                size="xl"
+            />
+        </Modal>
+    );
+}
+
+function SaveRouteModal({
+    modalState,
+    saveToId,
+    setSaveToId,
+    saveLabels,
+    onCreate,
+    onUpdate,
+}: {
+    modalState: ModalState;
+    saveToId: string | null;
+    setSaveToId: (value: string | null) => void;
+    saveLabels: Array<{ value: string; label: string }>;
+    onCreate: () => void;
+    onUpdate: () => void;
+}) {
+    return (
+        <Modal opened={modalState.opened} onClose={modalState.onClose} title="保存・更新">
+            <SoundButton variant="filled" color="blue" className={styles.button} onClick={onCreate} soundType="click">
+                新規保存
+            </SoundButton>
+
+            <Select
+                label="更新先を選択"
+                placeholder="更新先を選択"
+                data={saveLabels}
+                value={saveToId}
+                onChange={setSaveToId}
+            />
+            <SoundButton
+                variant="filled"
+                color="blue"
+                className={styles.button}
+                disabled={saveToId == null}
+                onClick={onUpdate}
+                soundType="click"
+            >
+                更新
+            </SoundButton>
+        </Modal>
+    );
+}
 
 export function ControlButtons() {
-    const type = useRouteStateStore((state) => state.type);
-    const month = useRouteStateStore((state) => state.month);
-    const day = useRouteStateStore((state) => state.day);
-    const dateOption = useRouteStateStore((state) => state.dateOption);
-    const departure = useRouteStateStore((state) => state.departure);
-    const destination = useRouteStateStore((state) => state.destination);
-    const routes = useRouteStateStore((state) => state.routes);
-    const notes = useRouteStateStore((state) => state.notes);
-    const resetType = useRouteStateStore((state) => state.resetType);
-    const setMonth = useRouteStateStore((state) => state.setMonth);
-    const setDay = useRouteStateStore((state) => state.setDay);
-    const setDateWithIndex = useRouteStateStore((state) => state.setDateWithIndex);
-    const enableDateOption = useRouteStateStore((state) => state.useDate);
-    const reverse = useRouteStateStore((state) => state.reverse);
-    const resetStations = useRouteStateStore((state) => state.resetStations);
-    const addRoute = useRouteStateStore((state) => state.addRoute);
-    const deleteEmptyRoutes = useRouteStateStore((state) => state.deleteEmptyRoutes);
-    const deleteAllRoutes = useRouteStateStore((state) => state.deleteAllRoutes);
-    const resetNotes = useRouteStateStore((state) => state.resetNotes);
-    const savedRoutes = useSavedRouteStore((state) => state.routes);
-    const saveRoute = useSavedRouteStore((state) => state.saveRoute);
-    const updateRoute = useSavedRouteStore((state) => state.updateRoute);
-    const useComplete = useInputSettingStore((state) => state.useComplete);
-    const enableComplete = useInputSettingStore((state) => state.enableComplete);
-    const disableComplete = useInputSettingStore((state) => state.disableComplete);
+    const {
+        type,
+        month,
+        day,
+        dateOption,
+        departure,
+        destination,
+        routes,
+        notes,
+        resetType,
+        setMonth,
+        setDay,
+        setDateWithIndex,
+        enableDateOption,
+        reverse,
+        resetStations,
+        addRoute,
+        deleteEmptyRoutes,
+        deleteAllRoutes,
+        resetNotes,
+    } = useRouteStateStore(
+        useShallow((state) => ({
+            type: state.type,
+            month: state.month,
+            day: state.day,
+            dateOption: state.dateOption,
+            departure: state.departure,
+            destination: state.destination,
+            routes: state.routes,
+            notes: state.notes,
+            resetType: state.resetType,
+            setMonth: state.setMonth,
+            setDay: state.setDay,
+            setDateWithIndex: state.setDateWithIndex,
+            enableDateOption: state.useDate,
+            reverse: state.reverse,
+            resetStations: state.resetStations,
+            addRoute: state.addRoute,
+            deleteEmptyRoutes: state.deleteEmptyRoutes,
+            deleteAllRoutes: state.deleteAllRoutes,
+            resetNotes: state.resetNotes,
+        })),
+    );
+    const {
+        routes: savedRoutes,
+        saveRoute,
+        updateRoute,
+    } = useSavedRouteStore(
+        useShallow((state) => ({
+            routes: state.routes,
+            saveRoute: state.saveRoute,
+            updateRoute: state.updateRoute,
+        })),
+    );
+    const { useComplete, enableComplete, disableComplete } = useInputSettingStore(
+        useShallow((state) => ({
+            useComplete: state.useComplete,
+            enableComplete: state.enableComplete,
+            disableComplete: state.disableComplete,
+        })),
+    );
     const [saveToId, setSaveToId] = useState<string | null>(null);
-    const [isOpenedCalendarModel, { open: openCalendarModal, close: closeCalendarModal }] = useDisclosure(false);
     const [calendarValue, setCalendarValue] = useState<Date | null>(null);
-    const [isOpenedSaveModel, { open: openSaveModal, close: closeSaveModal }] = useDisclosure(false);
-    const {
-        isOpened: isOpenedClearSettingModal,
-        openModal: openClearSettingModal,
-        closeModal: closeClearSettingModal,
-        handleConfirm: handleClearSettingConfirm,
-    } = useConfirmationModal();
-    const {
-        isOpened: isOpenedClearAllRoutesModal,
-        openModal: openClearAllRoutesModal,
-        closeModal: closeClearAllRoutesModal,
-        handleConfirm: handleClearAllRoutesConfirm,
-    } = useConfirmationModal();
-    const {
-        isOpened: isOpenedClearNotesModal,
-        openModal: openClearNotesModal,
-        closeModal: closeClearNotesModal,
-        handleConfirm: handleClearNotesConfirm,
-    } = useConfirmationModal();
+    const [isOpenedCalendarModel, calendarModalHandlers] = useDisclosure(false);
+    const [isOpenedSaveModel, saveModalHandlers] = useDisclosure(false);
+    const clearSettingModal = useConfirmationModal();
+    const clearAllRoutesModal = useConfirmationModal();
+    const clearNotesModal = useConfirmationModal();
+
+    const saveLabels = savedRoutes.map((route) => ({
+        value: route.id,
+        label: `${route.route.departure} → ${route.route.destination} / ID: ${route.id}`,
+    }));
+
+    const baseGrayButtons: ControlButtonDefinition[] = [
+        { key: 'today', label: '本日', variant: 'filled', color: 'gray', onClick: () => setDateWithIndex(0) },
+        { key: 'tomorrow', label: '明日', variant: 'filled', color: 'gray', onClick: () => setDateWithIndex(1) },
+        {
+            key: 'day-after-tomorrow',
+            label: '明後日',
+            variant: 'filled',
+            color: 'gray',
+            onClick: () => setDateWithIndex(2),
+        },
+        {
+            key: 'calendar',
+            label: 'カレンダー入力',
+            variant: 'filled',
+            color: 'gray',
+            onClick: calendarModalHandlers.open,
+        },
+        { key: 'reverse', label: '発着逆転', variant: 'filled', color: 'gray', onClick: reverse },
+        { key: 'add-route', label: '経路追加', variant: 'filled', color: 'gray', onClick: () => addRoute(-1) },
+    ];
+
+    const destructiveButtons: ControlButtonDefinition[] = [
+        {
+            key: 'delete-empty-routes',
+            label: '空経路クリア',
+            variant: 'light',
+            color: 'red',
+            onClick: deleteEmptyRoutes,
+        },
+        {
+            key: 'clear-setting',
+            label: '設定クリア',
+            variant: 'filled',
+            color: 'red',
+            soundType: 'chime',
+            onClick: () =>
+                clearSettingModal.openModal(() => {
+                    resetType();
+                    enableDateOption();
+                    resetStations();
+                }),
+        },
+        {
+            key: 'clear-all-routes',
+            label: '全経路クリア',
+            variant: 'filled',
+            color: 'red',
+            soundType: 'chime',
+            onClick: () => clearAllRoutesModal.openModal(deleteAllRoutes),
+        },
+        {
+            key: 'clear-notes',
+            label: '備考クリア',
+            variant: 'filled',
+            color: 'red',
+            soundType: 'chime',
+            onClick: () => clearNotesModal.openModal(resetNotes),
+        },
+        {
+            key: 'toggle-complete',
+            label: useComplete ? '補完無効化' : '補完有効化',
+            variant: 'filled',
+            color: useComplete ? 'gray' : 'blue',
+            onClick: () => (useComplete ? disableComplete() : enableComplete()),
+        },
+        {
+            key: 'saved-routes',
+            label: '保存済み経路',
+            variant: 'filled',
+            color: 'blue',
+            href: '/tools/fare-ticket-route-planner/states',
+            offset: 3,
+        },
+        {
+            key: 'save',
+            label: '保存・更新',
+            variant: 'filled',
+            color: 'blue',
+            onClick: saveModalHandlers.open,
+        },
+    ];
+
+    const handleCalendarChange = (newValue: string | Date | null) => {
+        const newValueDate = newValue == null ? null : new Date(newValue);
+        if (
+            calendarValue != null &&
+            newValueDate != null &&
+            calendarValue.getMonth() === newValueDate.getMonth() &&
+            calendarValue.getDay() === newValueDate.getDay()
+        ) {
+            setMonth(String(newValueDate.getMonth() + 1));
+            setDay(String(newValueDate.getDate()));
+            calendarModalHandlers.close();
+        }
+
+        setCalendarValue(newValueDate);
+    };
+
+    const handleCreateRoute = () => {
+        saveRoute({
+            type,
+            month,
+            day,
+            dateOption,
+            departure,
+            via: '',
+            destination,
+            routes,
+            routes2: [],
+            notes,
+        });
+        setSaveToId(null);
+        saveModalHandlers.close();
+    };
+
+    const handleUpdateRoute = () => {
+        if (saveToId == null) {
+            return;
+        }
+
+        updateRoute(saveToId, {
+            type,
+            month,
+            day,
+            dateOption,
+            departure,
+            destination,
+            routes,
+            notes,
+        });
+        saveModalHandlers.close();
+    };
 
     return (
         <>
             <Grid columns={12} gutter="xs">
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="gray"
-                        className={styles.button}
-                        onClick={() => setDateWithIndex(0)}
-                        soundType="click"
-                        fullWidth
-                    >
-                        本日
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="gray"
-                        className={styles.button}
-                        onClick={() => setDateWithIndex(1)}
-                        soundType="click"
-                        fullWidth
-                    >
-                        明日
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="gray"
-                        className={styles.button}
-                        onClick={() => setDateWithIndex(2)}
-                        soundType="click"
-                        fullWidth
-                    >
-                        明後日
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="gray"
-                        className={styles.button}
-                        onClick={openCalendarModal}
-                        soundType="click"
-                        fullWidth
-                    >
-                        カレンダー入力
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="gray"
-                        className={styles.button}
-                        onClick={reverse}
-                        soundType="click"
-                        fullWidth
-                    >
-                        発着逆転
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="gray"
-                        className={styles.button}
-                        onClick={() => addRoute(-1)}
-                        soundType="click"
-                        fullWidth
-                    >
-                        経路追加
-                    </SoundButton>
-                </Grid.Col>
+                {baseGrayButtons.map((definition) => (
+                    <GridActionButton key={definition.key} definition={definition} />
+                ))}
                 <Grid.Col span={3} />
                 <Grid.Col span={3} />
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="light"
-                        color="red"
-                        className={styles.button}
-                        onClick={deleteEmptyRoutes}
-                        soundType="click"
-                        fullWidth
-                    >
-                        空経路クリア
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="red"
-                        className={styles.button}
-                        onClick={() =>
-                            openClearSettingModal(() => {
-                                resetType();
-                                enableDateOption();
-                                resetStations();
-                            })
-                        }
-                        soundType="chime"
-                        fullWidth
-                    >
-                        設定クリア
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="red"
-                        className={styles.button}
-                        onClick={() => openClearAllRoutesModal(deleteAllRoutes)}
-                        soundType="chime"
-                        fullWidth
-                    >
-                        全経路クリア
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="red"
-                        className={styles.button}
-                        onClick={() => openClearNotesModal(resetNotes)}
-                        soundType="chime"
-                        fullWidth
-                    >
-                        備考クリア
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color={useComplete ? 'gray' : 'blue'}
-                        className={styles.button}
-                        onClick={() => (useComplete ? disableComplete() : enableComplete())}
-                        soundType="click"
-                        fullWidth
-                    >
-                        {useComplete ? '補完無効化' : '補完有効化'}
-                    </SoundButton>
-                </Grid.Col>
-                <Grid.Col span={3} offset={3}>
-                    <Button
-                        variant="filled"
-                        color="blue"
-                        className={styles.button}
-                        component={Link}
-                        href="/tools/fare-ticket-route-planner/states"
-                        fullWidth
-                    >
-                        保存済み経路
-                    </Button>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                    <SoundButton
-                        variant="filled"
-                        color="blue"
-                        className={styles.button}
-                        onClick={openSaveModal}
-                        soundType="click"
-                        fullWidth
-                    >
-                        保存・更新
-                    </SoundButton>
-                </Grid.Col>
+                {destructiveButtons.map((definition) => (
+                    <GridActionButton key={definition.key} definition={definition} />
+                ))}
             </Grid>
 
-            <Modal opened={isOpenedCalendarModel} onClose={closeCalendarModal} title="カレンダー入力" size="auto">
-                <DatePicker
-                    value={calendarValue}
-                    onChange={(newValue) => {
-                        const newValueDate = newValue == null ? null : new Date(newValue);
-                        if (
-                            calendarValue != null &&
-                            newValueDate != null &&
-                            calendarValue.getMonth() === newValueDate.getMonth() &&
-                            calendarValue.getDay() === newValueDate.getDay()
-                        ) {
-                            setMonth(String(newValueDate.getMonth() + 1));
-                            setDay(String(newValueDate.getDate()));
-                            closeCalendarModal();
-                        }
+            <CalendarModal
+                modalState={{ opened: isOpenedCalendarModel, onClose: calendarModalHandlers.close }}
+                calendarValue={calendarValue}
+                onChange={handleCalendarChange}
+            />
 
-                        setCalendarValue(newValueDate);
-                    }}
-                    firstDayOfWeek={0}
-                    locale="ja"
-                    level="month"
-                    minDate={new Date()}
-                    size="xl"
-                />
-            </Modal>
-            <Modal opened={isOpenedSaveModel} onClose={closeSaveModal} title="保存・更新">
-                <SoundButton
-                    variant="filled"
-                    color="blue"
-                    className={styles.button}
-                    onClick={() => {
-                        saveRoute({
-                            type,
-                            month,
-                            day,
-                            dateOption,
-                            departure,
-                            via: '',
-                            destination,
-                            routes,
-                            routes2: [],
-                            notes,
-                        });
-                        setSaveToId(null);
-                        closeSaveModal();
-                    }}
-                    soundType="click"
-                >
-                    新規保存
-                </SoundButton>
+            <SaveRouteModal
+                modalState={{ opened: isOpenedSaveModel, onClose: saveModalHandlers.close }}
+                saveToId={saveToId}
+                setSaveToId={setSaveToId}
+                saveLabels={saveLabels}
+                onCreate={handleCreateRoute}
+                onUpdate={handleUpdateRoute}
+            />
 
-                <Select
-                    label="更新先を選択"
-                    placeholder="更新先を選択"
-                    data={savedRoutes.map((route) => ({
-                        value: route.id,
-                        label: `${route.route.departure} → ${route.route.destination} / ID: ${route.id}`,
-                    }))}
-                    value={saveToId}
-                    onChange={(value) => setSaveToId(value)}
-                />
-                <SoundButton
-                    variant="filled"
-                    color="blue"
-                    className={styles.button}
-                    disabled={saveToId == null}
-                    onClick={() => {
-                        if (saveToId == null) {
-                            return;
-                        }
-
-                        updateRoute(saveToId, {
-                            type,
-                            month,
-                            day,
-                            dateOption,
-                            departure,
-                            destination,
-                            routes,
-                            notes,
-                        });
-                        closeSaveModal();
-                    }}
-                    soundType="click"
-                >
-                    更新
-                </SoundButton>
-            </Modal>
             <ConfirmationModal
-                opened={isOpenedClearSettingModal}
-                onClose={closeClearSettingModal}
-                onConfirm={handleClearSettingConfirm}
+                opened={clearSettingModal.isOpened}
+                onClose={clearSettingModal.closeModal}
+                onConfirm={clearSettingModal.handleConfirm}
                 title="設定のクリア"
                 message="設定をクリアしますか？"
                 confirmButtonText="クリア"
             />
 
             <ConfirmationModal
-                opened={isOpenedClearAllRoutesModal}
-                onClose={closeClearAllRoutesModal}
-                onConfirm={handleClearAllRoutesConfirm}
+                opened={clearAllRoutesModal.isOpened}
+                onClose={clearAllRoutesModal.closeModal}
+                onConfirm={clearAllRoutesModal.handleConfirm}
                 title="全経路のクリア"
                 message="全経路をクリアしますか？"
                 confirmButtonText="クリア"
             />
 
             <ConfirmationModal
-                opened={isOpenedClearNotesModal}
-                onClose={closeClearNotesModal}
-                onConfirm={handleClearNotesConfirm}
+                opened={clearNotesModal.isOpened}
+                onClose={clearNotesModal.closeModal}
+                onConfirm={clearNotesModal.handleConfirm}
                 title="備考のクリア"
                 message="備考をクリアしますか？"
                 confirmButtonText="クリア"

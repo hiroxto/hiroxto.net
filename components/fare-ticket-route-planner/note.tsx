@@ -1,16 +1,22 @@
 'use client';
 
 import { Textarea } from '@mantine/core';
+import { useShallow } from 'zustand/react/shallow';
 import styles from '@/components/fare-ticket-route-planner/fare-ticket-route-planner.module.css';
+import { SectionTitle } from '@/components/fare-ticket-route-planner/section-title';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 
 export function Note() {
-    const notes = useRouteStateStore((state) => state.notes);
-    const setNotes = useRouteStateStore((state) => state.setNotes);
+    const { notes, setNotes } = useRouteStateStore(
+        useShallow((state) => ({
+            notes: state.notes,
+            setNotes: state.setNotes,
+        })),
+    );
 
     return (
         <>
-            <h2 className={styles.sectionTitle}>備考</h2>
+            <SectionTitle>備考</SectionTitle>
             <Textarea
                 placeholder="備考"
                 value={notes}

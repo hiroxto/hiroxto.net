@@ -1,19 +1,25 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import styles from '@/components/fare-ticket-route-planner/fare-ticket-route-planner.module.css';
+import { SectionTitle } from '@/components/fare-ticket-route-planner/section-title';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 import { format } from '@/lib/fare-ticket-route-planner/formatter';
 
 export function Output() {
-    const type = useRouteStateStore((state) => state.type);
-    const month = useRouteStateStore((state) => state.month);
-    const day = useRouteStateStore((state) => state.day);
-    const dateOption = useRouteStateStore((state) => state.dateOption);
-    const departure = useRouteStateStore((state) => state.departure);
-    const destination = useRouteStateStore((state) => state.destination);
-    const routes = useRouteStateStore((state) => state.routes);
-    const notes = useRouteStateStore((state) => state.notes);
+    const { type, month, day, dateOption, departure, destination, routes, notes } = useRouteStateStore(
+        useShallow((state) => ({
+            type: state.type,
+            month: state.month,
+            day: state.day,
+            dateOption: state.dateOption,
+            departure: state.departure,
+            destination: state.destination,
+            routes: state.routes,
+            notes: state.notes,
+        })),
+    );
 
     const valuedRoutes = useMemo(() => routes.filter((route) => route.line.trim() !== ''), [routes]);
     const output = useMemo(() => {
@@ -33,7 +39,7 @@ export function Output() {
 
     return (
         <>
-            <h2 className={styles.sectionTitle}>出力</h2>
+            <SectionTitle>出力</SectionTitle>
 
             <pre className={styles.output}>
                 <span className="whitespace-pre-wrap">{output}</span>
