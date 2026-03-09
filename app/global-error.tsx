@@ -1,7 +1,7 @@
 'use client';
 
 import '@mantine/core/styles.css';
-import { MantineProvider, Container, Stack, Text, Title } from '@mantine/core';
+import { Container, MantineProvider, Stack, Text, Title } from '@mantine/core';
 import { InternalLink } from '@/components/common/internal-link';
 
 export default function GlobalErrorPage() {
