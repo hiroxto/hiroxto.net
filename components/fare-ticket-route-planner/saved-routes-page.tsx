@@ -72,7 +72,11 @@ export function SavedRoutesPage() {
     } = useConfirmationModal();
 
     return (
-        <PageShell title="保存済み経路" description="保存した経路の一覧と操作">
+        <PageShell
+            title="保存済み経路"
+            description="保存した経路の一覧と操作"
+            breadcrumbs={[{ href: '/tools/fare-ticket-route-planner', label: '乗車券の経路作成' }]}
+        >
             <Group gap="xs" mb="md">
                 <Button
                     variant="filled"
