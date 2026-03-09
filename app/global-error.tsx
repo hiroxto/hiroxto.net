@@ -6,7 +6,7 @@ import { InternalLink } from '@/components/common/internal-link';
 
 export default function GlobalErrorPage() {
     return (
-        <html lang="en">
+        <html lang="ja-JP">
             <body>
                 <MantineProvider>
                     <div className="bg-white py-8 text-[#161616]">

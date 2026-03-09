@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: RootLayoutProps) {
     return (
-        <html lang="en">
+        <html lang="ja-JP">
             <head>
                 <link rel="author" type="text/plain" href="/humans.txt" />
             </head>
