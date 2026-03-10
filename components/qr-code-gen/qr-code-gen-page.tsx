@@ -1,10 +1,9 @@
 'use client';
 
-import { ColorInput, Group, Radio, Slider, Stack, Text, Textarea, Title } from '@mantine/core';
+import { ColorInput, Radio, Slider, Stack, Text, Textarea, Title } from '@mantine/core';
 import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { useState } from 'react';
-import { InternalLink } from '@/components/common/internal-link';
-import { SitePageFrame } from '@/components/common/site-page-frame';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 
 type QrCodeErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 type QrCodeRenderAs = 'svg' | 'canvas';
@@ -28,16 +27,8 @@ export function QrCodeGenPage() {
     } as const;
 
     return (
-        <SitePageFrame>
+        <SiteSubpageFrame items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'QRコード生成' }]}>
             <Stack gap="xl">
-                <header>
-                    <Group gap="sm">
-                        <InternalLink href="/">トップページ</InternalLink>
-                        <Text c="dimmed">/</Text>
-                        <InternalLink href="/tools">ツール一覧</InternalLink>
-                    </Group>
-                </header>
-
                 <section>
                     <Title order={1}>QRコード生成</Title>
                     <Text mt="xs">ブラウザでQRコードを生成。</Text>
@@ -109,6 +100,6 @@ export function QrCodeGenPage() {
                     </Stack>
                 </section>
             </Stack>
-        </SitePageFrame>
+        </SiteSubpageFrame>
     );
 }

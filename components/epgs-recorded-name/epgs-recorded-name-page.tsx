@@ -5,7 +5,6 @@ import {
     Checkbox,
     Code,
     Grid,
-    Group,
     List,
     ListItem,
     Select,
@@ -15,8 +14,7 @@ import {
     Title,
 } from '@mantine/core';
 import { useMemo, useState } from 'react';
-import { InternalLink } from '@/components/common/internal-link';
-import { SitePageFrame } from '@/components/common/site-page-frame';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 
 type SeasonName = '冬アニメ' | '春アニメ' | '夏アニメ' | '秋アニメ' | 'アニメ以外';
 type SeasonValue = '01_winter' | '02_spring' | '03_summer' | '04_autumn' | '10_other';
@@ -89,16 +87,8 @@ export function EpgsRecordedNamePage() {
     };
 
     return (
-        <SitePageFrame>
+        <SiteSubpageFrame items={[{ label: 'ツール一覧', href: '/tools' }, { label: '録画サーバーの保存先のパスを生成' }]}>
             <Stack gap="xl">
-                <header>
-                    <Group gap="sm">
-                        <InternalLink href="/">トップページ</InternalLink>
-                        <Text c="dimmed">/</Text>
-                        <InternalLink href="/tools">ツール一覧</InternalLink>
-                    </Group>
-                </header>
-
                 <section>
                     <Title order={1}>録画サーバーの保存先のパスを生成</Title>
                 </section>
@@ -230,6 +220,6 @@ export function EpgsRecordedNamePage() {
                     </Stack>
                 </section>
             </Stack>
-        </SitePageFrame>
+        </SiteSubpageFrame>
     );
 }

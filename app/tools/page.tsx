@@ -1,7 +1,7 @@
-import { Group, List, ListItem, Stack, Text, Title } from '@mantine/core';
+import { List, ListItem, Stack, Title } from '@mantine/core';
 import type { Metadata } from 'next';
 import { InternalLink } from '@/components/common/internal-link';
-import { SitePageFrame } from '@/components/common/site-page-frame';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
 const title = 'ツール一覧';
@@ -40,16 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function ToolsPage() {
     return (
-        <SitePageFrame>
+        <SiteSubpageFrame items={[{ label: 'ツール一覧' }]}>
             <Stack gap="lg">
-                <header>
-                    <Group gap="sm">
-                        <InternalLink href="/">トップページ</InternalLink>
-                        <Text c="dimmed">/</Text>
-                        <InternalLink href="/tools">ツール一覧</InternalLink>
-                    </Group>
-                </header>
-
                 <section>
                     <Title order={1}>ツール一覧</Title>
                 </section>
@@ -64,6 +56,6 @@ export default function ToolsPage() {
                     </List>
                 </section>
             </Stack>
-        </SitePageFrame>
+        </SiteSubpageFrame>
     );
 }

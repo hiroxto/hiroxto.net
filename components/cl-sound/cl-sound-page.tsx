@@ -1,8 +1,7 @@
 'use client';
 
 import { Button, Group, Stack, Text, Title } from '@mantine/core';
-import { InternalLink } from '@/components/common/internal-link';
-import { SitePageFrame } from '@/components/common/site-page-frame';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 
 const playSuccessTone = () => {
     const context = new AudioContext();
@@ -34,16 +33,13 @@ const playAlertTone = () => {
 
 export function ClSoundPage() {
     return (
-        <SitePageFrame>
+        <SiteSubpageFrame
+            items={[
+                { label: 'ツール一覧', href: '/tools' },
+                { label: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生' },
+            ]}
+        >
             <Stack gap="xl">
-                <header>
-                    <Group gap="sm">
-                        <InternalLink href="/">トップページ</InternalLink>
-                        <Text c="dimmed">/</Text>
-                        <InternalLink href="/tools">ツール一覧</InternalLink>
-                    </Group>
-                </header>
-
                 <section>
                     <Title order={1}>EMVコンタクトレスのサウンドをWeb Audio APIで再生</Title>
                     <Text mt="xs">EMVコンタクトレスのサウンドをWeb Audio APIで再生</Text>
@@ -76,6 +72,6 @@ export function ClSoundPage() {
                     </Text>
                 </section>
             </Stack>
-        </SitePageFrame>
+        </SiteSubpageFrame>
     );
 }

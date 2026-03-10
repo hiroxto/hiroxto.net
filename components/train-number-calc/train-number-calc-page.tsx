@@ -1,12 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Badge, Code, Group, List, ListItem, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Badge, Code, List, ListItem, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { InternalLink } from '@/components/common/internal-link';
-import { SitePageFrame } from '@/components/common/site-page-frame';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { calcTrainNumberType } from '@/lib/train-number-calc/train-number-calc';
 
 const trainNumberValueSchema = z
@@ -48,16 +47,8 @@ export function TrainNumberCalcPage() {
     }, [value]);
 
     return (
-        <SitePageFrame>
+        <SiteSubpageFrame items={[{ label: 'ツール一覧', href: '/tools' }, { label: '列車番号から列車種別を計算' }]}>
             <Stack gap="xl">
-                <header>
-                    <Group gap="sm">
-                        <InternalLink href="/">トップページ</InternalLink>
-                        <Text c="dimmed">/</Text>
-                        <InternalLink href="/tools">ツール一覧</InternalLink>
-                    </Group>
-                </header>
-
                 <section>
                     <Title order={1}>列車番号から列車種別を計算</Title>
                     <Text mt="xs">
@@ -163,6 +154,6 @@ export function TrainNumberCalcPage() {
                     </List>
                 </section>
             </Stack>
-        </SitePageFrame>
+        </SiteSubpageFrame>
     );
 }
