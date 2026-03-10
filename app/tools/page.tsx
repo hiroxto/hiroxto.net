@@ -1,6 +1,7 @@
-import { Container, Group, List, ListItem, Stack, Text, Title } from '@mantine/core';
+import { Group, List, ListItem, Stack, Text, Title } from '@mantine/core';
 import type { Metadata } from 'next';
 import { InternalLink } from '@/components/common/internal-link';
+import { SitePageFrame } from '@/components/common/site-page-frame';
 import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
 const title = 'ツール一覧';
@@ -39,32 +40,30 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function ToolsPage() {
     return (
-        <div className="bg-white py-8 text-[#161616]">
-            <Container size="md">
-                <Stack gap="lg">
-                    <header>
-                        <Group gap="sm">
-                            <InternalLink href="/">トップページ</InternalLink>
-                            <Text c="dimmed">/</Text>
-                            <InternalLink href="/tools">ツール一覧</InternalLink>
-                        </Group>
-                    </header>
+        <SitePageFrame>
+            <Stack gap="lg">
+                <header>
+                    <Group gap="sm">
+                        <InternalLink href="/">トップページ</InternalLink>
+                        <Text c="dimmed">/</Text>
+                        <InternalLink href="/tools">ツール一覧</InternalLink>
+                    </Group>
+                </header>
 
-                    <section>
-                        <Title order={1}>ツール一覧</Title>
-                    </section>
+                <section>
+                    <Title order={1}>ツール一覧</Title>
+                </section>
 
-                    <section>
-                        <List listStyleType="disc" withPadding>
-                            {tools.map((tool) => (
-                                <ListItem key={tool.href}>
-                                    <InternalLink href={tool.href}>{tool.title}</InternalLink>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </section>
-                </Stack>
-            </Container>
-        </div>
+                <section>
+                    <List listStyleType="disc" withPadding>
+                        {tools.map((tool) => (
+                            <ListItem key={tool.href}>
+                                <InternalLink href={tool.href}>{tool.title}</InternalLink>
+                            </ListItem>
+                        ))}
+                    </List>
+                </section>
+            </Stack>
+        </SitePageFrame>
     );
 }
