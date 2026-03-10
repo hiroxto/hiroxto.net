@@ -1,18 +1,6 @@
 'use client';
 
-import {
-    Button,
-    Checkbox,
-    Code,
-    Grid,
-    List,
-    ListItem,
-    Select,
-    Stack,
-    Text,
-    TextInput,
-    Title,
-} from '@mantine/core';
+import { Button, Checkbox, Code, Grid, List, ListItem, Select, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 
@@ -87,7 +75,9 @@ export function EpgsRecordedNamePage() {
     };
 
     return (
-        <SiteSubpageFrame items={[{ label: 'ツール一覧', href: '/tools' }, { label: '録画サーバーの保存先のパスを生成' }]}>
+        <SiteSubpageFrame
+            items={[{ label: 'ツール一覧', href: '/tools' }, { label: '録画サーバーの保存先のパスを生成' }]}
+        >
             <Stack gap="xl">
                 <section>
                     <Title order={1}>録画サーバーの保存先のパスを生成</Title>
