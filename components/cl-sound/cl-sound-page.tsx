@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
-import { InternalLink } from '@/components/common/internal-link';
+import { Button, Group, Stack, Text, Title } from '@mantine/core';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 
 const playSuccessTone = () => {
     const context = new AudioContext();
@@ -33,50 +33,45 @@ const playAlertTone = () => {
 
 export function ClSoundPage() {
     return (
-        <div className="bg-white py-8 text-[#161616]">
-            <Container size="md">
-                <Stack gap="xl">
-                    <header>
-                        <Group gap="sm">
-                            <InternalLink href="/">トップページ</InternalLink>
-                            <Text c="dimmed">/</Text>
-                            <InternalLink href="/tools">ツール一覧</InternalLink>
-                        </Group>
-                    </header>
+        <SiteSubpageFrame
+            items={[
+                { label: 'ツール一覧', href: '/tools' },
+                { label: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生' },
+            ]}
+        >
+            <Stack gap="xl">
+                <section>
+                    <Title order={1}>EMVコンタクトレスのサウンドをWeb Audio APIで再生</Title>
+                    <Text mt="xs">EMVコンタクトレスのサウンドをWeb Audio APIで再生</Text>
+                </section>
 
-                    <section>
-                        <Title order={1}>EMVコンタクトレスのサウンドをWeb Audio APIで再生</Title>
-                        <Text mt="xs">EMVコンタクトレスのサウンドをWeb Audio APIで再生</Text>
-                    </section>
+                <section>
+                    <Group>
+                        <Button color="green" onClick={playSuccessTone}>
+                            Play Success Tone
+                        </Button>
+                        <Button color="red" onClick={playAlertTone}>
+                            Play Alert Tone
+                        </Button>
+                    </Group>
+                </section>
 
-                    <section>
-                        <Group>
-                            <Button color="green" onClick={playSuccessTone}>
-                                Play Success Tone
-                            </Button>
-                            <Button color="red" onClick={playAlertTone}>
-                                Play Alert Tone
-                            </Button>
-                        </Group>
-                    </section>
-
-                    <section>
-                        <Title order={3}>仕様</Title>
-                        <Text mt="xs">
-                            EMVCoが出しているContactless Specifications for Payment Systemsという仕様書にEMV
-                            Contactlessの仕様全般が書かれていて，オーディオ関連は9.1.2 Audio Indicationに書かれている。
-                        </Text>
-                        <Text mt={6}>
-                            読み取り完了音はSuccess
-                            Toneと定義されていて，約1500Hzの正弦波を約500ミリ秒の周期で鳴らすと規定されている。
-                        </Text>
-                        <Text mt={6}>
-                            警告音はAlert
-                            Toneと定義されていて，約750Hzの正弦波を使用して，約200ミリ秒オン，200ミリ秒オフ，約200ミリ秒オンのダブルビープを鳴らすと規定されている。
-                        </Text>
-                    </section>
-                </Stack>
-            </Container>
-        </div>
+                <section>
+                    <Title order={3}>仕様</Title>
+                    <Text mt="xs">
+                        EMVCoが出しているContactless Specifications for Payment Systemsという仕様書にEMV
+                        Contactlessの仕様全般が書かれていて，オーディオ関連は9.1.2 Audio Indicationに書かれている。
+                    </Text>
+                    <Text mt={6}>
+                        読み取り完了音はSuccess
+                        Toneと定義されていて，約1500Hzの正弦波を約500ミリ秒の周期で鳴らすと規定されている。
+                    </Text>
+                    <Text mt={6}>
+                        警告音はAlert
+                        Toneと定義されていて，約750Hzの正弦波を使用して，約200ミリ秒オン，200ミリ秒オフ，約200ミリ秒オンのダブルビープを鳴らすと規定されている。
+                    </Text>
+                </section>
+            </Stack>
+        </SiteSubpageFrame>
     );
 }

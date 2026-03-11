@@ -1,7 +1,8 @@
-import { Anchor, Container, Divider, List, ListItem, Stack, Text, Title } from '@mantine/core';
+import { Anchor, Divider, List, ListItem, Stack, Text, Title } from '@mantine/core';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { InternalLink } from '@/components/common/internal-link';
+import { SitePageFrame } from '@/components/common/site-page-frame';
 
 interface Profile {
     key: string;
@@ -60,55 +61,53 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
     return (
-        <div className="bg-white py-8 text-[#161616]">
-            <Container size="lg">
-                <Stack gap="xl">
-                    <Title order={1}>hiroxto.net</Title>
+        <SitePageFrame>
+            <Stack gap="xl">
+                <Title order={1}>hiroxto.net</Title>
 
-                    <section>
-                        <Title order={2}>Profile</Title>
-                        <Stack gap={4} mt="sm">
-                            {profiles.map((profile) => (
-                                <Text key={profile.key}>
-                                    {profile.linkTo == null ? (
-                                        `${profile.key}: ${profile.value}`
-                                    ) : (
-                                        <>
-                                            {profile.key}:{' '}
-                                            <ExternalLink href={profile.linkTo}>{profile.value}</ExternalLink>
-                                        </>
-                                    )}
-                                </Text>
-                            ))}
-                        </Stack>
-                    </section>
+                <section>
+                    <Title order={2}>Profile</Title>
+                    <Stack gap={4} mt="sm">
+                        {profiles.map((profile) => (
+                            <Text key={profile.key}>
+                                {profile.linkTo == null ? (
+                                    `${profile.key}: ${profile.value}`
+                                ) : (
+                                    <>
+                                        {profile.key}:{' '}
+                                        <ExternalLink href={profile.linkTo}>{profile.value}</ExternalLink>
+                                    </>
+                                )}
+                            </Text>
+                        ))}
+                    </Stack>
+                </section>
 
-                    <Divider />
+                <Divider />
 
-                    <section>
-                        <Title order={2}>Others</Title>
-                        <Title order={3} mt="sm">
-                            Tools
-                        </Title>
-                        <List listStyleType="disc" withPadding mt={6}>
-                            <ListItem>
-                                <InternalLink href="/tools">ツール一覧</InternalLink>
+                <section>
+                    <Title order={2}>Others</Title>
+                    <Title order={3} mt="sm">
+                        Tools
+                    </Title>
+                    <List listStyleType="disc" withPadding mt={6}>
+                        <ListItem>
+                            <InternalLink href="/tools">ツール一覧</InternalLink>
+                        </ListItem>
+                    </List>
+
+                    <Title order={3} mt="sm">
+                        Subdomains
+                    </Title>
+                    <List listStyleType="disc" withPadding mt={6}>
+                        {subdomainLinks.map((subdomainLink) => (
+                            <ListItem key={subdomainLink.href}>
+                                <ExternalLink href={subdomainLink.href}>{subdomainLink.text}</ExternalLink>
                             </ListItem>
-                        </List>
-
-                        <Title order={3} mt="sm">
-                            Subdomains
-                        </Title>
-                        <List listStyleType="disc" withPadding mt={6}>
-                            {subdomainLinks.map((subdomainLink) => (
-                                <ListItem key={subdomainLink.href}>
-                                    <ExternalLink href={subdomainLink.href}>{subdomainLink.text}</ExternalLink>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </section>
-                </Stack>
-            </Container>
-        </div>
+                        ))}
+                    </List>
+                </section>
+            </Stack>
+        </SitePageFrame>
     );
 }
