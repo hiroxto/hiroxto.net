@@ -24,6 +24,10 @@ const tools = [
         href: '/tools/qr-code-gen',
         title: 'QRコード生成',
     },
+    {
+        href: '/tools/swarm-checkin-regulation-checker',
+        title: 'Swarm コイン規制チェッカー',
+    },
 ] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
