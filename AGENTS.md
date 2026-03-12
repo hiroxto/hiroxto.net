@@ -4,6 +4,7 @@
 
 - フレームワーク: Next.js
 - 言語: TypeScript
+- 状態管理ライブラリ: Zustand
 - UIライブラリ: Mantine
 - CSSフレームワーク: Tailwind
     - Mantineのコンポーネントを優先して使用し，TailwindはMantineの補助として利用
