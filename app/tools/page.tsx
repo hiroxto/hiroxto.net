@@ -9,6 +9,10 @@ const description = 'hiroxto.netで公開しているツール一覧';
 
 const tools = [
     {
+        href: '/tools/fare-ticket-route-planner',
+        title: '乗車券の経路作成',
+    },
+    {
         href: '/tools/cl-sound',
         title: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生',
     },
