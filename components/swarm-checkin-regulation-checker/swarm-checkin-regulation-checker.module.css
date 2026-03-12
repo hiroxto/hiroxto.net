@@ -1,0 +1,33 @@
+.app {
+    padding: 2.5rem;
+    background: #ffffff;
+    color: #161616;
+}
+
+.container {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1536px;
+}
+
+.titleGroup {
+    padding-bottom: 1rem;
+}
+
+.title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.description {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+@media (max-width: 1279px) {
+    .app {
+        padding: 1.5rem 1rem;
+    }
+}

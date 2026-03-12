@@ -19,7 +19,7 @@ import {
 } from '@mantine/core';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
+import { PageShell } from '@/components/swarm-checkin-regulation-checker/page-shell';
 import { CHECKIN_LIMIT_TITLES, RESULT_KEYS } from '@/lib/swarm-checkin-regulation-checker/consts';
 import { FoursquareClient } from '@/lib/swarm-checkin-regulation-checker/foursquare';
 import {
@@ -184,13 +184,11 @@ export function SwarmCheckinRegulationCheckerPage() {
     };
 
     return (
-        <SiteSubpageFrame items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'Swarm コイン規制チェッカー' }]}>
+        <PageShell
+            title="Swarm コイン規制チェッカー"
+            description="Swarmでチェックインした際に貰えるコインが規制されているかを確認するツール"
+        >
             <Stack gap="xl">
-                <section>
-                    <Title order={1}>Swarm コイン規制チェッカー</Title>
-                    <Text mt="xs">Swarmでチェックインした際に貰えるコインが規制されているかを確認するツール</Text>
-                </section>
-
                 <Card withBorder radius="md" padding="lg">
                     <Stack gap="sm">
                         <Badge
@@ -245,43 +243,45 @@ export function SwarmCheckinRegulationCheckerPage() {
                             <section>
                                 <Title order={2}>チェックイン詳細</Title>
                                 <Accordion multiple defaultValue={RESULT_KEYS} mt="md">
-                                    {RESULT_KEYS.map((resultKey) => {
-                                        const result = limitCheckResult.limits[resultKey];
+                                    <SimpleGrid cols={{ base: 1, md: 2 }}>
+                                        {RESULT_KEYS.map((resultKey) => {
+                                            const result = limitCheckResult.limits[resultKey];
 
-                                        return (
-                                            <Accordion.Item key={resultKey} value={resultKey}>
-                                                <Accordion.Control>
-                                                    {CHECKIN_LIMIT_TITLES[resultKey]} ({result.checkins.length}件)
-                                                </Accordion.Control>
-                                                <Accordion.Panel>
-                                                    <Stack gap="sm">
-                                                        <Text>チェックイン数: {result.checkins.length}</Text>
-                                                        <Text>
-                                                            期間:{' '}
-                                                            {!isHydrated
-                                                                ? '読み込み中'
-                                                                : `${date2String(result.period.from)} から ${date2String(result.period.to)} まで`}
-                                                        </Text>
-                                                        <CheckinTable
-                                                            checkins={result.checkins}
-                                                            limit={result.limit}
-                                                            showReleaseAt
-                                                            placeHeader="ベニュー名"
-                                                            computeReleaseAt={(checkin) =>
-                                                                date2String(
-                                                                    addPeriod(
-                                                                        createdAt2Date(checkin.createdAt),
-                                                                        result.period.value,
-                                                                        result.period.unit,
-                                                                    ),
-                                                                )
-                                                            }
-                                                        />
-                                                    </Stack>
-                                                </Accordion.Panel>
-                                            </Accordion.Item>
-                                        );
-                                    })}
+                                            return (
+                                                <Accordion.Item key={resultKey} value={resultKey}>
+                                                    <Accordion.Control>
+                                                        {CHECKIN_LIMIT_TITLES[resultKey]} ({result.checkins.length}件)
+                                                    </Accordion.Control>
+                                                    <Accordion.Panel>
+                                                        <Stack gap="sm">
+                                                            <Text>チェックイン数: {result.checkins.length}</Text>
+                                                            <Text>
+                                                                期間:{' '}
+                                                                {!isHydrated
+                                                                    ? '読み込み中'
+                                                                    : `${date2String(result.period.from)} から ${date2String(result.period.to)} まで`}
+                                                            </Text>
+                                                            <CheckinTable
+                                                                checkins={result.checkins}
+                                                                limit={result.limit}
+                                                                showReleaseAt
+                                                                placeHeader="ベニュー名"
+                                                                computeReleaseAt={(checkin) =>
+                                                                    date2String(
+                                                                        addPeriod(
+                                                                            createdAt2Date(checkin.createdAt),
+                                                                            result.period.value,
+                                                                            result.period.unit,
+                                                                        ),
+                                                                    )
+                                                                }
+                                                            />
+                                                        </Stack>
+                                                    </Accordion.Panel>
+                                                </Accordion.Item>
+                                            );
+                                        })}
+                                    </SimpleGrid>
                                 </Accordion>
                             </section>
                         </Stack>
@@ -294,27 +294,29 @@ export function SwarmCheckinRegulationCheckerPage() {
                                 <Text c="dimmed">読み込み中</Text>
                             ) : (
                                 <Accordion multiple defaultValue={historyTargets.map((target) => target.key)}>
-                                    {historyTargets.map((target) => (
-                                        <Accordion.Item key={target.key} value={target.key}>
-                                            <Accordion.Control>
-                                                {target.title} ({target.checkins.length}件)
-                                            </Accordion.Control>
-                                            <Accordion.Panel>
-                                                <Stack gap="sm">
-                                                    <Text>チェックイン数: {target.checkins.length}</Text>
-                                                    <Text>
-                                                        期間: {date2String(target.periodFrom)} から{' '}
-                                                        {date2String(target.periodTo)} まで
-                                                    </Text>
-                                                    <CheckinTable
-                                                        checkins={target.checkins}
-                                                        showReleaseAt={false}
-                                                        placeHeader="場所"
-                                                    />
-                                                </Stack>
-                                            </Accordion.Panel>
-                                        </Accordion.Item>
-                                    ))}
+                                    <SimpleGrid cols={{ base: 1, md: 2 }}>
+                                        {historyTargets.map((target) => (
+                                            <Accordion.Item key={target.key} value={target.key}>
+                                                <Accordion.Control>
+                                                    {target.title} ({target.checkins.length}件)
+                                                </Accordion.Control>
+                                                <Accordion.Panel>
+                                                    <Stack gap="sm">
+                                                        <Text>チェックイン数: {target.checkins.length}</Text>
+                                                        <Text>
+                                                            期間: {date2String(target.periodFrom)} から{' '}
+                                                            {date2String(target.periodTo)} まで
+                                                        </Text>
+                                                        <CheckinTable
+                                                            checkins={target.checkins}
+                                                            showReleaseAt={false}
+                                                            placeHeader="場所"
+                                                        />
+                                                    </Stack>
+                                                </Accordion.Panel>
+                                            </Accordion.Item>
+                                        ))}
+                                    </SimpleGrid>
                                 </Accordion>
                             )}
                         </Stack>
@@ -333,6 +335,6 @@ export function SwarmCheckinRegulationCheckerPage() {
                     </Tabs.Panel>
                 </Tabs>
             </Stack>
-        </SiteSubpageFrame>
+        </PageShell>
     );
 }
