@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { SwarmCheckinRegulationCheckerPage } from '@/components/swarm-checkin-regulation-checker/swarm-checkin-regulation-checker-page';
 import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
@@ -22,5 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function SwarmCheckinRegulationCheckerToolPage() {
-    return <SwarmCheckinRegulationCheckerPage />;
+    return (
+        <Suspense fallback={null}>
+            <SwarmCheckinRegulationCheckerPage />
+        </Suspense>
+    );
 }
