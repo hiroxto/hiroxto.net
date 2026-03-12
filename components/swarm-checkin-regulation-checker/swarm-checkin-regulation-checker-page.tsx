@@ -19,7 +19,7 @@ import {
 } from '@mantine/core';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { PageShell } from '@/components/swarm-checkin-regulation-checker/page-shell';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { CHECKIN_LIMIT_TITLES, RESULT_KEYS } from '@/lib/swarm-checkin-regulation-checker/consts';
 import { FoursquareClient } from '@/lib/swarm-checkin-regulation-checker/foursquare';
 import {
@@ -184,9 +184,11 @@ export function SwarmCheckinRegulationCheckerPage() {
     };
 
     return (
-        <PageShell
+        <SiteSubpageFrame
+            items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'Swarm コイン規制チェッカー' }]}
             title="Swarm コイン規制チェッカー"
             description="Swarmでチェックインした際に貰えるコインが規制されているかを確認するツール"
+            pageSize="xl"
         >
             <Stack gap="xl">
                 <Card withBorder radius="md" padding="lg">
@@ -335,6 +337,6 @@ export function SwarmCheckinRegulationCheckerPage() {
                     </Tabs.Panel>
                 </Tabs>
             </Stack>
-        </PageShell>
+        </SiteSubpageFrame>
     );
 }
