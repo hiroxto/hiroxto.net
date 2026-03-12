@@ -38,13 +38,10 @@ export function ClSoundPage() {
                 { label: 'ツール一覧', href: '/tools' },
                 { label: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生' },
             ]}
+            title="EMVコンタクトレスのサウンドをWeb Audio APIで再生"
+            description="EMVコンタクトレスのサウンドをWeb Audio APIで再生"
         >
             <Stack gap="xl">
-                <section>
-                    <Title order={1}>EMVコンタクトレスのサウンドをWeb Audio APIで再生</Title>
-                    <Text mt="xs">EMVコンタクトレスのサウンドをWeb Audio APIで再生</Text>
-                </section>
-
                 <section>
                     <Group>
                         <Button color="green" onClick={playSuccessTone}>

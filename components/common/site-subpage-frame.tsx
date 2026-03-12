@@ -12,8 +12,8 @@ interface SiteSubpageItem {
 interface SiteSubpageFrameProps {
     children: ReactNode;
     items: SiteSubpageItem[];
-    title?: string;
-    description?: string;
+    title: string;
+    description: string;
     pageSize?: ContainerProps['size'];
 }
 
@@ -24,12 +24,10 @@ export function SiteSubpageFrame({ children, items, title, description, pageSize
                 <header>
                     <SiteBreadcrumbs items={[{ label: 'トップページ', href: '/' }, ...items]} />
                 </header>
-                {title != null ? (
-                    <section>
-                        <Title order={1}>{title}</Title>
-                        {description != null ? <Text mt="xs">{description}</Text> : null}
-                    </section>
-                ) : null}
+                <section>
+                    <Title order={1}>{title}</Title>
+                    <Text mt="xs">{description}</Text>
+                </section>
                 {children}
             </Stack>
         </SitePageFrame>
