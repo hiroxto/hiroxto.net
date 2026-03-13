@@ -1,4 +1,4 @@
-import { List, ListItem, Stack, Title } from '@mantine/core';
+import { List, ListItem, Stack } from '@mantine/core';
 import type { Metadata } from 'next';
 import { InternalLink } from '@/components/common/internal-link';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
@@ -24,6 +24,10 @@ const tools = [
         href: '/tools/qr-code-gen',
         title: 'QRコード生成',
     },
+    {
+        href: '/tools/swarm-checkin-regulation-checker',
+        title: 'Swarm コイン規制チェッカー',
+    },
 ] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -44,12 +48,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function ToolsPage() {
     return (
-        <SiteSubpageFrame items={[{ label: 'ツール一覧' }]}>
+        <SiteSubpageFrame items={[{ label: 'ツール一覧' }]} title={title} description={description}>
             <Stack gap="lg">
-                <section>
-                    <Title order={1}>ツール一覧</Title>
-                </section>
-
                 <section>
                     <List listStyleType="disc" withPadding>
                         {tools.map((tool) => (
