@@ -81,13 +81,9 @@ function LimitSummaryCard({
                 <Stack gap={4}>
                     <Text fw={600}>{CHECKIN_LIMIT_TITLES[resultKey]}</Text>
                     <Text c={isLimited ? 'red' : undefined}>{isLimited ? '規制中' : '規制されていません'}</Text>
-                    <Text size="sm" c="dimmed">
-                        対象チェックイン回数: {result.checkins.length}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                        対象チェックイン期間: {date2String(result.period.from)}
-                    </Text>
-                    <Text size="sm" c="dimmed">
+                    <Text size="sm">対象チェックイン回数: {result.checkins.length}</Text>
+                    <Text size="sm">対象チェックイン期間: {date2String(result.period.from)}</Text>
+                    <Text size="sm">
                         規制解除: {result.unLimitingAt == null ? 'N/A' : date2String(result.unLimitingAt)}
                     </Text>
                 </Stack>
