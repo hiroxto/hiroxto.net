@@ -64,7 +64,7 @@ describe('useRouteStateStore', () => {
 
     test('日付ショートカットで月日を設定する', () => {
         vi.useFakeTimers();
-        vi.setSystemTime(new Date('2026-03-10T00:00:00+09:00'));
+        vi.setSystemTime(new Date(2026, 2, 10, 12, 0, 0));
 
         useRouteStateStore.getState().setDateWithIndex(2);
 
