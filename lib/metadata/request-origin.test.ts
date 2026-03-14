@@ -52,6 +52,34 @@ describe('resolveRequestOriginFromHeaders', () => {
         expect(resolveRequestOriginFromHeaders(withoutProtoHeaders).toString()).toBe('https://host.example.com/');
     });
 
+    it('空白だけのヘッダー値はフォールバックされること', () => {
+        const requestHeaders = new Headers({
+            'x-forwarded-host': '   ',
+            host: '   ',
+            'x-forwarded-proto': '   ',
+        });
+
+        expect(resolveRequestOriginFromHeaders(requestHeaders).toString()).toBe('https://www.hiroxto.net/');
+    });
+
+    it('proto は大文字混在でも解釈できること', () => {
+        const requestHeaders = new Headers({
+            host: 'host.example.com',
+            'x-forwarded-proto': 'HTTP',
+        });
+
+        expect(resolveRequestOriginFromHeaders(requestHeaders).toString()).toBe('http://host.example.com/');
+    });
+
+    it('不正な proto は https にフォールバックされること', () => {
+        const requestHeaders = new Headers({
+            host: 'host.example.com',
+            'x-forwarded-proto': 'ftp',
+        });
+
+        expect(resolveRequestOriginFromHeaders(requestHeaders).toString()).toBe('https://host.example.com/');
+    });
+
     it('x-forwarded-host の先頭値が使用されること', () => {
         const requestHeaders = new Headers({
             'x-forwarded-host': 'first.example.com, second.example.com',
@@ -62,5 +90,14 @@ describe('resolveRequestOriginFromHeaders', () => {
         const origin = resolveRequestOriginFromHeaders(requestHeaders);
 
         expect(origin.toString()).toBe('https://first.example.com/');
+    });
+
+    it('x-forwarded-host の先頭値が空なら host が使用されること', () => {
+        const requestHeaders = new Headers({
+            'x-forwarded-host': ' , second.example.com',
+            host: 'host.example.com',
+        });
+
+        expect(resolveRequestOriginFromHeaders(requestHeaders).toString()).toBe('https://host.example.com/');
     });
 });
