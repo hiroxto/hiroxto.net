@@ -24,11 +24,16 @@ describe('calcTrainNumberType', () => {
         expect(calcTrainNumberType('159')).toBe('高速貨C');
         expect(calcTrainNumberType('160')).toBe('専貨A');
         expect(calcTrainNumberType('190')).toBe('専貨B');
+        expect(calcTrainNumberType('6101')).toBe('臨急客');
+        expect(calcTrainNumberType('6222')).toBe('臨客');
     });
 
     it('不正入力は null を返す', () => {
         expect(calcTrainNumberType('')).toBeNull();
+        expect(calcTrainNumberType('0')).toBeNull();
         expect(calcTrainNumberType('0001')).toBeNull();
         expect(calcTrainNumberType('A12')).toBeNull();
+        expect(calcTrainNumberType('12 ')).toBeNull();
+        expect(calcTrainNumberType('10000')).toBeNull();
     });
 });
