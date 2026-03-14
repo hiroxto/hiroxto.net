@@ -28,9 +28,7 @@
 - `npm run preview`: OpenNext / Cloudflare 向けビルドをローカルで確認する。
 - `npm run test`: `Vitest` によるテストを実行する。
 - `npm run check`: TypeScript の型検査を行う。
-- `npm run lint`: `biome check` で整形・静的解析を実行する。
-- `npm run lint:fix`: `biome check` で自動修正を適用する。
-- `npm run format`: `biome format` で整形内容を確認する。
+- `npm run lint:fix`: `biome check --write` で自動修正を適用する。
 - `npm run format:fix`: `biome format --write` で整形を適用する。
 
 ## コーディング規約と命名
@@ -40,6 +38,7 @@
 - ファイル名は `site-page-frame.tsx` のような kebab-case、React コンポーネント名は PascalCase、変数名・関数名は camelCase を使用する。
 - ページ固有でない表示ロジックは `components/`、純粋なロジックは `lib/` に配置する。
 - 別ファイルを import する際はプロジェクトルートのエイリアス `@/` を使用する。
+- コード整形にはBiomeを使用する。コード変更後は`npm run lint:fix`と`npm run format:fix`を実行する。
 
 ## テスト方針
 
