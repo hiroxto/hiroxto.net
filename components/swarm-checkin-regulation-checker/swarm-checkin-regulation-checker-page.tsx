@@ -17,9 +17,9 @@ import {
     ThemeIcon,
     Title,
 } from '@mantine/core';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
+import { useSwarmCheckinRegulationCheckerTokenStore } from '@/components/swarm-checkin-regulation-checker/stores/token-store';
 import { CHECKIN_LIMIT_TITLES, RESULT_KEYS } from '@/lib/swarm-checkin-regulation-checker/consts';
 import { FoursquareClient } from '@/lib/swarm-checkin-regulation-checker/foursquare';
 import {
@@ -40,14 +40,14 @@ interface HistoryTarget {
     checkins: CheckinItem[];
 }
 
-function filterCheckins(checkins: CheckinItem[], periodFrom: Date, periodTo: Date) {
+const filterCheckins = (checkins: CheckinItem[], periodFrom: Date, periodTo: Date) => {
     return checkins.filter((checkin) => {
         const checkinDate = createdAt2Date(checkin.createdAt).getTime();
         return checkinDate >= periodFrom.getTime() && checkinDate <= periodTo.getTime();
     });
-}
+};
 
-function getHistoryTargets(checkins: CheckinItem[], now: Date): HistoryTarget[] {
+const getHistoryTargets = (checkins: CheckinItem[], now: Date): HistoryTarget[] => {
     return [0, 1, 2].map((daysAgo) => {
         const targetDate = subDays(now, daysAgo);
         const { start, end } = getJstDayRange(targetDate);
@@ -59,15 +59,15 @@ function getHistoryTargets(checkins: CheckinItem[], now: Date): HistoryTarget[] 
             checkins: filterCheckins(checkins, start, end),
         };
     });
-}
+};
 
-function LimitSummaryCard({
+const LimitSummaryCard = ({
     resultKey,
     nowCheckins,
 }: {
     resultKey: ResultKey;
     nowCheckins: ReturnType<typeof checkAllLimits>;
-}) {
+}) => {
     const result = nowCheckins.limits[resultKey];
     const isLimited = result.isLimited;
     const detailColor = isLimited ? 'red' : undefined;
@@ -97,9 +97,9 @@ function LimitSummaryCard({
             </Group>
         </Card>
     );
-}
+};
 
-function CheckinTable({
+const CheckinTable = ({
     checkins,
     limit,
     showReleaseAt,
@@ -111,7 +111,7 @@ function CheckinTable({
     showReleaseAt: boolean;
     placeHeader: string;
     computeReleaseAt?: (checkin: CheckinItem) => string;
-}) {
+}) => {
     const rows = checkins.map((checkin, index) => (
         <Table.Tr key={checkin.id} bg={limit != null && index + 1 >= limit ? 'var(--mantine-color-red-0)' : undefined}>
             <Table.Td>{index + 1}</Table.Td>
@@ -134,26 +134,15 @@ function CheckinTable({
             <Table.Tbody>{rows}</Table.Tbody>
         </Table>
     );
-}
+};
 
-export function SwarmCheckinRegulationCheckerPage() {
-    const searchParams = useSearchParams();
-    const hasAppliedQueryToken = useRef(false);
-    const [token, setToken] = useState('');
+export const SwarmCheckinRegulationCheckerPage = () => {
+    const token = useSwarmCheckinRegulationCheckerTokenStore((state) => state.token);
+    const setToken = useSwarmCheckinRegulationCheckerTokenStore((state) => state.setToken);
     const [now, setNow] = useState<Date | null>(null);
     const [checkins, setCheckins] = useState<CheckinItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!hasAppliedQueryToken.current) {
-            const queryToken = searchParams.get('token');
-            if (queryToken != null) {
-                setToken(queryToken);
-            }
-            hasAppliedQueryToken.current = true;
-        }
-    }, [searchParams]);
 
     useEffect(() => {
         setNow(new Date());
@@ -344,4 +333,4 @@ export function SwarmCheckinRegulationCheckerPage() {
             </Stack>
         </SiteSubpageFrame>
     );
-}
+};
