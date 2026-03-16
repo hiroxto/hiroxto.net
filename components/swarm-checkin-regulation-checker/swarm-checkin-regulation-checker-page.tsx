@@ -70,6 +70,7 @@ function LimitSummaryCard({
 }) {
     const result = nowCheckins.limits[resultKey];
     const isLimited = result.isLimited;
+    const detailColor = isLimited ? 'red' : undefined;
 
     return (
         <Card withBorder radius="md" padding="lg">
@@ -79,11 +80,17 @@ function LimitSummaryCard({
                 </ThemeIcon>
 
                 <Stack gap={4}>
-                    <Text fw={600}>{CHECKIN_LIMIT_TITLES[resultKey]}</Text>
-                    <Text c={isLimited ? 'red' : undefined}>{isLimited ? '規制中' : '規制されていません'}</Text>
-                    <Text size="sm">対象チェックイン回数: {result.checkins.length}</Text>
-                    <Text size="sm">対象チェックイン期間: {date2String(result.period.from)}</Text>
-                    <Text size="sm">
+                    <Text fw={600} c={detailColor}>
+                        {CHECKIN_LIMIT_TITLES[resultKey]}
+                    </Text>
+                    <Text c={detailColor}>{isLimited ? '規制中' : '規制されていません'}</Text>
+                    <Text size="sm" c={detailColor}>
+                        対象チェックイン回数: {result.checkins.length}
+                    </Text>
+                    <Text size="sm" c={detailColor}>
+                        対象チェックイン期間: {date2String(result.period.from)}
+                    </Text>
+                    <Text size="sm" c={detailColor}>
                         規制解除: {result.unLimitingAt == null ? 'N/A' : date2String(result.unLimitingAt)}
                     </Text>
                 </Stack>
@@ -198,7 +205,7 @@ export function SwarmCheckinRegulationCheckerPage() {
                             >
                                 {limitCheckResult.isLimited ? '規制されています' : '規制されていません'}
                             </Badge>
-                            <Text>
+                            <Text c={limitCheckResult.isLimited ? 'red' : undefined}>
                                 規制解除日時:{' '}
                                 {!isHydrated
                                     ? '読み込み中'
