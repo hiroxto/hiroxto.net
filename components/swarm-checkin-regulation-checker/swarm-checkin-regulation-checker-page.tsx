@@ -187,34 +187,36 @@ export function SwarmCheckinRegulationCheckerPage() {
             pageSize="xl"
         >
             <Stack gap="xl">
-                <Card withBorder radius="md" padding="lg">
-                    <Stack gap="sm">
-                        <Badge
-                            color={limitCheckResult.isLimited ? 'red' : 'teal'}
-                            variant="light"
-                            size="lg"
-                            w="fit-content"
-                        >
-                            {limitCheckResult.isLimited ? '規制されています' : '規制されていません'}
-                        </Badge>
-                        <Text>
-                            規制解除日時:{' '}
-                            {!isHydrated
-                                ? '読み込み中'
-                                : limitCheckResult.unLimitingAts == null
-                                  ? 'N/A'
-                                  : date2String(limitCheckResult.unLimitingAts)}
-                        </Text>
-                        <Text>現在時刻: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
-                        <Group>
-                            <Button onClick={handlePullCheckins} disabled={token === '' || isLoading}>
-                                {isLoading ? '取得中...' : '履歴取得'}
-                            </Button>
-                            {isLoading ? <Loader size="sm" /> : null}
-                        </Group>
-                        {errorMessage != null ? <Alert color="red">{errorMessage}</Alert> : null}
-                    </Stack>
-                </Card>
+                <div className="sticky top-0 z-30 bg-white pb-3">
+                    <Card withBorder radius="md" padding="lg">
+                        <Stack gap="sm">
+                            <Badge
+                                color={limitCheckResult.isLimited ? 'red' : 'teal'}
+                                variant="light"
+                                size="lg"
+                                w="fit-content"
+                            >
+                                {limitCheckResult.isLimited ? '規制されています' : '規制されていません'}
+                            </Badge>
+                            <Text>
+                                規制解除日時:{' '}
+                                {!isHydrated
+                                    ? '読み込み中'
+                                    : limitCheckResult.unLimitingAts == null
+                                      ? 'N/A'
+                                      : date2String(limitCheckResult.unLimitingAts)}
+                            </Text>
+                            <Text>現在時刻: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
+                            <Group>
+                                <Button onClick={handlePullCheckins} disabled={token === '' || isLoading}>
+                                    {isLoading ? '取得中...' : '履歴取得'}
+                                </Button>
+                                {isLoading ? <Loader size="sm" /> : null}
+                            </Group>
+                            {errorMessage != null ? <Alert color="red">{errorMessage}</Alert> : null}
+                        </Stack>
+                    </Card>
+                </div>
 
                 <Tabs defaultValue="limits">
                     <Tabs.List>
