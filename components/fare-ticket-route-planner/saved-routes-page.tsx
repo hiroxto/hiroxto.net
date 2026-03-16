@@ -6,9 +6,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { ConfirmationModal, useConfirmationModal } from '@/components/fare-ticket-route-planner/confirmation-modal';
 import styles from '@/components/fare-ticket-route-planner/fare-ticket-route-planner.module.css';
-import { PageShell } from '@/components/fare-ticket-route-planner/page-shell';
 import { SavedRoutesTable } from '@/components/fare-ticket-route-planner/saved-routes-table';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 import { useSavedRouteStore } from '@/components/fare-ticket-route-planner/stores/saved-route-store';
@@ -72,10 +72,15 @@ export function SavedRoutesPage() {
     } = useConfirmationModal();
 
     return (
-        <PageShell
+        <SiteSubpageFrame
+            items={[
+                { label: 'ツール一覧', href: '/tools' },
+                { label: '乗車券の経路作成', href: '/tools/fare-ticket-route-planner' },
+                { label: '保存済み経路' },
+            ]}
             title="保存済み経路"
             description="保存した経路の一覧と操作"
-            breadcrumbs={[{ href: '/tools/fare-ticket-route-planner', label: '乗車券の経路作成' }]}
+            pageSize="xl"
         >
             <Group gap="xs" mb="md">
                 <Button
@@ -135,6 +140,6 @@ export function SavedRoutesPage() {
                 message="この経路を削除しますか？"
                 confirmButtonText="削除"
             />
-        </PageShell>
+        </SiteSubpageFrame>
     );
 }

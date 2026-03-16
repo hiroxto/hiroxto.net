@@ -41,10 +41,6 @@ const subdomainLinks = [
         text: 'utils.hiroxto.net',
         href: 'https://utils.hiroxto.net/',
     },
-    {
-        text: 'swarm-checkin-regulation-checker.hiroxto.net',
-        href: 'https://swarm-checkin-regulation-checker.hiroxto.net/',
-    },
 ];
 
 function ExternalLink({ href, children }: { href: string; children: ReactNode }) {

@@ -36,7 +36,6 @@
 ## コーディング規約と命名
 
 - プロジェクト全体で TypeScript を使用する。
-- インデントは 4 スペースを使用する。
 - 共有しやすい処理は named export を優先し， Next.js のページなどフレームワーク都合の箇所のみ default export を使用する。
 - ファイル名は `site-page-frame.tsx` のような kebab-case、React コンポーネント名は PascalCase、変数名・関数名は camelCase を使用する。
 - ページ固有でない表示ロジックは `components/`、純粋なロジックは `lib/` に配置する。
@@ -55,6 +54,14 @@
 - 履歴では `feat:`, `fix:`, `style:` のような短い Conventional Commits 形式を使用する。コミットメッセージは簡潔な日本語で記述する。
     - 例: `feat: 録画ファイル名生成を追加`, `fix: パンくずの表示崩れを修正`, `style: lint:fix`。
 - プルリクエストには概要、確認内容、関連 Issue があればそのリンクを含める。UI 変更時はスクリーンショットを添付する。
+
+## 修正後の確認内容
+
+コードの修正を行った際は以下のコマンドを実行してlint，test，buildを実行します。
+
+1. `npm run lint:fix`: コード整形
+2. `npm run test`: テスト実行
+3. `npm run build`: ビルド実行
 
 ## 動作確認
 
