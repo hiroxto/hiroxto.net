@@ -1,6 +1,6 @@
 import type { Duration } from 'date-fns';
 import { add, differenceInMilliseconds, endOfDay, isAfter, startOfDay, sub, subDays as subDateFnsDays } from 'date-fns';
-import { format } from 'date-fns-tz';
+import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import type {
     AllLimitCheckResult,
     CheckinItem,
@@ -9,7 +9,7 @@ import type {
 } from '@/lib/swarm-checkin-regulation-checker/types';
 
 export function date2String(date: Date): string {
-    return format(date, 'yyyy-MM-dd HH:mm:ss', { timeZone: 'Asia/Tokyo' });
+    return formatInTimeZone(date, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
 }
 
 export function createdAt2Date(createdAt: number): Date {
@@ -103,9 +103,9 @@ export function checkAllLimits(checkins: CheckinItem[], now: Date): AllLimitChec
 }
 
 export function getJstDayRange(target: Date) {
-    const base = new Date(date2String(target));
-    const start = startOfDay(base);
-    const end = endOfDay(base);
+    const zonedTarget = toZonedTime(target, 'Asia/Tokyo');
+    const start = fromZonedTime(startOfDay(zonedTarget), 'Asia/Tokyo');
+    const end = fromZonedTime(endOfDay(zonedTarget), 'Asia/Tokyo');
 
     return { start, end };
 }
