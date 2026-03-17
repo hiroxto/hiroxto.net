@@ -10,15 +10,16 @@ import {
     Loader,
     SimpleGrid,
     Stack,
-    Table,
     Tabs,
     Text,
     TextInput,
-    ThemeIcon,
     Title,
 } from '@mantine/core';
 import { useEffect, useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
+import { createHistoryTargets } from '@/components/swarm-checkin-regulation-checker/checkin-history';
+import { CheckinTable } from '@/components/swarm-checkin-regulation-checker/checkin-table';
+import { LimitSummaryCard } from '@/components/swarm-checkin-regulation-checker/limit-summary-card';
 import { useSwarmCheckinRegulationCheckerTokenStore } from '@/components/swarm-checkin-regulation-checker/stores/token-store';
 import { CHECKIN_LIMIT_TITLES, RESULT_KEYS } from '@/lib/swarm-checkin-regulation-checker/consts';
 import { FoursquareClient } from '@/lib/swarm-checkin-regulation-checker/foursquare';
@@ -27,114 +28,8 @@ import {
     checkAllLimits,
     createdAt2Date,
     date2String,
-    getJstDayRange,
-    subDays,
 } from '@/lib/swarm-checkin-regulation-checker/functions';
-import type { CheckinItem, ResultKey } from '@/lib/swarm-checkin-regulation-checker/types';
-
-interface HistoryTarget {
-    key: string;
-    title: string;
-    periodFrom: Date;
-    periodTo: Date;
-    checkins: CheckinItem[];
-}
-
-const filterCheckins = (checkins: CheckinItem[], periodFrom: Date, periodTo: Date) => {
-    return checkins.filter((checkin) => {
-        const checkinDate = createdAt2Date(checkin.createdAt).getTime();
-        return checkinDate >= periodFrom.getTime() && checkinDate <= periodTo.getTime();
-    });
-};
-
-const getHistoryTargets = (checkins: CheckinItem[], now: Date): HistoryTarget[] => {
-    return [0, 1, 2].map((daysAgo) => {
-        const targetDate = subDays(now, daysAgo);
-        const { start, end } = getJstDayRange(targetDate);
-        return {
-            key: `d${daysAgo}`,
-            title: daysAgo === 0 ? '本日のチェックイン一覧' : `${daysAgo}日前のチェックイン一覧`,
-            periodFrom: start,
-            periodTo: end,
-            checkins: filterCheckins(checkins, start, end),
-        };
-    });
-};
-
-const LimitSummaryCard = ({
-    resultKey,
-    nowCheckins,
-}: {
-    resultKey: ResultKey;
-    nowCheckins: ReturnType<typeof checkAllLimits>;
-}) => {
-    const result = nowCheckins.limits[resultKey];
-    const isLimited = result.isLimited;
-    const detailColor = isLimited ? 'red' : undefined;
-
-    return (
-        <Card withBorder radius="md" padding="lg">
-            <Group align="flex-start" wrap="nowrap">
-                <ThemeIcon size={42} radius="md" color={isLimited ? 'red' : 'teal'} variant="light">
-                    <Text fw={700}>{isLimited ? '!' : 'OK'}</Text>
-                </ThemeIcon>
-
-                <Stack gap={4}>
-                    <Text fw={600} c={detailColor}>
-                        {CHECKIN_LIMIT_TITLES[resultKey]}
-                    </Text>
-                    <Text c={detailColor}>{isLimited ? '規制中' : '規制されていません'}</Text>
-                    <Text size="sm" c={detailColor}>
-                        対象チェックイン回数: {result.checkins.length}
-                    </Text>
-                    <Text size="sm" c={detailColor}>
-                        対象チェックイン期間: {date2String(result.period.from)}
-                    </Text>
-                    <Text size="sm" c={detailColor}>
-                        規制解除: {result.unLimitingAt == null ? 'N/A' : date2String(result.unLimitingAt)}
-                    </Text>
-                </Stack>
-            </Group>
-        </Card>
-    );
-};
-
-const CheckinTable = ({
-    checkins,
-    limit,
-    showReleaseAt,
-    placeHeader,
-    computeReleaseAt,
-}: {
-    checkins: CheckinItem[];
-    limit?: number;
-    showReleaseAt: boolean;
-    placeHeader: string;
-    computeReleaseAt?: (checkin: CheckinItem) => string;
-}) => {
-    const rows = checkins.map((checkin, index) => (
-        <Table.Tr key={checkin.id} bg={limit != null && index + 1 >= limit ? 'var(--mantine-color-red-0)' : undefined}>
-            <Table.Td>{index + 1}</Table.Td>
-            <Table.Td>{date2String(createdAt2Date(checkin.createdAt))}</Table.Td>
-            <Table.Td>{checkin.venue.name}</Table.Td>
-            {showReleaseAt ? <Table.Td>{computeReleaseAt?.(checkin) ?? 'N/A'}</Table.Td> : null}
-        </Table.Tr>
-    ));
-
-    return (
-        <Table striped highlightOnHover withTableBorder withColumnBorders>
-            <Table.Thead>
-                <Table.Tr>
-                    <Table.Th>No.</Table.Th>
-                    <Table.Th>チェックイン日時</Table.Th>
-                    <Table.Th>{placeHeader}</Table.Th>
-                    {showReleaseAt ? <Table.Th>規制解除日時</Table.Th> : null}
-                </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-    );
-};
+import type { CheckinItem } from '@/lib/swarm-checkin-regulation-checker/types';
 
 export const SwarmCheckinRegulationCheckerPage = () => {
     const token = useSwarmCheckinRegulationCheckerTokenStore((state) => state.token);
@@ -157,7 +52,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
     const isHydrated = now != null;
     const limitCheckResult = useMemo(() => checkAllLimits(checkins, currentNow), [checkins, currentNow]);
     const historyTargets = useMemo(
-        () => (isHydrated ? getHistoryTargets(checkins, currentNow) : []),
+        () => (isHydrated ? createHistoryTargets(checkins, currentNow) : []),
         [checkins, currentNow, isHydrated],
     );
 
@@ -230,7 +125,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                         <LimitSummaryCard
                                             key={resultKey}
                                             resultKey={resultKey}
-                                            nowCheckins={limitCheckResult}
+                                            result={limitCheckResult.limits[resultKey]}
                                         />
                                     ))}
                                 </SimpleGrid>
