@@ -7,7 +7,7 @@ import {
     createUpdateRoutePayload,
     isSameCalendarDate,
 } from '@/components/fare-ticket-route-planner/control-buttons-ui';
-import type { RouteState, SavedRouteState } from '@/lib/fare-ticket-route-planner/types';
+import type { SavedRouteState } from '@/lib/fare-ticket-route-planner/types';
 
 describe('control buttons ui', () => {
     test('基本ボタンが対応するハンドラーを呼び出すこと', () => {
@@ -71,26 +71,33 @@ describe('control buttons ui', () => {
         );
     });
 
-    test('保存用ペイロード生成時に via と routes2 が正規化されること', () => {
+    test('保存用ペイロード生成時に現在の経路状態をそのまま返すこと', () => {
         const payload = createSaveRoutePayload({
             type: '片道乗車券',
             month: '1',
             day: '2',
             dateOption: 'skip',
             departure: '東京',
-            via: '東海道線',
             destination: '尼崎',
             routes: [
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            routes2: [{ id: 'route-3', line: 'JR神戸線', station: '尼崎' }],
             notes: 'テストnotes',
         });
 
         expect(payload).toMatchObject({
-            via: '',
-            routes2: [],
+            type: '片道乗車券',
+            month: '1',
+            day: '2',
+            dateOption: 'skip',
+            departure: '東京',
+            destination: '尼崎',
+            routes: [
+                { id: 'route-1', line: '新幹線', station: '新大阪' },
+                { id: 'route-2', line: '東海道線', station: '' },
+            ],
+            notes: 'テストnotes',
         });
     });
 
@@ -101,13 +108,11 @@ describe('control buttons ui', () => {
             day: '2',
             dateOption: 'skip',
             departure: '東京',
-            via: '東海道線',
             destination: '尼崎',
             routes: [
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            routes2: [],
             notes: 'テストnotes',
         });
 
@@ -124,7 +129,6 @@ describe('control buttons ui', () => {
             ],
             notes: 'テストnotes',
         });
-        expect((payload as RouteState).via).toBeUndefined();
     });
 
     test('保存ラベルが東京から尼崎の経路文字列になること', () => {
@@ -138,10 +142,8 @@ describe('control buttons ui', () => {
                     day: '2',
                     dateOption: 'use',
                     departure: '東京',
-                    via: '',
                     destination: '尼崎',
                     routes: [],
-                    routes2: [],
                     notes: '',
                 },
             },

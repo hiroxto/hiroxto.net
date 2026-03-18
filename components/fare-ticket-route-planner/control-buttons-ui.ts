@@ -134,10 +134,8 @@ export const createSaveRoutePayload = (state: RouteState): RouteState => ({
     day: state.day,
     dateOption: state.dateOption,
     departure: state.departure,
-    via: '',
     destination: state.destination,
     routes: state.routes,
-    routes2: [],
     notes: state.notes,
 });
 

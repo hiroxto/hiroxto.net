@@ -8,13 +8,11 @@ const routeState: RouteState = {
     day: '10',
     dateOption: 'use',
     departure: '東京',
-    via: '',
     destination: '博多',
     routes: [
         { id: '1', line: '東海道線', station: '名古屋' },
         { id: '2', line: '山陽線', station: '' },
     ],
-    routes2: [],
     notes: 'テスト',
 };
 

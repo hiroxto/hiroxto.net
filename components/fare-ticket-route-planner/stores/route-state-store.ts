@@ -39,10 +39,8 @@ export const useRouteStateStore = create<RouteState & RouteStateActions>()(
                 day: '',
                 dateOption: 'use',
                 departure: '',
-                via: '',
                 destination: '',
                 routes: [createRoute()],
-                routes2: [],
                 notes: '',
 
                 setType(type) {
@@ -158,7 +156,7 @@ export const useRouteStateStore = create<RouteState & RouteStateActions>()(
                     });
                 },
                 resetStations() {
-                    set({ departure: '', via: '', destination: '' });
+                    set({ departure: '', destination: '' });
                 },
                 setNotes(notes) {
                     set({ notes });
