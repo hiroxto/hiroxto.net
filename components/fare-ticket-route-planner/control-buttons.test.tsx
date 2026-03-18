@@ -55,10 +55,8 @@ describe('ControlButtons', () => {
             day: '',
             dateOption: 'use',
             departure: '',
-            via: '',
             destination: '',
             routes: [{ id: 'initial-route', line: '', station: '' }],
-            routes2: [],
             notes: '',
         });
         useInputSettingStore.setState({ useComplete: true });
@@ -129,7 +127,6 @@ describe('ControlButtons', () => {
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            routes2: [],
             notes: 'テストnotes',
         });
 
@@ -145,13 +142,11 @@ describe('ControlButtons', () => {
             day: '2',
             dateOption: 'skip',
             departure: '東京',
-            via: '',
             destination: '尼崎',
             routes: [
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            routes2: [],
             notes: 'テストnotes',
         });
     });

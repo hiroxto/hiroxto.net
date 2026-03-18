@@ -12,10 +12,8 @@ export interface RouteState {
     day: string;
     dateOption: 'use' | 'skip';
     departure: string;
-    via: string;
     destination: string;
     routes: Route[];
-    routes2: Route[];
     notes: string;
 }
 

@@ -1,31 +1,26 @@
 'use client';
 
-import { Button, type ButtonProps, Grid, Modal, Select } from '@mantine/core';
+import { Button, Grid, Modal, Select } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { ConfirmationModal, useConfirmationModal } from '@/components/fare-ticket-route-planner/confirmation-modal';
+import {
+    type ControlButtonDefinition,
+    createBaseGrayButtonDefinitions,
+    createSaveLabels,
+    createSaveRoutePayload,
+    createSecondaryButtonDefinitions,
+    createUpdateRoutePayload,
+    isSameCalendarDate,
+} from '@/components/fare-ticket-route-planner/control-buttons-ui';
 import styles from '@/components/fare-ticket-route-planner/fare-ticket-route-planner.module.css';
 import { SoundButton } from '@/components/fare-ticket-route-planner/sound-button';
 import { useInputSettingStore } from '@/components/fare-ticket-route-planner/stores/input-setting-store';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 import { useSavedRouteStore } from '@/components/fare-ticket-route-planner/stores/saved-route-store';
-import type { SoundType } from '@/components/fare-ticket-route-planner/use-sound';
-
-interface ControlButtonDefinition {
-    key: string;
-    label: string;
-    span?: number;
-    offset?: number;
-    variant?: ButtonProps['variant'];
-    color?: ButtonProps['color'];
-    soundType?: SoundType;
-    disabled?: boolean;
-    href?: string;
-    onClick?: () => void;
-}
 
 interface ModalState {
     opened: boolean;
@@ -124,14 +119,6 @@ function SaveRouteModal({
 
 export function ControlButtons() {
     const {
-        type,
-        month,
-        day,
-        dateOption,
-        departure,
-        destination,
-        routes,
-        notes,
         resetType,
         setMonth,
         setDay,
@@ -145,14 +132,6 @@ export function ControlButtons() {
         resetNotes,
     } = useRouteStateStore(
         useShallow((state) => ({
-            type: state.type,
-            month: state.month,
-            day: state.day,
-            dateOption: state.dateOption,
-            departure: state.departure,
-            destination: state.destination,
-            routes: state.routes,
-            notes: state.notes,
             resetType: state.resetType,
             setMonth: state.setMonth,
             setDay: state.setDay,
@@ -192,101 +171,41 @@ export function ControlButtons() {
     const clearAllRoutesModal = useConfirmationModal();
     const clearNotesModal = useConfirmationModal();
 
-    const saveLabels = savedRoutes.map((route) => ({
-        value: route.id,
-        label: `${route.route.departure} → ${route.route.destination} / ID: ${route.id}`,
-    }));
+    const saveLabels = createSaveLabels(savedRoutes);
 
-    const baseGrayButtons: ControlButtonDefinition[] = [
-        { key: 'today', label: '本日', variant: 'filled', color: 'gray', onClick: () => setDateWithIndex(0) },
-        { key: 'tomorrow', label: '明日', variant: 'filled', color: 'gray', onClick: () => setDateWithIndex(1) },
-        {
-            key: 'day-after-tomorrow',
-            label: '明後日',
-            variant: 'filled',
-            color: 'gray',
-            onClick: () => setDateWithIndex(2),
-        },
-        {
-            key: 'calendar',
-            label: 'カレンダー入力',
-            variant: 'filled',
-            color: 'gray',
-            onClick: calendarModalHandlers.open,
-        },
-        { key: 'reverse', label: '発着逆転', variant: 'filled', color: 'gray', onClick: reverse },
-        { key: 'add-route', label: '経路追加', variant: 'filled', color: 'gray', onClick: () => addRoute(-1) },
-    ];
+    const baseGrayButtons = createBaseGrayButtonDefinitions({
+        setDateWithIndex,
+        openCalendarModal: calendarModalHandlers.open,
+        reverse,
+        addRoute,
+    });
 
-    const destructiveButtons: ControlButtonDefinition[] = [
-        {
-            key: 'delete-empty-routes',
-            label: '空経路クリア',
-            variant: 'light',
-            color: 'red',
-            onClick: deleteEmptyRoutes,
-        },
-        {
-            key: 'clear-setting',
-            label: '設定クリア',
-            variant: 'filled',
-            color: 'red',
-            soundType: 'chime',
-            onClick: () =>
-                clearSettingModal.openModal(() => {
-                    resetType();
-                    enableDateOption();
-                    resetStations();
-                }),
-        },
-        {
-            key: 'clear-all-routes',
-            label: '全経路クリア',
-            variant: 'filled',
-            color: 'red',
-            soundType: 'chime',
-            onClick: () => clearAllRoutesModal.openModal(deleteAllRoutes),
-        },
-        {
-            key: 'clear-notes',
-            label: '備考クリア',
-            variant: 'filled',
-            color: 'red',
-            soundType: 'chime',
-            onClick: () => clearNotesModal.openModal(resetNotes),
-        },
-        {
-            key: 'toggle-complete',
-            label: useComplete ? '補完無効化' : '補完有効化',
-            variant: 'filled',
-            color: useComplete ? 'gray' : 'blue',
-            onClick: () => (useComplete ? disableComplete() : enableComplete()),
-        },
-        {
-            key: 'saved-routes',
-            label: '保存済み経路',
-            variant: 'filled',
-            color: 'blue',
-            href: '/tools/fare-ticket-route-planner/states',
-            offset: 3,
-        },
-        {
-            key: 'save',
-            label: '保存・更新',
-            variant: 'filled',
-            color: 'blue',
-            onClick: saveModalHandlers.open,
-        },
-    ];
+    const handleClearSetting = () => {
+        clearSettingModal.openModal(() => {
+            resetType();
+            enableDateOption();
+            resetStations();
+        });
+    };
+
+    const handleClearAllRoutes = () => clearAllRoutesModal.openModal(deleteAllRoutes);
+    const handleClearNotes = () => clearNotesModal.openModal(resetNotes);
+
+    const secondaryButtons = createSecondaryButtonDefinitions({
+        deleteEmptyRoutes,
+        openClearSettingModal: handleClearSetting,
+        openClearAllRoutesModal: handleClearAllRoutes,
+        openClearNotesModal: handleClearNotes,
+        useComplete,
+        enableComplete,
+        disableComplete,
+        savedRoutesHref: '/tools/fare-ticket-route-planner/states',
+        openSaveModal: saveModalHandlers.open,
+    });
 
     const handleCalendarChange = (newValue: string | Date | null) => {
         const newValueDate = newValue == null ? null : new Date(newValue);
-        if (
-            calendarValue != null &&
-            newValueDate != null &&
-            calendarValue.getMonth() === newValueDate.getMonth() &&
-            calendarValue.getDay() === newValueDate.getDay()
-        ) {
+        if (calendarValue != null && newValueDate != null && isSameCalendarDate(calendarValue, newValueDate)) {
             setMonth(String(newValueDate.getMonth() + 1));
             setDay(String(newValueDate.getDate()));
             calendarModalHandlers.close();
@@ -296,18 +215,8 @@ export function ControlButtons() {
     };
 
     const handleCreateRoute = () => {
-        saveRoute({
-            type,
-            month,
-            day,
-            dateOption,
-            departure,
-            via: '',
-            destination,
-            routes,
-            routes2: [],
-            notes,
-        });
+        const routeState = useRouteStateStore.getState();
+        saveRoute(createSaveRoutePayload(routeState));
         setSaveToId(null);
         saveModalHandlers.close();
     };
@@ -317,16 +226,8 @@ export function ControlButtons() {
             return;
         }
 
-        updateRoute(saveToId, {
-            type,
-            month,
-            day,
-            dateOption,
-            departure,
-            destination,
-            routes,
-            notes,
-        });
+        const routeState = useRouteStateStore.getState();
+        updateRoute(saveToId, createUpdateRoutePayload(routeState));
         saveModalHandlers.close();
     };
 
@@ -338,7 +239,7 @@ export function ControlButtons() {
                 ))}
                 <Grid.Col span={3} />
                 <Grid.Col span={3} />
-                {destructiveButtons.map((definition) => (
+                {secondaryButtons.map((definition) => (
                     <GridActionButton key={definition.key} definition={definition} />
                 ))}
             </Grid>

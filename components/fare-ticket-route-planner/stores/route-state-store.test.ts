@@ -9,10 +9,8 @@ describe('useRouteStateStore', () => {
             day: '',
             dateOption: 'use',
             departure: '',
-            via: '',
             destination: '',
             routes: [{ id: 'initial', line: '', station: '' }],
-            routes2: [],
             notes: '',
         });
     });
