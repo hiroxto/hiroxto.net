@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const contentDirPath = path.resolve(__dirname, '../lib/train-number/content');
+const generatedDirPath = path.resolve(__dirname, '../lib/train-number/gen');
 
 // 生成対象のファイル名はこの配列で管理する。
 // 新しい改正版を追加するときは、対応する content/*.md を追加し、この配列へ同じファイル名を追記する。
@@ -30,7 +31,7 @@ const createGeneratedSource = (markdownContent: string, sourceFileName: string):
 const main = async (): Promise<void> => {
     for (const fileName of fileNames) {
         const markdownFilePath = path.join(contentDirPath, `${fileName}.md`);
-        const generatedFilePath = path.join(contentDirPath, `${fileName}.ts`);
+        const generatedFilePath = path.join(generatedDirPath, `${fileName}.ts`);
         const markdownContent = await readFile(markdownFilePath, 'utf8');
         const generatedSource = createGeneratedSource(markdownContent, `${fileName}.md`);
 
