@@ -36,13 +36,6 @@ const profiles: Profile[] = [
     },
 ];
 
-const subdomainLinks = [
-    {
-        text: 'utils.hiroxto.net',
-        href: 'https://utils.hiroxto.net/',
-    },
-];
-
 function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
     return (
         <Anchor href={href} target="_blank" rel="noreferrer noopener">
@@ -90,17 +83,6 @@ export default function HomePage() {
                         <ListItem>
                             <InternalLink href="/tools">ツール一覧</InternalLink>
                         </ListItem>
-                    </List>
-
-                    <Title order={3} mt="sm">
-                        Subdomains
-                    </Title>
-                    <List listStyleType="disc" withPadding mt={6}>
-                        {subdomainLinks.map((subdomainLink) => (
-                            <ListItem key={subdomainLink.href}>
-                                <ExternalLink href={subdomainLink.href}>{subdomainLink.text}</ExternalLink>
-                            </ListItem>
-                        ))}
                     </List>
                 </section>
             </Stack>
