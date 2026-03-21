@@ -47,7 +47,6 @@ export function TrainNumberPage({ title, markdownSource }: TrainNumberPageProps)
             ]}
             title={title}
             description={`列車番号メモ ${title}`}
-            pageSize="xl"
         >
             <Stack gap="lg">
                 <section>
