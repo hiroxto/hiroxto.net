@@ -22,8 +22,8 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default async function TrainNumber20210313Page() {
-    const markdownSource = await loadTrainNumberContent('2021-03-13.md');
+export default function TrainNumber20210313Page() {
+    const markdownSource = loadTrainNumberContent('2021-03-13.md');
 
     return <TrainNumberPage title={title} markdownSource={markdownSource} />;
 }

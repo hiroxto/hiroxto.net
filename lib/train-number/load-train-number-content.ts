@@ -10,8 +10,6 @@ const trainNumberContentMap = {
     '2021-03-13.md': content20210313,
 } as const;
 
-export const loadTrainNumberContent = async (fileName: keyof typeof trainNumberContentMap): Promise<string> => {
-    const content = trainNumberContentMap[fileName];
-
-    return content;
+export const loadTrainNumberContent = (fileName: keyof typeof trainNumberContentMap): string => {
+    return trainNumberContentMap[fileName];
 };
