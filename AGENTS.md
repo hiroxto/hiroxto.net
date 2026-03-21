@@ -35,6 +35,7 @@
 
 - プロジェクト全体で TypeScript を使用する。
 - 共有しやすい処理は named export を優先し， Next.js のページなどフレームワーク都合の箇所のみ default export を使用する。
+  - 関数定義はTSXではfunctionでの関数宣言，lib/配下ではアロー関数を使用する。
 - ファイル名は `site-page-frame.tsx` のような kebab-case、React コンポーネント名は PascalCase、変数名・関数名は camelCase を使用する。
 - ページ固有でない表示ロジックは `components/`、純粋なロジックは `lib/` に配置する。
 - 別ファイルを import する際はプロジェクトルートのエイリアス `@/` を使用する。
