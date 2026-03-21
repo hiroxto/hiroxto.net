@@ -1,5 +1,14 @@
 import type { Duration } from 'date-fns';
-import { add, differenceInMilliseconds, endOfDay, isAfter, startOfDay, sub, subDays as subDateFnsDays } from 'date-fns';
+import {
+    add,
+    addDays,
+    differenceInMilliseconds,
+    endOfDay,
+    isAfter,
+    startOfDay,
+    sub,
+    subDays as subDateFnsDays,
+} from 'date-fns';
 import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import type {
     AllLimitCheckResult,
@@ -100,6 +109,25 @@ export function checkAllLimits(checkins: CheckinItem[], now: Date): AllLimitChec
         isLimited,
         unLimitingAts: getMostFurthestDate(unLimitingAts, now),
     };
+}
+
+export function getNextJstMidnight(now: Date): Date {
+    const zonedNow = toZonedTime(now, 'Asia/Tokyo');
+    return fromZonedTime(startOfDay(addDays(zonedNow, 1)), 'Asia/Tokyo');
+}
+
+export function getNextRefreshAt(checkins: CheckinItem[], now: Date): Date {
+    const m2 = checkLimits(checkins, now, 5, 2, 'minutes');
+    const m15 = checkLimits(checkins, now, 8, 15, 'minutes');
+    const d1 = checkLimits(checkins, now, 50, 1, 'days');
+    const nextMidnight = getNextJstMidnight(now);
+    const candidates = [nextMidnight, m2.unLimitingAt, m15.unLimitingAt, d1.unLimitingAt].filter(
+        (value): value is Date => value != null && isAfter(value, now),
+    );
+
+    return candidates.reduce((nearest, candidate) => {
+        return candidate.getTime() < nearest.getTime() ? candidate : nearest;
+    }, nextMidnight);
 }
 
 export function getJstDayRange(target: Date) {
