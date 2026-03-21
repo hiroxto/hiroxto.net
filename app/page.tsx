@@ -91,17 +91,6 @@ export default function HomePage() {
                             <InternalLink href="/tools">ツール一覧</InternalLink>
                         </ListItem>
                     </List>
-
-                    <Title order={3} mt="sm">
-                        Subdomains
-                    </Title>
-                    <List listStyleType="disc" withPadding mt={6}>
-                        {subdomainLinks.map((subdomainLink) => (
-                            <ListItem key={subdomainLink.href}>
-                                <ExternalLink href={subdomainLink.href}>{subdomainLink.text}</ExternalLink>
-                            </ListItem>
-                        ))}
-                    </List>
                 </section>
             </Stack>
         </SitePageFrame>
