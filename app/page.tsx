@@ -36,13 +36,6 @@ const profiles: Profile[] = [
     },
 ];
 
-const subdomainLinks = [
-    {
-        text: 'utils.hiroxto.net',
-        href: 'https://utils.hiroxto.net/',
-    },
-];
-
 function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
     return (
         <Anchor href={href} target="_blank" rel="noreferrer noopener">
