@@ -21,6 +21,10 @@ const tools = [
         title: '列車番号から列車種別を計算',
     },
     {
+        href: '/tools/train-number',
+        title: '列車番号メモ',
+    },
+    {
         href: '/tools/qr-code-gen',
         title: 'QRコード生成',
     },
