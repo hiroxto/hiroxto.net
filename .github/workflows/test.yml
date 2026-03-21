@@ -24,6 +24,9 @@ jobs:
             -   name: Install dependencies
                 run: npm ci
 
+            -   name: Check generated train-number content
+                run: npm run check:train-number-content
+
             -   name: Lint
                 run: npm run lint
 
