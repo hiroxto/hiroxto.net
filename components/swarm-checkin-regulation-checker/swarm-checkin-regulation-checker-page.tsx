@@ -114,11 +114,11 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                       : date2String(limitCheckResult.unLimitingAts)}
                             </Text>
                             <Text>
-                                現在時刻: {currentTime == null ? '読み込み中' : date2String(resolvedCurrentTime)}
+                                現在日時: {currentTime == null ? '読み込み中' : date2String(resolvedCurrentTime)}
                             </Text>
-                            <Text>判定時刻: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
+                            <Text>判定日時: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
                             <Text>
-                                次回判定時刻: {nextRefreshAt == null ? '読み込み中' : date2String(nextRefreshAt)}
+                                次回判定日時: {nextRefreshAt == null ? '読み込み中' : date2String(nextRefreshAt)}
                             </Text>
                             <Group>
                                 <Button onClick={handlePullCheckins} disabled={token === '' || isLoading}>
