@@ -21,6 +21,7 @@ import { createHistoryTargets } from '@/components/swarm-checkin-regulation-chec
 import { CheckinTable } from '@/components/swarm-checkin-regulation-checker/checkin-table';
 import { LimitSummaryCard } from '@/components/swarm-checkin-regulation-checker/limit-summary-card';
 import { useSwarmCheckinRegulationCheckerTokenStore } from '@/components/swarm-checkin-regulation-checker/stores/token-store';
+import { useCurrentTime } from '@/hooks/use-current-time';
 import { CHECKIN_LIMIT_TITLES, RESULT_KEYS } from '@/lib/swarm-checkin-regulation-checker/consts';
 import { FoursquareClient } from '@/lib/swarm-checkin-regulation-checker/foursquare';
 import {
@@ -28,28 +29,42 @@ import {
     checkAllLimits,
     createdAt2Date,
     date2String,
+    getNextRefreshAt,
 } from '@/lib/swarm-checkin-regulation-checker/functions';
 import type { CheckinItem } from '@/lib/swarm-checkin-regulation-checker/types';
 
 export const SwarmCheckinRegulationCheckerPage = () => {
     const token = useSwarmCheckinRegulationCheckerTokenStore((state) => state.token);
     const setToken = useSwarmCheckinRegulationCheckerTokenStore((state) => state.setToken);
-    const [now, setNow] = useState<Date | null>(null);
+    const currentTime = useCurrentTime();
+    const [comparisonNow, setComparisonNow] = useState<Date | null>(null);
     const [checkins, setCheckins] = useState<CheckinItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        setNow(new Date());
-        const intervalId = window.setInterval(() => {
-            setNow(new Date());
-        }, 1000);
-
-        return () => window.clearInterval(intervalId);
+        setComparisonNow(new Date());
     }, []);
 
-    const currentNow = now ?? new Date(0);
-    const isHydrated = now != null;
+    const resolvedCurrentTime = currentTime ?? new Date(0);
+    const currentNow = comparisonNow ?? new Date(0);
+    const isHydrated = comparisonNow != null;
+    const nextRefreshAt = isHydrated ? getNextRefreshAt(checkins, currentNow) : null;
+
+    useEffect(() => {
+        if (!isHydrated) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(
+            () => {
+                setComparisonNow(new Date());
+            },
+            Math.max((nextRefreshAt ?? currentNow).getTime() - Date.now(), 0) + 50,
+        );
+
+        return () => window.clearTimeout(timeoutId);
+    }, [currentNow, isHydrated, nextRefreshAt]);
     const limitCheckResult = useMemo(() => checkAllLimits(checkins, currentNow), [checkins, currentNow]);
     const historyTargets = useMemo(
         () => (isHydrated ? createHistoryTargets(checkins, currentNow) : []),
@@ -62,6 +77,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
         try {
             const client = new FoursquareClient(token);
             const nextCheckins = await client.getSelfCheckins();
+            setComparisonNow(new Date());
             setCheckins(nextCheckins);
         } catch (error) {
             setErrorMessage(error instanceof Error ? error.message : '履歴の取得に失敗しました。');
@@ -97,7 +113,13 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                       ? 'N/A'
                                       : date2String(limitCheckResult.unLimitingAts)}
                             </Text>
-                            <Text>現在時刻: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
+                            <Text>
+                                現在日時: {currentTime == null ? '読み込み中' : date2String(resolvedCurrentTime)}
+                            </Text>
+                            <Text>判定日時: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
+                            <Text>
+                                次回判定日時: {nextRefreshAt == null ? '読み込み中' : date2String(nextRefreshAt)}
+                            </Text>
                             <Group>
                                 <Button onClick={handlePullCheckins} disabled={token === '' || isLoading}>
                                     {isLoading ? '取得中...' : '履歴取得'}

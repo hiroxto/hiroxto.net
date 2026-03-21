@@ -6,6 +6,8 @@ import {
     date2String,
     getJstDayRange,
     getMostFurthestDate,
+    getNextJstMidnight,
+    getNextRefreshAt,
 } from '@/lib/swarm-checkin-regulation-checker/functions';
 import type { CheckinItem } from '@/lib/swarm-checkin-regulation-checker/types';
 
@@ -120,5 +122,34 @@ describe('getJstDayRange()', () => {
 
         expect(range.start).toStrictEqual(new Date('2024-09-30T15:00:00Z'));
         expect(range.end).toStrictEqual(new Date('2024-10-01T14:59:59.999Z'));
+    });
+});
+
+describe('getNextJstMidnight()', () => {
+    it('次の日本時間の0時を返すこと', () => {
+        const target = new Date('2024-10-01T03:34:56Z');
+
+        expect(getNextJstMidnight(target)).toStrictEqual(new Date('2024-10-01T15:00:00Z'));
+    });
+});
+
+describe('getNextRefreshAt()', () => {
+    it('規制解除前なら最も近い解除日時を返すこと', () => {
+        const now = new Date('2024-10-01T03:34:56Z');
+        const checkins = [
+            createCheckin('1', '2024-10-01T03:33:00Z'),
+            createCheckin('2', '2024-10-01T03:33:30Z'),
+            createCheckin('3', '2024-10-01T03:34:00Z'),
+            createCheckin('4', '2024-10-01T03:34:10Z'),
+            createCheckin('5', '2024-10-01T03:34:20Z'),
+        ];
+
+        expect(getNextRefreshAt(checkins, now)).toStrictEqual(new Date('2024-10-01T03:36:20Z'));
+    });
+
+    it('規制中でなければ次の日本時間の0時を返すこと', () => {
+        const now = new Date('2024-10-01T03:34:56Z');
+
+        expect(getNextRefreshAt([], now)).toStrictEqual(new Date('2024-10-01T15:00:00Z'));
     });
 });
