@@ -3,6 +3,10 @@
     "version": "1.0.0",
     "private": true,
     "type": "module",
+    "packageManager": "bun@1.2.14",
+    "engines": {
+        "bun": "1.2.14"
+    },
     "scripts": {
         "dev": "next dev --hostname 0.0.0.0",
         "build": "next build",
@@ -13,8 +17,8 @@
         "lint:fix": "biome check --write .",
         "format": "biome format .",
         "format:fix": "biome format --write .",
-        "generate:train-number-content": "node ./scripts/generate-train-number-content.ts",
-        "check:train-number-content": "npm run generate:train-number-content && git diff --exit-code -- lib/train-number/gen/*.ts",
+        "generate:train-number-content": "bun ./scripts/generate-train-number-content.ts",
+        "check:train-number-content": "bun run generate:train-number-content && git diff --exit-code -- lib/train-number/gen/*.ts",
         "deploy": "opennextjs-cloudflare deploy",
         "build:cf": "opennextjs-cloudflare build"
     },
