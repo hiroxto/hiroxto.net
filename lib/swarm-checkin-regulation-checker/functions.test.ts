@@ -147,15 +147,16 @@ describe('getNextRefreshAt()', () => {
         expect(getNextRefreshAt(checkins, now)).toStrictEqual(new Date('2024-10-01T03:36:20Z'));
     });
 
-    it('非規制でも対象チェックインがあれば最古のチェックインが対象外になる日時を返すこと', () => {
+    it('非規制でも対象チェックインがあれば各基準の最古チェックインから最も近い解除日時を返すこと', () => {
         const now = new Date('2024-10-01T03:34:56Z');
         const checkins = [
+            createCheckin('4', '2024-10-01T03:33:50Z'),
             createCheckin('3', '2024-10-01T03:34:30Z'),
             createCheckin('1', '2024-09-30T12:00:00Z'),
             createCheckin('2', '2024-10-01T03:20:00Z'),
         ];
 
-        expect(getNextRefreshAt(checkins, now)).toStrictEqual(new Date('2024-10-01T12:00:00Z'));
+        expect(getNextRefreshAt(checkins, now)).toStrictEqual(new Date('2024-10-01T03:35:00Z'));
     });
 
     it('規制中でなければ次の日本時間の0時を返すこと', () => {

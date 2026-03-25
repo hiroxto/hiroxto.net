@@ -122,13 +122,24 @@ export function getNextRefreshAt(checkins: CheckinItem[], now: Date): Date {
     const d1 = checkLimits(checkins, now, 50, 1, 'days');
     const isLimited = [m2.isLimited, m15.isLimited, d1.isLimited].some(Boolean);
 
-    if (!isLimited && d1.checkins.length > 0) {
-        const [firstCheckin, ...restCheckins] = d1.checkins;
-        const oldestCheckin = restCheckins.reduce((oldest, checkin) => {
-            return checkin.createdAt < oldest.createdAt ? checkin : oldest;
-        }, firstCheckin);
+    if (!isLimited) {
+        const oldestUnLimitingAts = [m2, m15, d1]
+            .filter((result) => result.checkins.length > 0)
+            .map((result) => {
+                const [firstCheckin, ...restCheckins] = result.checkins;
+                const oldestCheckin = restCheckins.reduce((oldest, checkin) => {
+                    return checkin.createdAt < oldest.createdAt ? checkin : oldest;
+                }, firstCheckin);
 
-        return addPeriod(createdAt2Date(oldestCheckin.createdAt), d1.period.value, d1.period.unit);
+                return addPeriod(createdAt2Date(oldestCheckin.createdAt), result.period.value, result.period.unit);
+            })
+            .filter((value) => isAfter(value, now));
+
+        if (oldestUnLimitingAts.length > 0) {
+            return oldestUnLimitingAts.reduce((nearest, candidate) => {
+                return candidate.getTime() < nearest.getTime() ? candidate : nearest;
+            });
+        }
     }
 
     const nextMidnight = getNextJstMidnight(now);
