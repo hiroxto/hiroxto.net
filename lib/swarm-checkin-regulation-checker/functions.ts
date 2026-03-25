@@ -128,7 +128,7 @@ export function getNextRefreshAt(checkins: CheckinItem[], now: Date): Date {
             return checkin.createdAt < oldest.createdAt ? checkin : oldest;
         }, firstCheckin);
 
-        return createdAt2Date(oldestCheckin.createdAt);
+        return addPeriod(createdAt2Date(oldestCheckin.createdAt), d1.period.value, d1.period.unit);
     }
 
     const nextMidnight = getNextJstMidnight(now);
