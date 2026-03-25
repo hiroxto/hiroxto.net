@@ -13,31 +13,31 @@ jobs:
             -   name: Setup mise
                 uses: jdx/mise-action@v3
 
-            -   name: Cache node_modules
+            -   name: Cache Bun dependencies
                 uses: actions/cache@v5
                 with:
-                    path: ~/.npm
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    path: ~/.bun/install/cache
+                    key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
                     restore-keys: |
-                        ${{ runner.os }}-node-
+                        ${{ runner.os }}-bun-
 
             -   name: Install dependencies
-                run: npm ci
+                run: mise exec -- bun install --frozen-lockfile
 
             -   name: Check generated train-number content
-                run: npm run check:train-number-content
+                run: mise exec -- bun run check:train-number-content
 
             -   name: Lint
-                run: npm run lint
+                run: mise exec -- bun run lint
 
             -   name: Format
-                run: npm run format
+                run: mise exec -- bun run format
 
             -   name: Type Check
-                run: npm run check
+                run: mise exec -- bun run check
 
             -   name: Test
-                run: npm run test
+                run: mise exec -- bun run test
 
             -   name: Build
-                run: npm run build:cf
+                run: mise exec -- bun run build:cf

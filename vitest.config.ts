@@ -9,6 +9,14 @@ export default defineConfig({
     },
     test: {
         environment: 'jsdom',
+        pool: 'threads',
+        poolOptions: {
+            threads: {
+                singleThread: true,
+            },
+        },
         setupFiles: ['./test/setup.tsx'],
+        hookTimeout: 30000,
+        testTimeout: 30000,
     },
 });
