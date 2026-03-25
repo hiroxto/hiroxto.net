@@ -96,7 +96,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
             <Stack gap="xl">
                 <div className="sticky top-0 z-30 bg-white pb-3">
                     <Card withBorder radius="md" padding="lg">
-                        <Stack gap="sm">
+                        <Stack gap="xs">
                             <Badge
                                 color={limitCheckResult.isLimited ? 'red' : 'teal'}
                                 variant="light"
@@ -105,21 +105,23 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                             >
                                 {limitCheckResult.isLimited ? '規制されています' : '規制されていません'}
                             </Badge>
-                            <Text c={limitCheckResult.isLimited ? 'red' : undefined}>
-                                規制解除日時:{' '}
-                                {!isHydrated
-                                    ? '読み込み中'
-                                    : limitCheckResult.unLimitingAts == null
-                                      ? 'N/A'
-                                      : date2String(limitCheckResult.unLimitingAts)}
-                            </Text>
-                            <Text>
-                                現在日時: {currentTime == null ? '読み込み中' : date2String(resolvedCurrentTime)}
-                            </Text>
-                            <Text>判定日時: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
-                            <Text>
-                                次回判定日時: {nextRefreshAt == null ? '読み込み中' : date2String(nextRefreshAt)}
-                            </Text>
+                            <Stack gap={2}>
+                                <Text c={limitCheckResult.isLimited ? 'red' : undefined} lh={1.2}>
+                                    規制解除日時:{' '}
+                                    {!isHydrated
+                                        ? '読み込み中'
+                                        : limitCheckResult.unLimitingAts == null
+                                          ? 'N/A'
+                                          : date2String(limitCheckResult.unLimitingAts)}
+                                </Text>
+                                <Text lh={1.2}>
+                                    現在日時: {currentTime == null ? '読み込み中' : date2String(resolvedCurrentTime)}
+                                </Text>
+                                <Text lh={1.2}>判定日時: {!isHydrated ? '読み込み中' : date2String(currentNow)}</Text>
+                                <Text lh={1.2}>
+                                    次回判定日時: {nextRefreshAt == null ? '読み込み中' : date2String(nextRefreshAt)}
+                                </Text>
+                            </Stack>
                             <Group>
                                 <Button onClick={handlePullCheckins} disabled={token === '' || isLoading}>
                                     {isLoading ? '取得中...' : '履歴取得'}
