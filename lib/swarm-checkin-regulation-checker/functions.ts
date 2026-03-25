@@ -120,6 +120,28 @@ export function getNextRefreshAt(checkins: CheckinItem[], now: Date): Date {
     const m2 = checkLimits(checkins, now, 5, 2, 'minutes');
     const m15 = checkLimits(checkins, now, 8, 15, 'minutes');
     const d1 = checkLimits(checkins, now, 50, 1, 'days');
+    const isLimited = [m2.isLimited, m15.isLimited, d1.isLimited].some(Boolean);
+
+    if (!isLimited) {
+        const oldestUnLimitingAts = [m2, m15, d1]
+            .filter((result) => result.checkins.length > 0)
+            .map((result) => {
+                const [firstCheckin, ...restCheckins] = result.checkins;
+                const oldestCheckin = restCheckins.reduce((oldest, checkin) => {
+                    return checkin.createdAt < oldest.createdAt ? checkin : oldest;
+                }, firstCheckin);
+
+                return addPeriod(createdAt2Date(oldestCheckin.createdAt), result.period.value, result.period.unit);
+            })
+            .filter((value) => isAfter(value, now));
+
+        if (oldestUnLimitingAts.length > 0) {
+            return oldestUnLimitingAts.reduce((nearest, candidate) => {
+                return candidate.getTime() < nearest.getTime() ? candidate : nearest;
+            });
+        }
+    }
+
     const nextMidnight = getNextJstMidnight(now);
     const candidates = [nextMidnight, m2.unLimitingAt, m15.unLimitingAt, d1.unLimitingAt].filter(
         (value): value is Date => value != null && isAfter(value, now),
