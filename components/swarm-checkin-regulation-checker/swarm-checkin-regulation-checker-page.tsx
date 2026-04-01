@@ -168,17 +168,20 @@ export const SwarmCheckinRegulationCheckerPage = () => {
     };
 
     useEffect(() => {
-        if (!autoFetchEnabled || isLoading || token === '' || currentTime == null || nextAutoFetchAt == null) {
+        if (!autoFetchEnabled || isLoading || token === '' || nextAutoFetchAt == null) {
             return;
         }
 
-        // 現在時刻ベースで監視し、指定時刻を超えたタイミングでだけ自動取得を走らせる。
-        if (currentTime.getTime() < nextAutoFetchAt.getTime()) {
-            return;
-        }
+        // 自動取得は毎秒の現在時刻監視ではなく、次回実行日時に向けた単発タイマーで予約する。
+        const timeoutId = window.setTimeout(
+            () => {
+                void pullCheckins('auto', new Date());
+            },
+            Math.max(nextAutoFetchAt.getTime() - Date.now(), 0),
+        );
 
-        void pullCheckins('auto', currentTime);
-    }, [autoFetchEnabled, currentTime, isLoading, nextAutoFetchAt, pullCheckins, token]);
+        return () => window.clearTimeout(timeoutId);
+    }, [autoFetchEnabled, isLoading, nextAutoFetchAt, pullCheckins, token]);
 
     return (
         <SiteSubpageFrame
