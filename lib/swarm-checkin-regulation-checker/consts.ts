@@ -11,3 +11,10 @@ export const CHECKIN_LIMIT_TITLES: CheckinLimitTitles = {
 } as const;
 
 export const RESULT_KEYS: ResultKey[] = ['m2', 'm15', 'd1'];
+
+export const AUTO_FETCH_INTERVAL_OPTIONS = [
+    { value: '5', label: '5秒' },
+    { value: '10', label: '10秒' },
+    { value: '30', label: '30秒' },
+    { value: '60', label: '1分' },
+] as const;

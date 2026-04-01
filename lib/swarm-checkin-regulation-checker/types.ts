@@ -87,3 +87,12 @@ export interface AllLimitCheckResult {
 }
 
 export type ResultKey = keyof CheckinLimits;
+
+export interface AutoFetchStabilityState {
+    previousCount: number | null;
+    unchangedCount: number;
+}
+
+export interface AutoFetchStabilityEvaluation extends AutoFetchStabilityState {
+    shouldDisable: boolean;
+}
