@@ -135,6 +135,11 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                     setNextAutoFetchAt(add(triggeredAt, { seconds: autoFetchIntervalSeconds }));
                 }
             } catch (error) {
+                if (trigger === 'auto' && autoFetchEnabled) {
+                    /** 自動取得失敗時は直ちに再試行せず、interval 秒後に次回実行を組み直す。 */
+                    setNextAutoFetchAt(add(new Date(), { seconds: autoFetchIntervalSeconds }));
+                }
+
                 setErrorMessage(error instanceof Error ? error.message : '履歴の取得に失敗しました。');
             } finally {
                 setIsLoading(false);
