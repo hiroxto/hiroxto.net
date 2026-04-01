@@ -16,7 +16,7 @@ import {
     TextInput,
     Title,
 } from '@mantine/core';
-import { add } from 'date-fns';
+import { add, differenceInMilliseconds } from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { createHistoryTargets } from '@/components/swarm-checkin-regulation-checker/checkin-history';
@@ -177,7 +177,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
             () => {
                 void pullCheckins('auto', new Date());
             },
-            Math.max(nextAutoFetchAt.getTime() - Date.now(), 0),
+            Math.max(differenceInMilliseconds(nextAutoFetchAt, new Date()), 0),
         );
 
         return () => window.clearTimeout(timeoutId);
