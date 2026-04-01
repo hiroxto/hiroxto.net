@@ -59,7 +59,7 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
         expect(screen.getByText('次回自動取得日時: 2024-10-01 12:35:01')).toBeInTheDocument();
     });
 
-    it('自動取得が失敗した場合は次回時刻を先送りして即時再試行しないこと', async () => {
+    it('自動取得が失敗した場合は1回で無効化すること', async () => {
         getSelfCheckinsMock.mockRejectedValueOnce(new Error('API Call Error: 401'));
         renderWithMantine(<SwarmCheckinRegulationCheckerPage />);
 
@@ -71,11 +71,12 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
         });
 
         expect(getSelfCheckinsMock).toHaveBeenCalledTimes(1);
-        expect(screen.getByText('次回自動取得日時: 2024-10-01 12:35:06')).toBeInTheDocument();
+        expect(screen.getByText('自動取得状態: 無効')).toBeInTheDocument();
+        expect(screen.getByText('次回自動取得日時: 未設定')).toBeInTheDocument();
         expect(screen.getByText('API Call Error: 401')).toBeInTheDocument();
 
         await act(async () => {
-            await vi.advanceTimersByTimeAsync(4_000);
+            await vi.advanceTimersByTimeAsync(10_000);
         });
 
         expect(getSelfCheckinsMock).toHaveBeenCalledTimes(1);

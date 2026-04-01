@@ -100,6 +100,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
      * `auto` はタイマー起点の取得で、結果表示を更新したうえで、規制件数の変動有無をキャッシュと比較する。
      * 変動なしが 5 回続いたら自動取得を停止し、キャッシュと連続回数をリセットする。
      * 停止しない場合は、規制中なら「規制解除日時 + interval 秒」、非規制なら「取得完了時刻 + interval 秒」を次回実行日時にする。
+     * 自動取得が失敗した場合は、連続再試行を避けるためその時点で自動取得を無効化する。
      */
     const pullCheckins = useCallback(
         async (trigger: 'manual' | 'auto', triggeredAt: Date) => {
@@ -136,8 +137,10 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                 }
             } catch (error) {
                 if (trigger === 'auto' && autoFetchEnabled) {
-                    /** 自動取得失敗時は直ちに再試行せず、interval 秒後に次回実行を組み直す。 */
-                    setNextAutoFetchAt(add(new Date(), { seconds: autoFetchIntervalSeconds }));
+                    /** 自動取得失敗時は即時無効化し、以後の自動再試行を止める。 */
+                    setAutoFetchEnabled(false);
+                    setNextAutoFetchAt(null);
+                    resetAutoFetchStability();
                 }
 
                 setErrorMessage(error instanceof Error ? error.message : '履歴の取得に失敗しました。');
