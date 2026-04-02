@@ -12,6 +12,8 @@ import {
 import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import type {
     AllLimitCheckResult,
+    AutoFetchStabilityEvaluation,
+    AutoFetchStabilityState,
     CheckinItem,
     LimitCheckResult,
     PeriodUnit,
@@ -150,6 +152,48 @@ export function getNextRefreshAt(checkins: CheckinItem[], now: Date): Date {
     return candidates.reduce((nearest, candidate) => {
         return candidate.getTime() < nearest.getTime() ? candidate : nearest;
     }, nextMidnight);
+}
+
+export function getAutoFetchComparisonCount(result: AllLimitCheckResult): number {
+    return Math.max(...Object.values(result.limits).map((limit) => limit.checkins.length));
+}
+
+export function getNextAutoFetchAt(result: AllLimitCheckResult, fetchedAt: Date, intervalSeconds: number): Date {
+    if (result.isLimited && result.unLimitingAts != null) {
+        return add(result.unLimitingAts, { seconds: intervalSeconds });
+    }
+
+    return add(fetchedAt, { seconds: intervalSeconds });
+}
+
+export function evaluateAutoFetchStability(
+    state: AutoFetchStabilityState,
+    currentCount: number,
+): AutoFetchStabilityEvaluation {
+    // 初回は比較対象を作るだけにして、即座に停止カウントを進めない。
+    if (state.previousCount == null) {
+        return {
+            previousCount: currentCount,
+            unchangedCount: 0,
+            shouldDisable: false,
+        };
+    }
+
+    if (state.previousCount !== currentCount) {
+        return {
+            previousCount: currentCount,
+            unchangedCount: 0,
+            shouldDisable: false,
+        };
+    }
+
+    const unchangedCount = state.unchangedCount + 1;
+
+    return {
+        previousCount: currentCount,
+        unchangedCount,
+        shouldDisable: unchangedCount >= 3,
+    };
 }
 
 export function getJstDayRange(target: Date) {
