@@ -96,6 +96,8 @@ export const SwarmCheckinRegulationCheckerPage = () => {
      * 履歴取得の共通入口。
      * `manual` はユーザーが明示的に押した取得で、結果表示は更新するが、未変動回数による自動取得停止判定には使わない。
      * 自動取得が有効な場合だけ、「手動取得した今」から interval 秒後を次回自動取得日時として再スケジュールする。
+     * ただし手動取得の結果が「非規制 → 規制」に変わった場合は、次回自動取得日時を
+     * 「規制解除日時 + interval 秒」に切り替える。
      *
      * `auto` はタイマー起点の取得で、結果表示を更新したうえで、規制件数の変動有無をキャッシュと比較する。
      * 変動なしが 3 回続いたら自動取得を停止し、キャッシュと連続回数をリセットする。
@@ -132,8 +134,12 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                         setNextAutoFetchAt(getNextAutoFetchAt(nextResult, fetchedAt, autoFetchIntervalSeconds));
                     }
                 } else if (autoFetchEnabled) {
-                    /** 手動取得は規制有無に関係なく、押下時刻を基準に次回自動取得を組み直す。 */
-                    setNextAutoFetchAt(add(triggeredAt, { seconds: autoFetchIntervalSeconds }));
+                    /** 手動取得で規制入りした場合だけ、規制解除基準へ次回自動取得日時を切り替える。 */
+                    setNextAutoFetchAt(
+                        !limitCheckResult.isLimited && nextResult.isLimited
+                            ? getNextAutoFetchAt(nextResult, fetchedAt, autoFetchIntervalSeconds)
+                            : add(triggeredAt, { seconds: autoFetchIntervalSeconds }),
+                    );
                 }
             } catch (error) {
                 if (trigger === 'auto' && autoFetchEnabled) {
@@ -153,6 +159,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
             autoFetchEnabled,
             autoFetchIntervalSeconds,
             autoFetchUnchangedCount,
+            limitCheckResult.isLimited,
             resetAutoFetchStability,
             token,
         ],
