@@ -192,7 +192,7 @@ export function evaluateAutoFetchStability(
     return {
         previousCount: currentCount,
         unchangedCount,
-        shouldDisable: unchangedCount >= 5,
+        shouldDisable: unchangedCount >= 3,
     };
 }
 

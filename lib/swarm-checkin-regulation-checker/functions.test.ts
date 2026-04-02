@@ -228,10 +228,10 @@ describe('evaluateAutoFetchStability()', () => {
         });
     });
 
-    it('同じ比較値が5回続いたら停止対象にすること', () => {
-        expect(evaluateAutoFetchStability({ previousCount: 4, unchangedCount: 4 }, 4)).toStrictEqual({
+    it('同じ比較値が3回続いたら停止対象にすること', () => {
+        expect(evaluateAutoFetchStability({ previousCount: 4, unchangedCount: 2 }, 4)).toStrictEqual({
             previousCount: 4,
-            unchangedCount: 5,
+            unchangedCount: 3,
             shouldDisable: true,
         });
     });
