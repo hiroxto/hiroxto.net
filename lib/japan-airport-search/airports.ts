@@ -161,7 +161,7 @@ export const japanAirports = [
     },
     { officialName: '明野飛行場', aliases: [], icaoCode: 'RJOE', iataCode: null, prefectureCode: '24' },
     { officialName: '舞鶴飛行場', aliases: [], icaoCode: 'RJBM', iataCode: null, prefectureCode: '26' },
-    { officialName: '関西国際空港', aliases: ['関空空港'], icaoCode: 'RJBB', iataCode: 'KIX', prefectureCode: '27' },
+    { officialName: '関西国際空港', aliases: ['関西空港'], icaoCode: 'RJBB', iataCode: 'KIX', prefectureCode: '27' },
     {
         officialName: '大阪国際空港',
         aliases: ['伊丹空港'],
