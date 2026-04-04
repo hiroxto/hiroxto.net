@@ -3,65 +3,26 @@
 import { Button, Checkbox, Code, Grid, List, ListItem, Select, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
-
-type SeasonName = '冬アニメ' | '春アニメ' | '夏アニメ' | '秋アニメ' | 'アニメ以外';
-type SeasonValue = '01_winter' | '02_spring' | '03_summer' | '04_autumn' | '10_other';
-
-interface Season {
-    name: SeasonName;
-    value: SeasonValue;
-    isCurrentSeason: (month: number) => boolean;
-}
-
-const seasonsList: Season[] = [
-    {
-        name: '冬アニメ',
-        value: '01_winter',
-        // 準備期間を考慮して放送月より1月前からの3ヶ月分を入れる
-        isCurrentSeason: (month) => [12, 1, 2].includes(month),
-    },
-    {
-        name: '春アニメ',
-        value: '02_spring',
-        isCurrentSeason: (month) => [3, 4, 5].includes(month),
-    },
-    {
-        name: '夏アニメ',
-        value: '03_summer',
-        isCurrentSeason: (month) => [6, 7, 8].includes(month),
-    },
-    {
-        name: '秋アニメ',
-        value: '04_autumn',
-        isCurrentSeason: (month) => [9, 10, 11].includes(month),
-    },
-    {
-        name: 'アニメ以外',
-        value: '10_other',
-        isCurrentSeason: () => false,
-    },
-];
-
-const currentMonth = new Date().getMonth() + 1;
-const currentSeasonIndex = seasonsList.map((season) => season.isCurrentSeason(currentMonth)).indexOf(true);
-const defaultSeason = seasonsList[currentSeasonIndex === -1 ? 0 : currentSeasonIndex].value;
+import { buildRecordedPath, getDefaultSeason, type SeasonValue, seasonsList } from '@/lib/epgs-recorded-name/path';
 
 export function EpgsRecordedNamePage() {
     const [year, setYear] = useState(String(new Date().getFullYear()));
-    const [season, setSeason] = useState<SeasonValue>(defaultSeason);
+    const [season, setSeason] = useState<SeasonValue>(getDefaultSeason(new Date().getMonth() + 1));
     const [isUnclassifiable, setIsUnclassifiable] = useState(false);
     const [isRepeat, setIsRepeat] = useState(false);
     const [programName, setProgramName] = useState('');
 
-    const name = useMemo(() => {
-        if (isUnclassifiable) {
-            return '10_other';
-        }
-        const prefix = isRepeat ? 'repeat_' : '';
-        return `${prefix}${programName}`;
-    }, [isRepeat, isUnclassifiable, programName]);
-
-    const output = useMemo(() => [year, season, name].join('/'), [name, season, year]);
+    const output = useMemo(
+        () =>
+            buildRecordedPath({
+                year,
+                season,
+                programName,
+                isRepeat,
+                isUnclassifiable,
+            }),
+        [year, season, programName, isRepeat, isUnclassifiable],
+    );
 
     const copyOutput = () => {
         navigator.clipboard
