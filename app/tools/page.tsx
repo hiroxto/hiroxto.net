@@ -9,6 +9,10 @@ const description = 'hiroxto.netで公開しているツール一覧';
 
 const tools = [
     {
+        href: '/tools/japan-airport-search',
+        title: '日本の飛行場・空港検索',
+    },
+    {
         href: '/tools/fare-ticket-route-planner',
         title: '乗車券の経路作成',
     },
