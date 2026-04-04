@@ -8,6 +8,7 @@ const sitemapEntries = [
     { path: '/tools/epgs-recorded-name', changeFrequency: 'yearly', priority: 0.2 },
     { path: '/tools/fare-ticket-route-planner', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/fare-ticket-route-planner/states', changeFrequency: 'yearly', priority: 0.4 },
+    { path: '/tools/japan-airport-search', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/qr-code-gen', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/swarm-checkin-regulation-checker', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/train-number-calc', changeFrequency: 'yearly', priority: 0.8 },
