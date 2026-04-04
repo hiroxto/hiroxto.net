@@ -3,32 +3,40 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 
-const playSuccessTone = () => {
-    const context = new AudioContext();
-    const oscillator = context.createOscillator();
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 1500;
-    oscillator.connect(context.destination);
+interface TonePlanItem {
+    frequency: number;
+    durationSeconds: number;
+    startOffsetSeconds: number;
+}
 
-    const startAt = context.currentTime;
-    oscillator.start(startAt);
-    oscillator.stop(startAt + 0.5);
+const successTonePlan: TonePlanItem[] = [{ frequency: 1500, durationSeconds: 0.5, startOffsetSeconds: 0 }];
+
+const alertTonePlan: TonePlanItem[] = [
+    { frequency: 750, durationSeconds: 0.2, startOffsetSeconds: 0 },
+    { frequency: 750, durationSeconds: 0.2, startOffsetSeconds: 0.4 },
+];
+
+const playTonePlan = (plan: TonePlanItem[]) => {
+    const context = new AudioContext();
+    const startedAt = context.currentTime;
+
+    for (const item of plan) {
+        const oscillator = context.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = item.frequency;
+        oscillator.connect(context.destination);
+        oscillator.start(startedAt + item.startOffsetSeconds);
+        oscillator.stop(startedAt + item.startOffsetSeconds + item.durationSeconds);
+    }
 };
 
-const scheduleAlertBeep = (context: AudioContext, startAt: number, durationSeconds: number) => {
-    const oscillator = context.createOscillator();
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 750;
-    oscillator.connect(context.destination);
-    oscillator.start(startAt);
-    oscillator.stop(startAt + durationSeconds);
-};
-
-const playAlertTone = () => {
-    const context = new AudioContext();
-    const startAt = context.currentTime;
-    scheduleAlertBeep(context, startAt, 0.2);
-    scheduleAlertBeep(context, startAt + 0.4, 0.2);
+export const clSoundActions = {
+    playSuccessTone: () => {
+        playTonePlan(successTonePlan);
+    },
+    playAlertTone: () => {
+        playTonePlan(alertTonePlan);
+    },
 };
 
 export function ClSoundPage() {
@@ -44,10 +52,10 @@ export function ClSoundPage() {
             <Stack gap="xl">
                 <section>
                     <Group>
-                        <Button color="green" onClick={playSuccessTone}>
+                        <Button color="green" onClick={() => clSoundActions.playSuccessTone()}>
                             Play Success Tone
                         </Button>
-                        <Button color="red" onClick={playAlertTone}>
+                        <Button color="red" onClick={() => clSoundActions.playAlertTone()}>
                             Play Alert Tone
                         </Button>
                     </Group>
