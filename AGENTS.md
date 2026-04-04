@@ -60,7 +60,8 @@
 
 ## コミットとプルリクエスト
 
-- タスクを進めながら適度な粒度でコミットする
+- コミットは変更内容を意図単位で分離する
+- タスク完了時に一括でコミットせずにタスクを進めながら適度な粒度でコミットする
 - `git add`, `git commit`, `git restore`, `git rebase` など `.git/index.lock` を使う操作は並列実行しない
 - `git status`, `git diff`, `git log` などの参照系コマンドは並列でもよいが、index を更新する操作は必ず直列で行う
 - 履歴では `feat:`, `fix:`, `delete:`, `style:`, `docs:`, `chore:` のような短い Conventional Commits 形式を使用する。コミットメッセージは簡潔な日本語で記述する。
