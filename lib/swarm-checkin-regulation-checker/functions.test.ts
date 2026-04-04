@@ -297,6 +297,20 @@ describe('resolveAutoFetchSuccess()', () => {
             unchangedCount: 0,
         });
     });
+
+    it('取得完了時点ですでに自動取得が無効なら再有効化しないこと', () => {
+        const fetchedAt = new Date('2024-10-01T03:34:56Z');
+        const result = checkAllLimits([], fetchedAt);
+
+        expect(
+            resolveAutoFetchSuccess({ previousCount: 1, unchangedCount: 1 }, result, fetchedAt, 5, false),
+        ).toStrictEqual({
+            autoFetchEnabled: false,
+            nextAutoFetchAt: null,
+            previousCount: null,
+            unchangedCount: 0,
+        });
+    });
 });
 
 describe('resolveAutoFetchFailure()', () => {

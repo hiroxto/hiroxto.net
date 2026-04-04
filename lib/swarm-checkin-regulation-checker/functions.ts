@@ -185,7 +185,12 @@ export function resolveAutoFetchSuccess(
     nextResult: AllLimitCheckResult,
     fetchedAt: Date,
     intervalSeconds: number,
+    isAutoFetchStillEnabled = true,
 ) {
+    if (!isAutoFetchStillEnabled) {
+        return resolveAutoFetchFailure();
+    }
+
     const stability = evaluateAutoFetchStability(state, getAutoFetchComparisonCount(nextResult));
 
     if (stability.shouldDisable) {

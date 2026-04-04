@@ -17,7 +17,7 @@ import {
     Title,
 } from '@mantine/core';
 import { add, differenceInMilliseconds } from 'date-fns';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { createHistoryTargets } from '@/components/swarm-checkin-regulation-checker/checkin-history';
 import { CheckinTable } from '@/components/swarm-checkin-regulation-checker/checkin-table';
@@ -57,6 +57,9 @@ export const SwarmCheckinRegulationCheckerPage = () => {
     const [nextAutoFetchAt, setNextAutoFetchAt] = useState<Date | null>(null);
     const [autoFetchCachedCount, setAutoFetchCachedCount] = useState<number | null>(null);
     const [autoFetchUnchangedCount, setAutoFetchUnchangedCount] = useState(0);
+    const autoFetchEnabledRef = useRef(autoFetchEnabled);
+
+    autoFetchEnabledRef.current = autoFetchEnabled;
 
     useEffect(() => {
         setComparisonNow(new Date());
@@ -124,6 +127,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                         nextResult,
                         fetchedAt,
                         autoFetchIntervalSeconds,
+                        autoFetchEnabledRef.current,
                     );
 
                     setAutoFetchEnabled(nextState.autoFetchEnabled);
