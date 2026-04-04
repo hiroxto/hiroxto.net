@@ -35,10 +35,10 @@ import {
     checkAllLimits,
     createdAt2Date,
     date2String,
-    evaluateAutoFetchStability,
-    getAutoFetchComparisonCount,
-    getNextAutoFetchAt,
+    getNextManualAutoFetchAt,
     getNextRefreshAt,
+    resolveAutoFetchFailure,
+    resolveAutoFetchSuccess,
 } from '@/lib/swarm-checkin-regulation-checker/functions';
 import type { CheckinItem } from '@/lib/swarm-checkin-regulation-checker/types';
 
@@ -119,34 +119,37 @@ export const SwarmCheckinRegulationCheckerPage = () => {
 
                 if (trigger === 'auto') {
                     /** 自動取得だけを停止判定の対象にし、手動取得では未変動回数を進めない。 */
-                    const stability = evaluateAutoFetchStability(
+                    const nextState = resolveAutoFetchSuccess(
                         { previousCount: autoFetchCachedCount, unchangedCount: autoFetchUnchangedCount },
-                        getAutoFetchComparisonCount(nextResult),
+                        nextResult,
+                        fetchedAt,
+                        autoFetchIntervalSeconds,
                     );
 
-                    if (stability.shouldDisable) {
-                        setAutoFetchEnabled(false);
-                        setNextAutoFetchAt(null);
-                        resetAutoFetchStability();
-                    } else {
-                        setAutoFetchCachedCount(stability.previousCount);
-                        setAutoFetchUnchangedCount(stability.unchangedCount);
-                        setNextAutoFetchAt(getNextAutoFetchAt(nextResult, fetchedAt, autoFetchIntervalSeconds));
-                    }
+                    setAutoFetchEnabled(nextState.autoFetchEnabled);
+                    setNextAutoFetchAt(nextState.nextAutoFetchAt);
+                    setAutoFetchCachedCount(nextState.previousCount);
+                    setAutoFetchUnchangedCount(nextState.unchangedCount);
                 } else if (autoFetchEnabled) {
                     /** 手動取得で規制入りした場合だけ、規制解除基準へ次回自動取得日時を切り替える。 */
                     setNextAutoFetchAt(
-                        !limitCheckResult.isLimited && nextResult.isLimited
-                            ? getNextAutoFetchAt(nextResult, fetchedAt, autoFetchIntervalSeconds)
-                            : add(triggeredAt, { seconds: autoFetchIntervalSeconds }),
+                        getNextManualAutoFetchAt(
+                            limitCheckResult.isLimited,
+                            nextResult,
+                            triggeredAt,
+                            fetchedAt,
+                            autoFetchIntervalSeconds,
+                        ),
                     );
                 }
             } catch (error) {
                 if (trigger === 'auto' && autoFetchEnabled) {
                     /** 自動取得失敗時は即時無効化し、以後の自動再試行を止める。 */
-                    setAutoFetchEnabled(false);
-                    setNextAutoFetchAt(null);
-                    resetAutoFetchStability();
+                    const nextState = resolveAutoFetchFailure();
+                    setAutoFetchEnabled(nextState.autoFetchEnabled);
+                    setNextAutoFetchAt(nextState.nextAutoFetchAt);
+                    setAutoFetchCachedCount(nextState.previousCount);
+                    setAutoFetchUnchangedCount(nextState.unchangedCount);
                 }
 
                 setErrorMessage(error instanceof Error ? error.message : '履歴の取得に失敗しました。');
@@ -160,7 +163,6 @@ export const SwarmCheckinRegulationCheckerPage = () => {
             autoFetchIntervalSeconds,
             autoFetchUnchangedCount,
             limitCheckResult.isLimited,
-            resetAutoFetchStability,
             token,
         ],
     );

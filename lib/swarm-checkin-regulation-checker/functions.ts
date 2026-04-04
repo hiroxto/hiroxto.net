@@ -166,6 +166,54 @@ export function getNextAutoFetchAt(result: AllLimitCheckResult, fetchedAt: Date,
     return add(fetchedAt, { seconds: intervalSeconds });
 }
 
+export function getNextManualAutoFetchAt(
+    wasLimited: boolean,
+    nextResult: AllLimitCheckResult,
+    triggeredAt: Date,
+    fetchedAt: Date,
+    intervalSeconds: number,
+): Date {
+    if (!wasLimited && nextResult.isLimited) {
+        return getNextAutoFetchAt(nextResult, fetchedAt, intervalSeconds);
+    }
+
+    return add(triggeredAt, { seconds: intervalSeconds });
+}
+
+export function resolveAutoFetchSuccess(
+    state: AutoFetchStabilityState,
+    nextResult: AllLimitCheckResult,
+    fetchedAt: Date,
+    intervalSeconds: number,
+) {
+    const stability = evaluateAutoFetchStability(state, getAutoFetchComparisonCount(nextResult));
+
+    if (stability.shouldDisable) {
+        return {
+            autoFetchEnabled: false,
+            nextAutoFetchAt: null,
+            previousCount: null,
+            unchangedCount: 0,
+        };
+    }
+
+    return {
+        autoFetchEnabled: true,
+        nextAutoFetchAt: getNextAutoFetchAt(nextResult, fetchedAt, intervalSeconds),
+        previousCount: stability.previousCount,
+        unchangedCount: stability.unchangedCount,
+    };
+}
+
+export function resolveAutoFetchFailure() {
+    return {
+        autoFetchEnabled: false,
+        nextAutoFetchAt: null,
+        previousCount: null,
+        unchangedCount: 0,
+    };
+}
+
 export function evaluateAutoFetchStability(
     state: AutoFetchStabilityState,
     currentCount: number,
