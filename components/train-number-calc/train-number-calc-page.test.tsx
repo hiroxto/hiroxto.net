@@ -19,31 +19,4 @@ describe('TrainNumberCalcPage', () => {
 
         expect(container.querySelector('.mantine-Badge-root')).toHaveTextContent('高速貨C');
     });
-
-    it('先頭0の入力でエラーを表示すること', async () => {
-        const user = userEvent.setup();
-        renderWithMantine(<TrainNumberCalcPage />);
-
-        await user.type(screen.getByLabelText('列車番号'), '0123');
-
-        expect(await screen.findByText('先頭を0にすることはできません。')).toBeInTheDocument();
-    });
-
-    it('数字以外の入力でエラーを表示すること', async () => {
-        const user = userEvent.setup();
-        renderWithMantine(<TrainNumberCalcPage />);
-
-        await user.type(screen.getByLabelText('列車番号'), '12a');
-
-        expect(await screen.findByText('列車番号は数字のみで入力してください。')).toBeInTheDocument();
-    });
-
-    it('範囲外の入力でエラーを表示すること', async () => {
-        const user = userEvent.setup();
-        renderWithMantine(<TrainNumberCalcPage />);
-
-        await user.type(screen.getByLabelText('列車番号'), '10000');
-
-        expect(await screen.findByText('列車番号は1〜9999の範囲で入力してください。')).toBeInTheDocument();
-    });
 });

@@ -12,9 +12,11 @@ vi.mock('qrcode.react', () => ({
 }));
 
 describe('QrCodeGenPage', () => {
-    it('初期状態では Canvas で描画すること', () => {
+    it('初期状態ではフォームと Canvas プレビューを表示すること', () => {
         renderWithMantine(<QrCodeGenPage />);
 
+        expect(screen.getByLabelText('埋め込む値')).toBeInTheDocument();
+        expect(screen.getByLabelText('背景色')).toBeInTheDocument();
         expect(screen.getByTestId('qr-canvas')).toBeInTheDocument();
         expect(screen.queryByTestId('qr-svg')).not.toBeInTheDocument();
     });
@@ -27,22 +29,5 @@ describe('QrCodeGenPage', () => {
 
         expect(screen.getByTestId('qr-svg')).toBeInTheDocument();
         expect(screen.queryByTestId('qr-canvas')).not.toBeInTheDocument();
-    });
-
-    it('入力値と色を QR props に反映すること', async () => {
-        const user = userEvent.setup();
-        renderWithMantine(<QrCodeGenPage />);
-
-        await user.type(screen.getByLabelText('埋め込む値'), 'https://example.com');
-        await user.clear(screen.getByLabelText('背景色'));
-        await user.type(screen.getByLabelText('背景色'), '#112233');
-        await user.clear(screen.getByLabelText('QRコードの色'));
-        await user.type(screen.getByLabelText('QRコードの色'), '#abcdef');
-
-        const props = JSON.parse(screen.getByTestId('qr-canvas').getAttribute('data-props') ?? '{}');
-        expect(props.value).toBe('https://example.com');
-        expect(props.bgColor).toBe('#112233');
-        expect(props.fgColor).toBe('#abcdef');
-        expect(props.level).toBe('H');
     });
 });

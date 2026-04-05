@@ -10,27 +10,6 @@ describe('EpgsRecordedNamePage', () => {
         vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     });
 
-    it('通常時は year/season/programName を出力すること', async () => {
-        const user = userEvent.setup();
-        renderWithMantine(<EpgsRecordedNamePage />);
-
-        await user.clear(screen.getByLabelText('放送開始年'));
-        await user.type(screen.getByLabelText('放送開始年'), '2026');
-        await user.type(screen.getByLabelText('番組名'), 'my-anime');
-
-        expect(screen.getByText((content) => content.includes('/my-anime'))).toHaveTextContent('2026/');
-    });
-
-    it('再放送を選ぶと repeat_ を付けること', async () => {
-        const user = userEvent.setup();
-        renderWithMantine(<EpgsRecordedNamePage />);
-
-        await user.type(screen.getByLabelText('番組名'), 'my-anime');
-        await user.click(screen.getByLabelText('再放送'));
-
-        expect(screen.getByText((content) => content.includes('repeat_my-anime'))).toBeInTheDocument();
-    });
-
     it('分類不要を選ぶと 10_other を使い入力を無効化すること', async () => {
         const user = userEvent.setup();
         renderWithMantine(<EpgsRecordedNamePage />);

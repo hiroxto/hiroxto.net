@@ -1,63 +1,43 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithMantine } from '@/test/test-utils';
-import { ClSoundPage } from './cl-sound-page';
+import * as clSoundPageModule from './cl-sound-page';
 
 describe('ClSoundPage', () => {
-    const start = vi.fn();
-    const stop = vi.fn();
-    const connect = vi.fn();
-    const createOscillator = vi.fn(() => ({
-        type: 'sine',
-        frequency: { value: 0 },
-        connect,
-        start,
-        stop,
-    }));
-    const AudioContextMock = vi.fn(
-        class {
-            currentTime = 10;
-            destination = {};
-            createOscillator = createOscillator;
-        },
-    );
-
-    beforeEach(() => {
-        start.mockReset();
-        stop.mockReset();
-        connect.mockReset();
-        createOscillator.mockClear();
-        AudioContextMock.mockClear();
-
-        Object.defineProperty(window, 'AudioContext', {
-            writable: true,
-            value: AudioContextMock,
-        });
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
-    it('success tone は 1 回だけ発音すること', async () => {
+    it('Play Success Tone ボタン押下で playSuccessTone を呼ぶこと', async () => {
         const user = userEvent.setup();
-        renderWithMantine(<ClSoundPage />);
+        const playSuccessToneSpy = vi
+            .spyOn(clSoundPageModule.clSoundActions, 'playSuccessTone')
+            .mockImplementation(() => {});
+        const playAlertToneSpy = vi
+            .spyOn(clSoundPageModule.clSoundActions, 'playAlertTone')
+            .mockImplementation(() => {});
+        renderWithMantine(<clSoundPageModule.ClSoundPage />);
 
         await user.click(screen.getByRole('button', { name: 'Play Success Tone' }));
 
-        expect(window.AudioContext).toHaveBeenCalledTimes(1);
-        expect(createOscillator).toHaveBeenCalledTimes(1);
-        expect(start).toHaveBeenCalledWith(10);
-        expect(stop).toHaveBeenCalledWith(10.5);
+        expect(playSuccessToneSpy).toHaveBeenCalledTimes(1);
+        expect(playAlertToneSpy).not.toHaveBeenCalled();
     });
 
-    it('alert tone はダブルビープを鳴らすこと', async () => {
+    it('Play Alert Tone ボタン押下で playAlertTone を呼ぶこと', async () => {
         const user = userEvent.setup();
-        renderWithMantine(<ClSoundPage />);
+        const playSuccessToneSpy = vi
+            .spyOn(clSoundPageModule.clSoundActions, 'playSuccessTone')
+            .mockImplementation(() => {});
+        const playAlertToneSpy = vi
+            .spyOn(clSoundPageModule.clSoundActions, 'playAlertTone')
+            .mockImplementation(() => {});
+        renderWithMantine(<clSoundPageModule.ClSoundPage />);
 
         await user.click(screen.getByRole('button', { name: 'Play Alert Tone' }));
 
-        expect(createOscillator).toHaveBeenCalledTimes(2);
-        expect(start).toHaveBeenNthCalledWith(1, 10);
-        expect(stop).toHaveBeenNthCalledWith(1, 10.2);
-        expect(start).toHaveBeenNthCalledWith(2, 10.4);
-        expect(stop).toHaveBeenNthCalledWith(2, 10.6);
+        expect(playAlertToneSpy).toHaveBeenCalledTimes(1);
+        expect(playSuccessToneSpy).not.toHaveBeenCalled();
     });
 });

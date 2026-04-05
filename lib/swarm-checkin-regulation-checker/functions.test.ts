@@ -10,7 +10,10 @@ import {
     getMostFurthestDate,
     getNextAutoFetchAt,
     getNextJstMidnight,
+    getNextManualAutoFetchAt,
     getNextRefreshAt,
+    resolveAutoFetchFailure,
+    resolveAutoFetchSuccess,
 } from '@/lib/swarm-checkin-regulation-checker/functions';
 import type { CheckinItem } from '@/lib/swarm-checkin-regulation-checker/types';
 
@@ -211,6 +214,37 @@ describe('getNextAutoFetchAt()', () => {
     });
 });
 
+describe('getNextManualAutoFetchAt()', () => {
+    it('非規制から規制状態になったときは規制解除基準で返すこと', () => {
+        const triggeredAt = new Date('2024-10-01T03:34:56Z');
+        const fetchedAt = new Date('2024-10-01T03:35:00Z');
+        const nextResult = checkAllLimits(
+            [
+                createCheckin('1', '2024-10-01T03:33:01Z'),
+                createCheckin('2', '2024-10-01T03:33:30Z'),
+                createCheckin('3', '2024-10-01T03:34:00Z'),
+                createCheckin('4', '2024-10-01T03:34:10Z'),
+                createCheckin('5', '2024-10-01T03:34:20Z'),
+            ],
+            fetchedAt,
+        );
+
+        expect(getNextManualAutoFetchAt(false, nextResult, triggeredAt, fetchedAt, 5)).toStrictEqual(
+            new Date('2024-10-01T03:36:25Z'),
+        );
+    });
+
+    it('すでに規制中でないまま手動取得しても次回日時は押下時刻基準で返すこと', () => {
+        const triggeredAt = new Date('2024-10-01T03:34:56Z');
+        const fetchedAt = new Date('2024-10-01T03:35:00Z');
+        const nextResult = checkAllLimits([], fetchedAt);
+
+        expect(getNextManualAutoFetchAt(false, nextResult, triggeredAt, fetchedAt, 5)).toStrictEqual(
+            new Date('2024-10-01T03:35:01Z'),
+        );
+    });
+});
+
 describe('evaluateAutoFetchStability()', () => {
     it('初回は比較値を保存して未変動回数を増やさないこと', () => {
         expect(evaluateAutoFetchStability({ previousCount: null, unchangedCount: 0 }, 4)).toStrictEqual({
@@ -233,6 +267,59 @@ describe('evaluateAutoFetchStability()', () => {
             previousCount: 4,
             unchangedCount: 3,
             shouldDisable: true,
+        });
+    });
+});
+
+describe('resolveAutoFetchSuccess()', () => {
+    it('継続する場合は次回自動取得日時を返すこと', () => {
+        const fetchedAt = new Date('2024-10-01T03:34:56Z');
+        const result = checkAllLimits([], fetchedAt);
+
+        expect(resolveAutoFetchSuccess({ previousCount: null, unchangedCount: 0 }, result, fetchedAt, 5)).toStrictEqual(
+            {
+                autoFetchEnabled: true,
+                nextAutoFetchAt: new Date('2024-10-01T03:35:01Z'),
+                previousCount: 0,
+                unchangedCount: 0,
+            },
+        );
+    });
+
+    it('未変動が3回続いたら自動取得を停止すること', () => {
+        const fetchedAt = new Date('2024-10-01T03:34:56Z');
+        const result = checkAllLimits([], fetchedAt);
+
+        expect(resolveAutoFetchSuccess({ previousCount: 0, unchangedCount: 2 }, result, fetchedAt, 5)).toStrictEqual({
+            autoFetchEnabled: false,
+            nextAutoFetchAt: null,
+            previousCount: null,
+            unchangedCount: 0,
+        });
+    });
+
+    it('取得完了時点ですでに自動取得が無効なら再有効化しないこと', () => {
+        const fetchedAt = new Date('2024-10-01T03:34:56Z');
+        const result = checkAllLimits([], fetchedAt);
+
+        expect(
+            resolveAutoFetchSuccess({ previousCount: 1, unchangedCount: 1 }, result, fetchedAt, 5, false),
+        ).toStrictEqual({
+            autoFetchEnabled: false,
+            nextAutoFetchAt: null,
+            previousCount: null,
+            unchangedCount: 0,
+        });
+    });
+});
+
+describe('resolveAutoFetchFailure()', () => {
+    it('自動取得失敗時の停止状態を返すこと', () => {
+        expect(resolveAutoFetchFailure()).toStrictEqual({
+            autoFetchEnabled: false,
+            nextAutoFetchAt: null,
+            previousCount: null,
+            unchangedCount: 0,
         });
     });
 });

@@ -19,6 +19,6 @@ describe('JapanAirportSearchPage', () => {
 
         await user.type(screen.getByLabelText('検索'), 'RJTT');
 
-        expect(screen.getByRole('cell', { name: '東京国際空港' })).toBeInTheDocument();
+        expect(screen.getByText('東京国際空港')).toBeInTheDocument();
     });
 });

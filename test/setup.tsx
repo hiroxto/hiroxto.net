@@ -41,6 +41,33 @@ Object.defineProperty(window, 'ResizeObserver', {
     value: ResizeObserverMock,
 });
 
+const localStorageMock = (() => {
+    let store = new Map<string, string>();
+
+    return {
+        clear: vi.fn(() => {
+            store = new Map<string, string>();
+        }),
+        getItem: vi.fn((key: string) => store.get(key) ?? null),
+        key: vi.fn((index: number) => Array.from(store.keys())[index] ?? null),
+        removeItem: vi.fn((key: string) => {
+            store.delete(key);
+        }),
+        setItem: vi.fn((key: string, value: string) => {
+            store.set(key, value);
+        }),
+        get length() {
+            return store.size;
+        },
+    };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    writable: true,
+    value: localStorageMock,
+});
+
 Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
     writable: true,
     value: vi.fn(),

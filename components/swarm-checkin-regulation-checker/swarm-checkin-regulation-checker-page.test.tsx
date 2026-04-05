@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSwarmCheckinRegulationCheckerTokenStore } from '@/components/swarm-checkin-regulation-checker/stores/token-store';
 import { renderWithMantine } from '@/test/test-utils';
@@ -8,32 +8,6 @@ const { getSelfCheckinsMock, mockCurrentTime } = vi.hoisted(() => ({
     getSelfCheckinsMock: vi.fn(),
     mockCurrentTime: { value: null as Date | null },
 }));
-
-function createCheckin(id: string, isoDate: string) {
-    return {
-        id,
-        createdAt: Math.floor(new Date(isoDate).getTime() / 1000),
-        type: 'checkin',
-        timeZoneOffset: 540,
-        venue: {
-            id: `venue-${id}`,
-            name: `Venue ${id}`,
-            location: {
-                address: '',
-                lat: 0,
-                lng: 0,
-                labeledLatLngs: [],
-                postalCode: '',
-                cc: 'JP',
-                city: 'Tokyo',
-                state: 'Tokyo',
-                country: 'Japan',
-                formattedAddress: [],
-            },
-            categories: [],
-        },
-    };
-}
 
 vi.mock('@/hooks/use-current-time', () => ({
     useCurrentTime: () => mockCurrentTime.value,
@@ -68,65 +42,5 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
 
         expect(screen.getByRole('button', { name: '履歴取得 / 自動取得有効' })).toBeInTheDocument();
         expect(screen.getByText('自動取得状態: 有効')).toBeInTheDocument();
-    });
-
-    it('自動取得有効中に手動取得すると次回自動取得日時を押下時刻基準で更新すること', async () => {
-        renderWithMantine(<SwarmCheckinRegulationCheckerPage />);
-
-        fireEvent.click(screen.getByRole('tab', { name: '設定' }));
-        fireEvent.click(screen.getByRole('button', { name: '自動取得を有効化' }));
-        fireEvent.click(screen.getByRole('button', { name: '履歴取得 / 自動取得有効' }));
-
-        await act(async () => {
-            await Promise.resolve();
-        });
-
-        expect(getSelfCheckinsMock).toHaveBeenCalledTimes(1);
-        expect(screen.getByText('次回自動取得日時: 2024-10-01 12:35:01')).toBeInTheDocument();
-    });
-
-    it('自動取得有効中の手動取得で非規制から規制状態になった場合は規制解除基準で次回時刻を更新すること', async () => {
-        getSelfCheckinsMock.mockResolvedValueOnce([
-            createCheckin('1', '2024-10-01T03:33:00Z'),
-            createCheckin('2', '2024-10-01T03:33:30Z'),
-            createCheckin('3', '2024-10-01T03:34:00Z'),
-            createCheckin('4', '2024-10-01T03:34:10Z'),
-            createCheckin('5', '2024-10-01T03:34:20Z'),
-        ]);
-        renderWithMantine(<SwarmCheckinRegulationCheckerPage />);
-
-        fireEvent.click(screen.getByRole('tab', { name: '設定' }));
-        fireEvent.click(screen.getByRole('button', { name: '自動取得を有効化' }));
-        fireEvent.click(screen.getByRole('button', { name: '履歴取得 / 自動取得有効' }));
-
-        await act(async () => {
-            await Promise.resolve();
-        });
-
-        expect(getSelfCheckinsMock).toHaveBeenCalledTimes(1);
-        expect(screen.getByText('次回自動取得日時: 2024-10-01 12:36:25')).toBeInTheDocument();
-    });
-
-    it('自動取得が失敗した場合は1回で無効化すること', async () => {
-        getSelfCheckinsMock.mockRejectedValueOnce(new Error('API Call Error: 401'));
-        renderWithMantine(<SwarmCheckinRegulationCheckerPage />);
-
-        fireEvent.click(screen.getByRole('tab', { name: '設定' }));
-        fireEvent.click(screen.getByRole('button', { name: '自動取得を有効化' }));
-
-        await act(async () => {
-            await vi.advanceTimersByTimeAsync(5_000);
-        });
-
-        expect(getSelfCheckinsMock).toHaveBeenCalledTimes(1);
-        expect(screen.getByText('自動取得状態: 無効')).toBeInTheDocument();
-        expect(screen.getByText('次回自動取得日時: 未設定')).toBeInTheDocument();
-        expect(screen.getByText('API Call Error: 401')).toBeInTheDocument();
-
-        await act(async () => {
-            await vi.advanceTimersByTimeAsync(10_000);
-        });
-
-        expect(getSelfCheckinsMock).toHaveBeenCalledTimes(1);
     });
 });
