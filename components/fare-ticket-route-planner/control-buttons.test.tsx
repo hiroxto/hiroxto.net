@@ -81,13 +81,13 @@ describe('ControlButtons', () => {
         const user = userEvent.setup();
         renderWithMantine(<ControlButtons />);
 
-        await user.click(screen.getByRole('button', { name: '補完無効化' }));
+        await user.click(screen.getByRole('button', { name: /補完\s*無効化/ }));
         expect(useInputSettingStore.getState().useComplete).toBe(false);
-        expect(screen.getByRole('button', { name: '補完有効化' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /補完\s*有効化/ })).toBeInTheDocument();
 
-        await user.click(screen.getByRole('button', { name: '補完有効化' }));
+        await user.click(screen.getByRole('button', { name: /補完\s*有効化/ }));
         expect(useInputSettingStore.getState().useComplete).toBe(true);
-        expect(screen.getByRole('button', { name: '補完無効化' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /補完\s*無効化/ })).toBeInTheDocument();
     });
 
     test('設定クリアの確認後に種別と駅設定を初期化する', async () => {
@@ -101,7 +101,7 @@ describe('ControlButtons', () => {
 
         renderWithMantine(<ControlButtons />);
 
-        await user.click(screen.getByRole('button', { name: '設定クリア' }));
+        await user.click(screen.getByRole('button', { name: /設定\s*クリア/ }));
         expect(screen.getByText('設定をクリアしますか？')).toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'クリア' }));

@@ -69,6 +69,8 @@ describe('control buttons ui', () => {
         expect(buttons.find((button) => button.key === 'saved-routes')?.href).toBe(
             '/tools/fare-ticket-route-planner/states',
         );
+        expect(buttons.find((button) => button.key === 'delete-empty-routes')?.label).toBe('空経路\nクリア');
+        expect(buttons.find((button) => button.key === 'clear-all-routes')?.label).toBe('全経路\nクリア');
     });
 
     test('保存用ペイロード生成時に現在の経路状態をそのまま返すこと', () => {
