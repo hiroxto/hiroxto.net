@@ -29,13 +29,14 @@ interface ModalState {
 
 function GridActionButton({ definition }: { definition: ControlButtonDefinition }) {
     const { key: _key, label, span = 3, offset, href, soundType = 'click', onClick, ...buttonProps } = definition;
+    const buttonClassName = `${styles.button} ${styles.controlButton}`;
 
     return (
         <Grid.Col span={span} offset={offset}>
             {href == null || onClick != null ? (
                 <SoundButton
                     {...buttonProps}
-                    className={styles.button}
+                    className={buttonClassName}
                     onClick={onClick ?? (() => {})}
                     soundType={soundType}
                     fullWidth
@@ -43,7 +44,7 @@ function GridActionButton({ definition }: { definition: ControlButtonDefinition 
                     {label}
                 </SoundButton>
             ) : (
-                <Button {...buttonProps} className={styles.button} component={Link} href={href} fullWidth>
+                <Button {...buttonProps} className={buttonClassName} component={Link} href={href} fullWidth>
                     {label}
                 </Button>
             )}

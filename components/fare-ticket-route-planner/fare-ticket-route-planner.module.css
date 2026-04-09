@@ -10,6 +10,20 @@
     padding: 0.5rem;
 }
 
+.controlButton {
+    min-height: 3.5rem;
+}
+
+.controlButton :global(.mantine-Button-inner) {
+    height: 100%;
+}
+
+.controlButton :global(.mantine-Button-label) {
+    text-align: center;
+    line-height: 1.2;
+    white-space: pre-line;
+}
+
 .output {
     width: 83.333333%;
     white-space: pre-wrap;

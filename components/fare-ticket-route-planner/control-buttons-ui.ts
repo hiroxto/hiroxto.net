@@ -41,7 +41,7 @@ export const createBaseGrayButtonDefinitions = ({
     },
     {
         key: 'calendar',
-        label: 'カレンダー入力',
+        label: 'カレンダー\n入力',
         variant: 'filled',
         color: 'gray',
         onClick: openCalendarModal,
@@ -75,14 +75,14 @@ export const createSecondaryButtonDefinitions = ({
 }: SecondaryButtonArgs): ControlButtonDefinition[] => [
     {
         key: 'delete-empty-routes',
-        label: '空経路クリア',
+        label: '空経路\nクリア',
         variant: 'light',
         color: 'red',
         onClick: deleteEmptyRoutes,
     },
     {
         key: 'clear-setting',
-        label: '設定クリア',
+        label: '設定\nクリア',
         variant: 'filled',
         color: 'red',
         soundType: 'chime',
@@ -90,7 +90,7 @@ export const createSecondaryButtonDefinitions = ({
     },
     {
         key: 'clear-all-routes',
-        label: '全経路クリア',
+        label: '全経路\nクリア',
         variant: 'filled',
         color: 'red',
         soundType: 'chime',
@@ -98,7 +98,7 @@ export const createSecondaryButtonDefinitions = ({
     },
     {
         key: 'clear-notes',
-        label: '備考クリア',
+        label: '備考\nクリア',
         variant: 'filled',
         color: 'red',
         soundType: 'chime',
@@ -106,14 +106,14 @@ export const createSecondaryButtonDefinitions = ({
     },
     {
         key: 'toggle-complete',
-        label: useComplete ? '補完無効化' : '補完有効化',
+        label: useComplete ? '補完\n無効化' : '補完\n有効化',
         variant: 'filled',
         color: useComplete ? 'gray' : 'blue',
         onClick: () => (useComplete ? disableComplete() : enableComplete()),
     },
     {
         key: 'saved-routes',
-        label: '保存済み経路',
+        label: '保存済み\n経路',
         variant: 'filled',
         color: 'blue',
         href: savedRoutesHref,
