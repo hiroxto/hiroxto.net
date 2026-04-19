@@ -27,7 +27,10 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
         getSelfCheckinsMock.mockReset();
         getSelfCheckinsMock.mockResolvedValue([]);
         window.localStorage.clear();
-        useSwarmCheckinRegulationCheckerTokenStore.setState({ token: 'token-value' });
+        useSwarmCheckinRegulationCheckerTokenStore.setState({
+            token: 'token-value',
+            autoFetchIntervalSeconds: 5,
+        });
     });
 
     afterEach(() => {
@@ -42,5 +45,18 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
 
         expect(screen.getByRole('button', { name: '履歴取得 / 自動取得有効' })).toBeInTheDocument();
         expect(screen.getByText('自動取得状態: 有効')).toBeInTheDocument();
+    });
+
+    it('保存済みの自動取得秒数を初期表示に反映すること', async () => {
+        useSwarmCheckinRegulationCheckerTokenStore.setState({
+            token: 'token-value',
+            autoFetchIntervalSeconds: 30,
+        });
+
+        renderWithMantine(<SwarmCheckinRegulationCheckerPage />);
+
+        fireEvent.click(screen.getByRole('tab', { name: '設定' }));
+
+        expect(screen.getByRole('textbox', { name: '自動取得間隔' })).toHaveValue('30秒');
     });
 });
