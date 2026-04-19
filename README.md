@@ -1,3 +1,3 @@
 # hiroxto.net
 
-Code of www.hiroxto.net
+Code of hiroxto.net

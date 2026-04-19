@@ -11,7 +11,7 @@
     "preview_urls": true,
     "routes": [
         {
-            "pattern": "www.hiroxto.net",
+            "pattern": "hiroxto.net",
             "custom_domain": true
         }
     ],

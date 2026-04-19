@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 
-const FALLBACK_HOST = 'www.hiroxto.net';
+const FALLBACK_HOST = 'hiroxto.net';
 const FALLBACK_PROTOCOL = 'https';
 
 const getFirstHeaderValue = (value: string | null): string | null => {
