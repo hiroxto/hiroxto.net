@@ -32,7 +32,7 @@ describe('resolveRequestOriginFromHeaders', () => {
 
         const origin = resolveRequestOriginFromHeaders(requestHeaders);
 
-        expect(origin.toString()).toBe('https://www.hiroxto.net/');
+        expect(origin.toString()).toBe('https://hiroxto.net/');
     });
 
     it('x-forwarded-proto が優先して使用されること', () => {
@@ -59,7 +59,7 @@ describe('resolveRequestOriginFromHeaders', () => {
             'x-forwarded-proto': '   ',
         });
 
-        expect(resolveRequestOriginFromHeaders(requestHeaders).toString()).toBe('https://www.hiroxto.net/');
+        expect(resolveRequestOriginFromHeaders(requestHeaders).toString()).toBe('https://hiroxto.net/');
     });
 
     it('proto は大文字混在でも解釈できること', () => {

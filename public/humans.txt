@@ -3,14 +3,14 @@
 ## PERSONAL
   Name: hiroxto
   Location: Japan
-  Site: https://www.hiroxto.net/
+  Site: https://hiroxto.net/
   Social:
     Twitter: http://twitter.com/hiroxto
     GitHub: https://github.com/hiroxto
 
 ## SITE
   Name: hiroxto.net
-  URL: https://www.hiroxto.net/
+  URL: https://hiroxto.net/
   Contents: Website of hiroxto.
   Standards: HTML5, CSS3
   Language: ja-JP
