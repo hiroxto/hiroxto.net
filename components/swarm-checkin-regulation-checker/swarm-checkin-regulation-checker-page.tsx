@@ -42,18 +42,21 @@ import {
 } from '@/lib/swarm-checkin-regulation-checker/functions';
 import type { CheckinItem } from '@/lib/swarm-checkin-regulation-checker/types';
 
-const DEFAULT_AUTO_FETCH_INTERVAL_SECONDS = 5;
-
 export const SwarmCheckinRegulationCheckerPage = () => {
     const token = useSwarmCheckinRegulationCheckerTokenStore((state) => state.token);
     const setToken = useSwarmCheckinRegulationCheckerTokenStore((state) => state.setToken);
+    const autoFetchIntervalSeconds = useSwarmCheckinRegulationCheckerTokenStore(
+        (state) => state.autoFetchIntervalSeconds,
+    );
+    const setAutoFetchIntervalSeconds = useSwarmCheckinRegulationCheckerTokenStore(
+        (state) => state.setAutoFetchIntervalSeconds,
+    );
     const currentTime = useCurrentTime();
     const [comparisonNow, setComparisonNow] = useState<Date | null>(null);
     const [checkins, setCheckins] = useState<CheckinItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
-    const [autoFetchIntervalSeconds, setAutoFetchIntervalSeconds] = useState(DEFAULT_AUTO_FETCH_INTERVAL_SECONDS);
     const [nextAutoFetchAt, setNextAutoFetchAt] = useState<Date | null>(null);
     const [autoFetchCachedCount, setAutoFetchCachedCount] = useState<number | null>(null);
     const [autoFetchUnchangedCount, setAutoFetchUnchangedCount] = useState(0);

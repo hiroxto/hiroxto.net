@@ -3,7 +3,10 @@ import { useSwarmCheckinRegulationCheckerTokenStore } from '@/components/swarm-c
 
 describe('useSwarmCheckinRegulationCheckerTokenStore', () => {
     beforeEach(() => {
-        useSwarmCheckinRegulationCheckerTokenStore.setState({ token: '' });
+        useSwarmCheckinRegulationCheckerTokenStore.setState({
+            token: '',
+            autoFetchIntervalSeconds: 5,
+        });
     });
 
     it('トークンを更新できること', () => {
@@ -18,5 +21,11 @@ describe('useSwarmCheckinRegulationCheckerTokenStore', () => {
         useSwarmCheckinRegulationCheckerTokenStore.getState().setToken('');
 
         expect(useSwarmCheckinRegulationCheckerTokenStore.getState().token).toBe('');
+    });
+
+    it('自動取得秒数を更新できること', () => {
+        useSwarmCheckinRegulationCheckerTokenStore.getState().setAutoFetchIntervalSeconds(30);
+
+        expect(useSwarmCheckinRegulationCheckerTokenStore.getState().autoFetchIntervalSeconds).toBe(30);
     });
 });
