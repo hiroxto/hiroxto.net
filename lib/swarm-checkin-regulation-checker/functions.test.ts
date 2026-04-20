@@ -170,6 +170,23 @@ describe('getNextRefreshAt()', () => {
 
         expect(getNextRefreshAt([], now)).toStrictEqual(new Date('2024-10-01T15:00:00Z'));
     });
+
+    it('一部の条件が規制中でも他条件の非規制判定更新時刻を優先して返すこと', () => {
+        const now = new Date('2024-10-01T03:34:56Z');
+        const checkins = [
+            createCheckin('1', '2024-10-01T03:26:00Z'),
+            createCheckin('2', '2024-10-01T03:27:00Z'),
+            createCheckin('3', '2024-10-01T03:28:00Z'),
+            createCheckin('4', '2024-10-01T03:29:00Z'),
+            createCheckin('5', '2024-10-01T03:30:00Z'),
+            createCheckin('6', '2024-10-01T03:34:00Z'),
+            createCheckin('7', '2024-10-01T03:34:10Z'),
+            createCheckin('8', '2024-10-01T03:34:20Z'),
+            createCheckin('9', '2024-10-01T03:34:30Z'),
+        ];
+
+        expect(getNextRefreshAt(checkins, now)).toStrictEqual(new Date('2024-10-01T03:36:00Z'));
+    });
 });
 
 describe('getAutoFetchComparisonCount()', () => {
