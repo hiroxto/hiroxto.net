@@ -245,11 +245,15 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                             </Stack>
                             <Group>
                                 <Button onClick={handlePullCheckins} disabled={token === '' || isLoading}>
-                                    {isLoading
-                                        ? '取得中...'
-                                        : autoFetchEnabled
-                                          ? '履歴取得 / 自動取得有効'
-                                          : '履歴取得'}
+                                    履歴取得
+                                </Button>
+                                <Button
+                                    onClick={autoFetchEnabled ? handleDisableAutoFetch : handleEnableAutoFetch}
+                                    disabled={token === '' || isLoading}
+                                    color={autoFetchEnabled ? 'red' : 'blue'}
+                                    variant={autoFetchEnabled ? 'light' : 'filled'}
+                                >
+                                    {autoFetchEnabled ? '自動取得無効化' : '自動取得有効化'}
                                 </Button>
                                 {isLoading ? <Loader size="sm" /> : null}
                             </Group>
@@ -393,16 +397,6 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                 }}
                                 allowDeselect={false}
                             />
-                            <Group>
-                                <Button
-                                    onClick={autoFetchEnabled ? handleDisableAutoFetch : handleEnableAutoFetch}
-                                    disabled={token === '' || isLoading}
-                                    color={autoFetchEnabled ? 'red' : 'blue'}
-                                    variant={autoFetchEnabled ? 'light' : 'filled'}
-                                >
-                                    {autoFetchEnabled ? '自動取得を無効化' : '自動取得を有効化'}
-                                </Button>
-                            </Group>
                             <Stack gap={2}>
                                 <Text lh={1.2}>自動取得状態: {autoFetchEnabled ? '有効' : '無効'}</Text>
                                 <Text lh={1.2}>
