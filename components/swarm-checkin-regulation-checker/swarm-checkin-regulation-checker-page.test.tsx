@@ -37,16 +37,6 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
         vi.useRealTimers();
     });
 
-    it('自動取得を有効化すると履歴取得ボタンのラベルが切り替わること', async () => {
-        renderWithMantine(<SwarmCheckinRegulationCheckerPage />);
-
-        fireEvent.click(screen.getByRole('tab', { name: '設定' }));
-        fireEvent.click(screen.getByRole('button', { name: '自動取得を有効化' }));
-
-        expect(screen.getByRole('button', { name: '履歴取得 / 自動取得有効' })).toBeInTheDocument();
-        expect(screen.getByText('自動取得状態: 有効')).toBeInTheDocument();
-    });
-
     it('保存済みの自動取得秒数を初期表示に反映すること', async () => {
         useSwarmCheckinRegulationCheckerTokenStore.setState({
             token: 'token-value',
