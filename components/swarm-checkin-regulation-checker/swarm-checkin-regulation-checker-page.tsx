@@ -24,12 +24,12 @@ import { CheckinTable } from '@/components/swarm-checkin-regulation-checker/chec
 import { LimitSummaryCard } from '@/components/swarm-checkin-regulation-checker/limit-summary-card';
 import { useSwarmCheckinRegulationCheckerTokenStore } from '@/components/swarm-checkin-regulation-checker/stores/token-store';
 import { useCurrentTime } from '@/hooks/use-current-time';
+import { SwarmCheckinRegulationCheckerApiClient } from '@/lib/swarm-checkin-regulation-checker/api-client';
 import {
     AUTO_FETCH_INTERVAL_OPTIONS,
     CHECKIN_LIMIT_TITLES,
     RESULT_KEYS,
 } from '@/lib/swarm-checkin-regulation-checker/consts';
-import { FoursquareClient } from '@/lib/swarm-checkin-regulation-checker/foursquare';
 import {
     addPeriod,
     checkAllLimits,
@@ -115,7 +115,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
             setIsLoading(true);
             setErrorMessage(null);
             try {
-                const client = new FoursquareClient(token);
+                const client = new SwarmCheckinRegulationCheckerApiClient(token);
                 const nextCheckins = await client.getSelfCheckins();
                 const fetchedAt = new Date();
                 const nextResult = checkAllLimits(nextCheckins, fetchedAt);
