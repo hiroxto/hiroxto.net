@@ -13,8 +13,8 @@ vi.mock('@/hooks/use-current-time', () => ({
     useCurrentTime: () => mockCurrentTime.value,
 }));
 
-vi.mock('@/lib/swarm-checkin-regulation-checker/foursquare', () => ({
-    FoursquareClient: class {
+vi.mock('@/lib/swarm-checkin-regulation-checker/api-client', () => ({
+    SwarmCheckinRegulationCheckerApiClient: class {
         getSelfCheckins = getSelfCheckinsMock;
     },
 }));
