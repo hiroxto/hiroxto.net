@@ -11,6 +11,7 @@ const sitemapEntries = [
     { path: '/tools/japan-airport-search', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/qr-code-gen', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/swarm-checkin-regulation-checker', changeFrequency: 'yearly', priority: 0.8 },
+    { path: '/tools/times-car-estimate-comparison', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/train-number-calc', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/train-number', changeFrequency: 'yearly', priority: 0.2 },
     { path: '/tools/train-number/2018-03-17', changeFrequency: 'yearly', priority: 0.6 },
