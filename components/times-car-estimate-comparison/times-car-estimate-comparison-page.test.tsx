@@ -15,11 +15,11 @@ describe('TimesCarEstimateComparisonPage', () => {
         const user = userEvent.setup();
         renderWithMantine(<TimesCarEstimateComparisonPage />);
 
-        await user.type(screen.getByLabelText('カーシェア利用料金'), '5000');
-        await user.type(screen.getByLabelText('レンタカー利用料金'), '6000');
-        await user.type(screen.getByLabelText('利用距離'), '50');
-        await user.type(screen.getByLabelText('ガソリン単価'), '180');
-        await user.type(screen.getByLabelText('燃費'), '15');
+        await user.type(screen.getByLabelText('カーシェア利用料金(円)'), '5000');
+        await user.type(screen.getByLabelText('レンタカー利用料金(円)'), '6000');
+        await user.type(screen.getByLabelText('利用距離(km)'), '50');
+        await user.type(screen.getByLabelText('ガソリン単価(円/L)'), '180');
+        await user.type(screen.getByLabelText('燃費(km/L)'), '15');
 
         expect(screen.getByText('5,600円')).toBeInTheDocument();
         expect(screen.getByText('6,600円')).toBeInTheDocument();
@@ -30,11 +30,11 @@ describe('TimesCarEstimateComparisonPage', () => {
         const user = userEvent.setup();
         renderWithMantine(<TimesCarEstimateComparisonPage />);
 
-        await user.type(screen.getByLabelText('カーシェア利用料金'), '5000');
-        await user.type(screen.getByLabelText('レンタカー利用料金'), '6000');
-        await user.type(screen.getByLabelText('利用距離'), '50');
-        await user.type(screen.getByLabelText('ガソリン単価'), '180');
-        await user.type(screen.getByLabelText('燃費'), '15');
+        await user.type(screen.getByLabelText('カーシェア利用料金(円)'), '5000');
+        await user.type(screen.getByLabelText('レンタカー利用料金(円)'), '6000');
+        await user.type(screen.getByLabelText('利用距離(km)'), '50');
+        await user.type(screen.getByLabelText('ガソリン単価(円/L)'), '180');
+        await user.type(screen.getByLabelText('燃費(km/L)'), '15');
         await user.click(screen.getByLabelText('ナイトパック等: 利用開始時から20円/km'));
 
         expect(screen.getByText('6,000円')).toBeInTheDocument();

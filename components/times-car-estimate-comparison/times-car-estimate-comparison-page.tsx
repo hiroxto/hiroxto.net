@@ -130,7 +130,7 @@ export function TimesCarEstimateComparisonPage() {
 
                         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                             <NumberInput
-                                label="カーシェア利用料金"
+                                label="カーシェア利用料金(円)"
                                 placeholder="例: 5500"
                                 value={carShareUsageFee}
                                 onChange={setCarShareUsageFee}
@@ -140,7 +140,7 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="numeric"
                             />
                             <NumberInput
-                                label="レンタカー利用料金"
+                                label="レンタカー利用料金(円)"
                                 placeholder="例: 6072"
                                 value={rentalCarUsageFee}
                                 onChange={setRentalCarUsageFee}
@@ -150,7 +150,7 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="numeric"
                             />
                             <NumberInput
-                                label="利用距離"
+                                label="利用距離(km)"
                                 placeholder="例: 100"
                                 value={distanceKm}
                                 onChange={setDistanceKm}
@@ -161,7 +161,7 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="decimal"
                             />
                             <NumberInput
-                                label="ガソリン単価"
+                                label="ガソリン単価(円/L)"
                                 placeholder="例: 175"
                                 value={gasolinePricePerLiter}
                                 onChange={setGasolinePricePerLiter}
@@ -172,7 +172,7 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="decimal"
                             />
                             <NumberInput
-                                label="燃費"
+                                label="燃費(km/L)"
                                 placeholder="例: 15"
                                 value={fuelEfficiencyKmPerLiter}
                                 onChange={setFuelEfficiencyKmPerLiter}
