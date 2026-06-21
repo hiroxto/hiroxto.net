@@ -90,6 +90,67 @@ describe('ControlButtons', () => {
         expect(screen.getByRole('button', { name: /補完\s*無効化/ })).toBeInTheDocument();
     });
 
+    test('発着逆転ボタンで出発地と到着地を入れ替えられる', async () => {
+        const user = userEvent.setup();
+        useRouteStateStore.setState({
+            departure: '東京',
+            destination: '博多',
+            routes: [
+                { id: 'route-1', line: '東海道線', station: '名古屋' },
+                { id: 'route-2', line: '山陽線', station: '' },
+            ],
+        });
+
+        renderWithMantine(<ControlButtons />);
+
+        await user.click(screen.getByRole('button', { name: '発着逆転' }));
+
+        expect(useRouteStateStore.getState()).toMatchObject({
+            departure: '博多',
+            destination: '東京',
+            routes: [
+                { id: 'route-2', line: '山陽線', station: '名古屋' },
+                { id: 'route-1', line: '東海道線', station: '' },
+            ],
+        });
+    });
+
+    test('経路追加ボタンで経路を1行追加できる', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(<ControlButtons />);
+
+        await user.click(screen.getByRole('button', { name: '経路追加' }));
+
+        expect(useRouteStateStore.getState().routes).toHaveLength(2);
+    });
+
+    test('空経路クリアボタンで値のない経路を除外できる', async () => {
+        const user = userEvent.setup();
+        useRouteStateStore.setState({
+            routes: [
+                { id: 'empty-route', line: '', station: '' },
+                { id: 'valued-route', line: '東海道線', station: '東京' },
+            ],
+        });
+
+        renderWithMantine(<ControlButtons />);
+
+        await user.click(screen.getByRole('button', { name: /空経路\s*クリア/ }));
+
+        expect(useRouteStateStore.getState().routes).toEqual([
+            { id: 'valued-route', line: '東海道線', station: '東京' },
+        ]);
+    });
+
+    test('保存済み経路へのリンクを表示する', () => {
+        renderWithMantine(<ControlButtons />);
+
+        expect(screen.getByRole('link', { name: /保存済み\s*経路/ })).toHaveAttribute(
+            'href',
+            '/tools/fare-ticket-route-planner/states',
+        );
+    });
+
     test('設定クリアの確認後に種別と駅設定を初期化する', async () => {
         const user = userEvent.setup();
         useRouteStateStore.setState({

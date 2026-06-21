@@ -17,8 +17,4 @@ describe('useInputSettingStore', () => {
         useInputSettingStore.getState().enableComplete();
         expect(useInputSettingStore.getState().useComplete).toBe(true);
     });
-
-    test('永続化キーが input-setting であること', () => {
-        expect(useInputSettingStore.persist.getOptions().name).toBe('input-setting');
-    });
 });

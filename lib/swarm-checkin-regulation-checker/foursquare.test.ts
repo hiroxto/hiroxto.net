@@ -26,9 +26,13 @@ describe('FoursquareClient', () => {
 
         const [url, options] = fetchMock.mock.calls[0] ?? [];
         expect(url).toBeInstanceOf(URL);
-        expect((url as URL).toString()).toBe(
-            'https://api.foursquare.com/v2/users/self/checkins?oauth_token=test-token&limit=200&v=20221016&lang=ja',
-        );
+        const endpoint = url as URL;
+        expect(endpoint.origin).toBe('https://api.foursquare.com');
+        expect(endpoint.pathname).toBe('/v2/users/self/checkins');
+        expect(endpoint.searchParams.get('oauth_token')).toBe('test-token');
+        expect(endpoint.searchParams.get('limit')).toBe('200');
+        expect(endpoint.searchParams.get('v')).toBe('20221016');
+        expect(endpoint.searchParams.get('lang')).toBe('ja');
         expect(options).toEqual({ method: 'GET' });
     });
 

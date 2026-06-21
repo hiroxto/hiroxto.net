@@ -55,7 +55,7 @@ export function TrainNumberCalcPage() {
                     />
 
                     {trainType != null ? (
-                        <Badge mt="md" size="xl" color="blue" variant="filled">
+                        <Badge mt="md" size="xl" color="blue" variant="filled" role="status">
                             {trainType}
                         </Badge>
                     ) : null}
