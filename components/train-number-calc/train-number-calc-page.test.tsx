@@ -6,17 +6,17 @@ import { TrainNumberCalcPage } from './train-number-calc-page';
 
 describe('TrainNumberCalcPage', () => {
     it('空入力では結果を表示しないこと', () => {
-        const { container } = renderWithMantine(<TrainNumberCalcPage />);
+        renderWithMantine(<TrainNumberCalcPage />);
 
-        expect(container.querySelector('.mantine-Badge-root')).toBeNull();
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
     it('正常な数字入力で列車種別を表示すること', async () => {
         const user = userEvent.setup();
-        const { container } = renderWithMantine(<TrainNumberCalcPage />);
+        renderWithMantine(<TrainNumberCalcPage />);
 
         await user.type(screen.getByLabelText('列車番号'), '1150');
 
-        expect(container.querySelector('.mantine-Badge-root')).toHaveTextContent('高速貨C');
+        expect(screen.getByRole('status')).toHaveTextContent('高速貨C');
     });
 });
