@@ -3,8 +3,7 @@ import { TimesCarEstimateComparisonPage } from '@/components/times-car-estimate-
 import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
 const title = 'タイムズカー/タイムズカーレンタル概算比較';
-const description =
-    'タイムズカーとタイムズカーレンタルの料金を入力値から概算比較するページ。';
+const description = 'タイムズカーとタイムズカーレンタルの料金を入力値から概算比較するページ。';
 
 export async function generateMetadata(): Promise<Metadata> {
     const requestOrigin = await getRequestOrigin();
