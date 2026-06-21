@@ -109,9 +109,9 @@ export function TimesCarEstimateComparisonPage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'タイムズカー概算比較' }]}
-            title="タイムズカー概算比較"
-            description="タイムズカーのカーシェアとタイムズカーレンタルの料金を、入力値から概算比較するページ。"
+            items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'タイムズカー/タイムズカーレンタル概算比較' }]}
+            title="タイムズカー/タイムズカーレンタル概算比較"
+            description="タイムズカーとタイムズカーレンタルの料金を入力値から概算比較するページ。"
         >
             <Stack gap="xl">
                 <section>
@@ -125,7 +125,7 @@ export function TimesCarEstimateComparisonPage() {
                             <Anchor href="https://rental.timescar.jp/price/" target="_blank" rel="noreferrer">
                                 タイムズカーレンタルの料金と車種
                             </Anchor>
-                            を確認してください。このページの結果は入力値に基づく概算です。
+                            を確認する。
                         </Text>
 
                         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">

@@ -10,7 +10,7 @@ const description = 'hiroxto.netで公開しているツール一覧';
 const tools = [
     {
         href: '/tools/times-car-estimate-comparison',
-        title: 'タイムズカー概算比較',
+        title: 'タイムズカー/タイムズカーレンタル概算比較',
     },
     {
         href: '/tools/japan-airport-search',
