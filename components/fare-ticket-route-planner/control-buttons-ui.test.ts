@@ -23,7 +23,7 @@ describe('control buttons ui', () => {
             notes: 'テストnotes',
         });
 
-        expect(payload).toMatchObject({
+        expect(payload).toEqual({
             type: '片道乗車券',
             month: '1',
             day: '2',
@@ -53,7 +53,7 @@ describe('control buttons ui', () => {
             notes: 'テストnotes',
         });
 
-        expect(payload).toMatchObject({
+        expect(payload).toEqual({
             type: '片道乗車券',
             month: '1',
             day: '2',

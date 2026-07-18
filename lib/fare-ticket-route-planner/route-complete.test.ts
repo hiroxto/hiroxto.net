@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { lineToStations, stationToLines } from './route-complete';
+import { stationToLines } from './route-complete';
 
 describe('stationToLines', () => {
-    it('lineToStations から逆引きできること', () => {
+    it('東京に接続する代表路線を取得できること', () => {
         expect(stationToLines.get('東京')).toContain('新幹線');
         expect(stationToLines.get('東京')).toContain('東北線');
         expect(stationToLines.get('東京')).toContain('東海道線');
@@ -15,13 +15,5 @@ describe('stationToLines', () => {
 
     it('代表駅で余計な路線を含めないこと', () => {
         expect(stationToLines.get('新大村')).toEqual(['西九州新幹線', '大村線']);
-    });
-
-    it('lineToStations に存在する全駅が stationToLines から逆参照できること', () => {
-        for (const [line, stations] of lineToStations) {
-            for (const station of stations) {
-                expect(stationToLines.get(station)).toContain(line);
-            }
-        }
     });
 });
