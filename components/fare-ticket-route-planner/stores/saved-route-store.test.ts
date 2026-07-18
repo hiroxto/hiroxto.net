@@ -26,7 +26,19 @@ describe('useSavedRouteStore', () => {
 
         const savedRoutes = useSavedRouteStore.getState().routes;
         expect(savedRoutes).toHaveLength(1);
-        expect(savedRoutes[0]?.route).toEqual(routeState);
+        expect(savedRoutes[0]?.route).toEqual({
+            type: '片道乗車券',
+            month: '3',
+            day: '10',
+            dateOption: 'use',
+            departure: '東京',
+            destination: '博多',
+            routes: [
+                { id: '1', line: '東海道線', station: '名古屋' },
+                { id: '2', line: '山陽線', station: '' },
+            ],
+            notes: 'テスト',
+        });
     });
 
     test('更新できる', () => {
@@ -48,9 +60,9 @@ describe('useSavedRouteStore', () => {
         });
 
         useSavedRouteStore.getState().deleteRoute('saved-1');
-        expect(useSavedRouteStore.getState().routes).toHaveLength(1);
+        expect(useSavedRouteStore.getState().routes.map((route) => route.id)).toEqual(['saved-2']);
 
         useSavedRouteStore.getState().bulkDeleteRoute(['saved-2']);
-        expect(useSavedRouteStore.getState().routes).toHaveLength(0);
+        expect(useSavedRouteStore.getState().routes).toEqual([]);
     });
 });

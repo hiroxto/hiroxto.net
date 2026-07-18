@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ControlButtons } from '@/components/fare-ticket-route-planner/control-buttons';
 import { useInputSettingStore } from '@/components/fare-ticket-route-planner/stores/input-setting-store';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
@@ -63,17 +63,22 @@ describe('ControlButtons', () => {
         useSavedRouteStore.setState({ routes: [] });
     });
 
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     test('本日ボタンで現在日付を設定できる', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date(2026, 2, 10, 12));
         const user = userEvent.setup();
-        const today = new Date();
         renderWithMantine(<ControlButtons />);
 
         await user.click(screen.getByRole('button', { name: '本日' }));
 
         expect(useRouteStateStore.getState()).toMatchObject({
             dateOption: 'use',
-            month: String(today.getMonth() + 1),
-            day: String(today.getDate()),
+            month: '3',
+            day: '10',
         });
     });
 
@@ -122,6 +127,7 @@ describe('ControlButtons', () => {
         await user.click(screen.getByRole('button', { name: '経路追加' }));
 
         expect(useRouteStateStore.getState().routes).toHaveLength(2);
+        expect(useRouteStateStore.getState().routes[1]).toMatchObject({ line: '', station: '' });
     });
 
     test('空経路クリアボタンで値のない経路を除外できる', async () => {

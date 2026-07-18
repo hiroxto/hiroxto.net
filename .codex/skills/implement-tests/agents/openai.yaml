@@ -1,4 +1,0 @@
-interface:
-  display_name: "Implement Tests"
-  short_description: "振る舞いを基準にテストを実装する"
-  default_prompt: "Use $implement-tests to design or review tests that verify observable behavior instead of implementation details."

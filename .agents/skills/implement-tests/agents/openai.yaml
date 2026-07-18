@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implement Tests"
+  short_description: "観測可能な振る舞いを本番コードと独立した期待値で検証する"
+  default_prompt: "Use $implement-tests to design or review tests that verify observable behavior with expected values independent from production logic."
