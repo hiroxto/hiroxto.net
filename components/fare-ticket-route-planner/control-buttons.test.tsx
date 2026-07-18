@@ -69,7 +69,7 @@ describe('ControlButtons', () => {
 
     test('本日ボタンで現在日付を設定できる', async () => {
         vi.useFakeTimers({ toFake: ['Date'] });
-        vi.setSystemTime(new Date('2026-03-10T12:00:00+09:00'));
+        vi.setSystemTime(new Date(2026, 2, 10, 12));
         const user = userEvent.setup();
         renderWithMantine(<ControlButtons />);
 
