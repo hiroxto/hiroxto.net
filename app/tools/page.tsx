@@ -33,6 +33,10 @@ const tools = [
         title: '列車番号メモ',
     },
     {
+        href: '/tools/tokyometro-transfer-search',
+        title: '東京メトロ 改札外乗換検索',
+    },
+    {
         href: '/tools/japan-airport-search',
         title: '日本の飛行場・空港検索',
     },
