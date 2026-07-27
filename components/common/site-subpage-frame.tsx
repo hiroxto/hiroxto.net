@@ -22,7 +22,7 @@ export function SiteSubpageFrame({ children, items, title, description, pageSize
         <SitePageFrame size={pageSize}>
             <Stack gap="xl">
                 <header>
-                    <SiteBreadcrumbs items={[{ label: 'トップページ', href: '/' }, ...items]} />
+                    <SiteBreadcrumbs items={[{ label: 'Top page', href: '/' }, ...items]} />
                 </header>
                 <section>
                     <Title order={1}>{title}</Title>

@@ -41,7 +41,7 @@ export function TrainNumberPage({ title, markdownSource }: TrainNumberPageProps)
     return (
         <SiteSubpageFrame
             items={[
-                { label: 'ツール一覧', href: '/tools' },
+                { label: 'Tools', href: '/tools' },
                 { label: trainNumberIndexTitle, href: '/tools/train-number' },
                 { label: title },
             ]}

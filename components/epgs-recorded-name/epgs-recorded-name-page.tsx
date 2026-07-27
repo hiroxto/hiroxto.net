@@ -37,7 +37,7 @@ export function EpgsRecordedNamePage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: '録画サーバーの保存先のパスを生成' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: '録画サーバーの保存先のパスを生成' }]}
             title="録画サーバーの保存先のパスを生成"
             description="録画サーバーの保存先として使うパスをルールに沿って生成。"
         >

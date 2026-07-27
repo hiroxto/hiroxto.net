@@ -7,7 +7,7 @@ describe('SiteSubpageFrame', () => {
     it('トップページのパンくずを自動付与して子要素を表示すること', () => {
         renderWithMantine(
             <SiteSubpageFrame
-                items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'QRコード生成' }]}
+                items={[{ label: 'Tools', href: '/tools' }, { label: 'QRコード生成' }]}
                 title="QRコード生成"
                 description="QRコードを生成します"
             >
@@ -16,7 +16,7 @@ describe('SiteSubpageFrame', () => {
         );
 
         expect(screen.getByRole('link', { name: 'トップページ' })).toHaveAttribute('href', '/');
-        expect(screen.getByRole('link', { name: 'ツール一覧' })).toHaveAttribute('href', '/tools');
+        expect(screen.getByRole('link', { name: 'Tools' })).toHaveAttribute('href', '/tools');
         expect(screen.getByText('body')).toBeInTheDocument();
     });
 });

@@ -15,7 +15,7 @@ export function JapanAirportSearchPage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: '日本の飛行場・空港検索' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: '日本の飛行場・空港検索' }]}
             title="日本の飛行場・空港検索"
             description="日本の飛行場・空港を名称、ICAO空港コード、IATA空港コードで検索できるページ。"
         >

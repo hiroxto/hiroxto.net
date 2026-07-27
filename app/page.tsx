@@ -76,12 +76,9 @@ export default function HomePage() {
 
                 <section>
                     <Title order={2}>Others</Title>
-                    <Title order={3} mt="sm">
-                        Tools
-                    </Title>
                     <List listStyleType="disc" withPadding mt={6}>
                         <ListItem>
-                            <InternalLink href="/tools">ツール一覧</InternalLink>
+                            <InternalLink href="/tools">Tools</InternalLink>
                         </ListItem>
                     </List>
                 </section>

@@ -33,7 +33,7 @@ export function TrainNumberCalcPage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: '列車番号から列車種別を計算' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: '列車番号から列車種別を計算' }]}
             title="列車番号から列車種別を計算"
             description="列車番号から列車種別(特急客, 臨急客, 臨特急客, 高速貨A, 臨専貨A, など)を計算できるページ。"
         >

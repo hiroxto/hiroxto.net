@@ -74,7 +74,7 @@ export function SavedRoutesPage() {
     return (
         <SiteSubpageFrame
             items={[
-                { label: 'ツール一覧', href: '/tools' },
+                { label: 'Tools', href: '/tools' },
                 { label: '乗車券の経路作成', href: '/tools/fare-ticket-route-planner' },
                 { label: '保存済み経路' },
             ]}

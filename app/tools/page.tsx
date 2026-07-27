@@ -4,8 +4,8 @@ import { InternalLink } from '@/components/common/internal-link';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
-const title = 'ツール一覧';
-const description = 'hiroxto.netで公開しているツール一覧';
+const title = 'Tools';
+const description = '便利(?)ツール類';
 
 const tools = [
     {
@@ -60,7 +60,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function ToolsPage() {
     return (
-        <SiteSubpageFrame items={[{ label: 'ツール一覧' }]} title={title} description={description}>
+        <SiteSubpageFrame items={[{ label: 'Tools' }]} title={title} description={description}>
             <Stack gap="lg">
                 <section>
                     <List listStyleType="disc" withPadding>
