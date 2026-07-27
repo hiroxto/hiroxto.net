@@ -109,7 +109,7 @@ export function TimesCarEstimateComparisonPage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'タイムズカー/タイムズカーレンタル概算比較' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: 'タイムズカー/タイムズカーレンタル概算比較' }]}
             title="タイムズカー/タイムズカーレンタル概算比較"
             description="タイムズカーとタイムズカーレンタルの料金を入力値から概算比較するページ。"
         >

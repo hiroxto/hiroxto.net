@@ -10,7 +10,7 @@ import { Setting } from '@/components/fare-ticket-route-planner/setting';
 export function FareTicketRoutePlannerPage() {
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: '乗車券の経路作成' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: '乗車券の経路作成' }]}
             title="乗車券の経路作成"
             description="複雑な経路の乗車券作る際の補助ツール"
             pageSize="xl"

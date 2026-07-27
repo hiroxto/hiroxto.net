@@ -28,7 +28,7 @@ export function QrCodeGenPage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'QRコード生成' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: 'QRコード生成' }]}
             title="QRコード生成"
             description="ブラウザでQRコードを生成。"
         >

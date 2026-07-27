@@ -22,7 +22,7 @@ describe('TrainNumberPage', () => {
             />,
         );
 
-        expect(screen.getByRole('link', { name: 'ツール一覧' })).toHaveAttribute('href', '/tools');
+        expect(screen.getByRole('link', { name: 'Tools' })).toHaveAttribute('href', '/tools');
         expect(screen.getByRole('link', { name: '列車番号メモ' })).toHaveAttribute('href', '/tools/train-number');
         expect(screen.getByText('東大宮操~回8610M~大宮')).toBeInTheDocument();
         expect(screen.getByRole('heading', { level: 2, name: '入出場' })).toBeInTheDocument();

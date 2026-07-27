@@ -209,7 +209,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: 'Swarm コイン規制チェッカー' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: 'Swarm コイン規制チェッカー' }]}
             title="Swarm コイン規制チェッカー"
             description="Swarmでチェックインした際に貰えるコインが規制されているかを確認するツール"
             pageSize="xl"
