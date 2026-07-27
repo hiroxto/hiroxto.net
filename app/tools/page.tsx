@@ -9,20 +9,20 @@ const description = '便利(?)ツール類';
 
 const tools = [
     {
-        href: '/tools/times-car-estimate-comparison',
-        title: 'タイムズカー/タイムズカーレンタル概算比較',
-    },
-    {
-        href: '/tools/japan-airport-search',
-        title: '日本の飛行場・空港検索',
-    },
-    {
         href: '/tools/fare-ticket-route-planner',
         title: '乗車券の経路作成',
     },
     {
+        href: '/tools/times-car-estimate-comparison',
+        title: 'タイムズカー/タイムズカーレンタル概算比較',
+    },
+    {
         href: '/tools/cl-sound',
         title: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生',
+    },
+    {
+        href: '/tools/qr-code-gen',
+        title: 'QRコード生成',
     },
     {
         href: '/tools/train-number-calc',
@@ -33,8 +33,8 @@ const tools = [
         title: '列車番号メモ',
     },
     {
-        href: '/tools/qr-code-gen',
-        title: 'QRコード生成',
+        href: '/tools/japan-airport-search',
+        title: '日本の飛行場・空港検索',
     },
     {
         href: '/tools/swarm-checkin-regulation-checker',
