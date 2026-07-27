@@ -15,7 +15,7 @@ describe('SiteSubpageFrame', () => {
             </SiteSubpageFrame>,
         );
 
-        expect(screen.getByRole('link', { name: 'トップページ' })).toHaveAttribute('href', '/');
+        expect(screen.getByRole('link', { name: 'Top page' })).toHaveAttribute('href', '/');
         expect(screen.getByRole('link', { name: 'Tools' })).toHaveAttribute('href', '/tools');
         expect(screen.getByText('body')).toBeInTheDocument();
     });
