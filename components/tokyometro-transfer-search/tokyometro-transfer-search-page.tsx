@@ -184,6 +184,7 @@ export function TokyoMetroTransferSearchPage({
     const [formError, setFormError] = useState<string | null>(null);
     const [searchError, setSearchError] = useState<string | null>(null);
     const [routes, setRoutes] = useState<RouteResult[] | null>(null);
+    const [isSearchTruncated, setIsSearchTruncated] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [isPending, startTransition] = useTransition();
 
@@ -197,6 +198,7 @@ export function TokyoMetroTransferSearchPage({
     useEffect(() => {
         if (initialFrom == null || initialTo == null) {
             setRoutes(null);
+            setIsSearchTruncated(false);
             setSearchError(null);
             setIsSearching(false);
             return;
@@ -212,12 +214,14 @@ export function TokyoMetroTransferSearchPage({
         };
 
         setRoutes(null);
+        setIsSearchTruncated(false);
         setSearchError(null);
         setIsSearching(true);
 
         worker.onmessage = ({ data }: MessageEvent<RouteSearchResponse>) => {
             if (data.status === 'success') {
                 setRoutes(data.routes);
+                setIsSearchTruncated(data.truncated);
             } else {
                 setSearchError(data.message);
             }
@@ -347,6 +351,12 @@ export function TokyoMetroTransferSearchPage({
                             上位経路を検索しています
                         </Text>
                     </Paper>
+                ) : null}
+
+                {isSearchTruncated ? (
+                    <Alert color="yellow" variant="light" title="探索上限に達しました">
+                        表示中の候補は探索済み範囲の結果です。完全な上位結果が必要な場合は最大改札外乗換回数を指定してください。
+                    </Alert>
                 ) : null}
 
                 {routes != null ? (

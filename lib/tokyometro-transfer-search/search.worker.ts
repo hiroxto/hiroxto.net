@@ -8,9 +8,10 @@ const workerScope = globalThis as unknown as {
 
 workerScope.onmessage = ({ data }: MessageEvent<RouteSearchRequest>) => {
     try {
+        const result = searchRoutes(data.originStationId, data.destinationStationId, data.maximumOutsideTransferCount);
         workerScope.postMessage({
             status: 'success',
-            routes: searchRoutes(data.originStationId, data.destinationStationId, data.maximumOutsideTransferCount),
+            ...result,
         });
     } catch (error) {
         workerScope.postMessage({

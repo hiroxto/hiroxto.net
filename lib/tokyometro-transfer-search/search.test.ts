@@ -80,7 +80,7 @@ describe('calculateFareBetweenStations', () => {
 describe('searchRoutes', () => {
     it('桜田門から浅草は路線を再利用する改札外乗換14回の上位20経路を返す', () => {
         // 改札外乗換14か所をすべて通る片道経路があり、その最上位経路の改札内乗換は3回。
-        const routes = searchRoutes('sakuradamon', 'asakusa');
+        const { routes } = searchRoutes('sakuradamon', 'asakusa');
         const firstRouteLineIds = routes[0].legs.map((leg) => leg.lineId);
 
         expect(routes).toHaveLength(20);
@@ -93,14 +93,14 @@ describe('searchRoutes', () => {
     }, 10_000);
 
     it('最大改札外乗換回数を3回にすると改札外乗換3回の上位20経路を返す', () => {
-        const routes = searchRoutes('sakuradamon', 'asakusa', 3);
+        const { routes } = searchRoutes('sakuradamon', 'asakusa', 3);
 
         expect(routes).toHaveLength(20);
         expect(routes.every((route) => route.outsideTransferCount === 3)).toBe(true);
     });
 
     it('最大改札外乗換回数を1回にしても改札内乗換は1回に制限しない', () => {
-        const routes = searchRoutes('sakuradamon', 'asakusa', 1);
+        const { routes } = searchRoutes('sakuradamon', 'asakusa', 1);
 
         expect(routes.every((route) => route.outsideTransferCount === 1)).toBe(true);
         expect(routes.some((route) => route.insideTransferCount > 1)).toBe(true);
@@ -108,11 +108,19 @@ describe('searchRoutes', () => {
 
     it('乗車駅と降車駅が同じ場合は経路を返さない', () => {
         // 片道経路は異なる発着駅を前提とするため、同駅指定の期待件数は0件。
-        expect(searchRoutes('ginza', 'ginza')).toEqual([]);
+        expect(searchRoutes('ginza', 'ginza')).toEqual({ routes: [], truncated: false });
     });
 
     it('出発駅を再訪しないと到達できない場合は経路を返さない', () => {
         // 北綾瀬へは綾瀬を経由する必要があるため、綾瀬発の片道経路では改札外乗換を挟めない。
-        expect(searchRoutes('ayase', 'kita-ayase')).toEqual([]);
+        expect(searchRoutes('ayase', 'kita-ayase')).toEqual({ routes: [], truncated: false });
+    });
+
+    it('未指定検索の探索量が上限に達した場合は見つかった候補と打ち切り状態を返す', () => {
+        const result = searchRoutes('wakoshi', 'nishi-funabashi');
+
+        expect(result.truncated).toBe(true);
+        expect(result.routes).toHaveLength(20);
+        expect(result.routes.every((route) => route.outsideTransferCount === 14)).toBe(true);
     });
 });

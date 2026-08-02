@@ -60,7 +60,11 @@ class WorkerMock {
                 : [inarichoToIriyaRoute];
 
         queueMicrotask(() => {
-            this.onmessage?.(new MessageEvent('message', { data: { status: 'success', routes } }));
+            this.onmessage?.(
+                new MessageEvent('message', {
+                    data: { status: 'success', routes, truncated: request.originStationId === 'wakoshi' },
+                }),
+            );
         });
     }
 
@@ -207,6 +211,20 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
 
         expect(await screen.findByText('改札外乗換のルートを構成できません')).toBeInTheDocument();
+    });
+
+    it('探索上限に達した場合は結果が探索済み範囲であることを表示する', async () => {
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="wakoshi"
+                initialTo="nishi-funabashi"
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
+        );
+
+        expect(await screen.findByText('探索上限に達しました')).toBeInTheDocument();
+        expect(screen.getByText(/表示中の候補は探索済み範囲の結果です/)).toBeInTheDocument();
     });
 
     it('URLの駅IDが不正な場合はエラーを表示する', () => {

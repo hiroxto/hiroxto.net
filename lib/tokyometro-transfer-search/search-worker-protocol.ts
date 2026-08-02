@@ -11,6 +11,7 @@ export type RouteSearchResponse =
     | {
           status: 'success';
           routes: RouteResult[];
+          truncated: boolean;
       }
     | {
           status: 'error';

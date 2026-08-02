@@ -82,6 +82,11 @@ export type RouteResult = {
     fareCheckpoints: FareCheckpoint[];
 };
 
+export type RouteSearchResult = {
+    routes: RouteResult[];
+    truncated: boolean;
+};
+
 export type StationOption = {
     id: StationId;
     name: string;
@@ -663,6 +668,8 @@ const countBits = (value: number): number => {
 };
 
 export const SEARCH_RESULT_LIMIT = 20;
+export const SEARCH_INITIAL_VISIT_LIMIT = 10_000_000;
+export const SEARCH_REFINEMENT_VISIT_LIMIT = 500_000;
 export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
 
 export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
@@ -672,13 +679,13 @@ export const searchRoutes = (
     originStationId: StationId,
     destinationStationId: StationId,
     maximumOutsideTransferCount: number | null = null,
-): RouteResult[] => {
+): RouteSearchResult => {
     if (maximumOutsideTransferCount != null && !isValidMaximumOutsideTransferCount(maximumOutsideTransferCount)) {
         throw new Error(`最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`);
     }
 
     if (originStationId === destinationStationId) {
-        return [];
+        return { routes: [], truncated: false };
     }
 
     const shortestDistances = getShortestDistances(originStationId);
@@ -691,6 +698,9 @@ export const searchRoutes = (
         ~unavailableOutsideMask;
     const availableOutsideCount = countBits(availableOutsideMask);
     const maximumOutsideCount = Math.min(availableOutsideCount, maximumOutsideTransferCount ?? availableOutsideCount);
+    let remainingInitialVisitCount = SEARCH_INITIAL_VISIT_LIMIT;
+    let remainingRefinementVisitCount = SEARCH_REFINEMENT_VISIT_LIMIT;
+    let truncated = false;
 
     for (let targetOutsideCount = maximumOutsideCount; targetOutsideCount >= 1; targetOutsideCount -= 1) {
         const results: RouteResult[] = [];
@@ -724,6 +734,21 @@ export const searchRoutes = (
                 insideTransferCount: number,
                 actualDistanceTenths: number,
             ): void => {
+                const hasEnoughResults = results.length === SEARCH_RESULT_LIMIT;
+
+                if (
+                    (hasEnoughResults && remainingRefinementVisitCount === 0) ||
+                    (!hasEnoughResults && remainingInitialVisitCount === 0)
+                ) {
+                    truncated = true;
+                    return;
+                }
+
+                if (hasEnoughResults) {
+                    remainingRefinementVisitCount -= 1;
+                } else {
+                    remainingInitialVisitCount -= 1;
+                }
                 const worstResult = results.length === SEARCH_RESULT_LIMIT ? results.at(-1) : null;
 
                 if (worstResult != null) {
@@ -751,6 +776,10 @@ export const searchRoutes = (
                     );
 
                 for (const segment of segments) {
+                    if (truncated) {
+                        return;
+                    }
+
                     const touchedRequiredMask = segment.outsideOpportunityMask & requiredOutsideMask & ~usedOutsideMask;
 
                     if (countBits(touchedRequiredMask) > 1) {
@@ -793,6 +822,10 @@ export const searchRoutes = (
                     }
 
                     for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
+                        if (truncated) {
+                            return;
+                        }
+
                         const isOutside = transfer.step.type === 'outside';
 
                         if (
@@ -834,15 +867,23 @@ export const searchRoutes = (
 
             for (const lineId of stationLineIds.get(originStationId) ?? []) {
                 visit(originStationId, lineId, getStationBit(originStationId), 0, 0, 0);
+
+                if (truncated) {
+                    break;
+                }
+            }
+
+            if (truncated) {
+                return { routes: results, truncated: true };
             }
         }
 
         if (results.length > 0) {
-            return results;
+            return { routes: results, truncated: false };
         }
     }
 
-    return [];
+    return { routes: [], truncated: false };
 };
 
 export const formatDistance = (distanceTenths: number): string => `${(distanceTenths / 10).toFixed(1)}km`;
