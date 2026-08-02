@@ -293,7 +293,6 @@ export function TokyoMetroTransferSearchPage({
                                     searchable
                                     clearable
                                     nothingFoundMessage="該当する駅がありません"
-                                    comboboxProps={{ withinPortal: false }}
                                 />
                                 <Select
                                     label="降車駅"
@@ -304,7 +303,6 @@ export function TokyoMetroTransferSearchPage({
                                     searchable
                                     clearable
                                     nothingFoundMessage="該当する駅がありません"
-                                    comboboxProps={{ withinPortal: false }}
                                 />
                                 <Select
                                     label="最大改札外乗換回数"
