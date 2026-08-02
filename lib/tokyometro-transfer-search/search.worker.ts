@@ -10,7 +10,7 @@ workerScope.onmessage = ({ data }: MessageEvent<RouteSearchRequest>) => {
     try {
         workerScope.postMessage({
             status: 'success',
-            routes: searchRoutes(data.originStationId, data.destinationStationId),
+            routes: searchRoutes(data.originStationId, data.destinationStationId, data.maximumOutsideTransferCount),
         });
     } catch (error) {
         workerScope.postMessage({

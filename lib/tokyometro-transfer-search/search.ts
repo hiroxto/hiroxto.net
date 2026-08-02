@@ -663,8 +663,20 @@ const countBits = (value: number): number => {
 };
 
 export const SEARCH_RESULT_LIMIT = 20;
+export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
 
-export const searchRoutes = (originStationId: StationId, destinationStationId: StationId): RouteResult[] => {
+export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
+    Number.isInteger(value) && value >= 1 && value <= MAX_OUTSIDE_TRANSFER_COUNT;
+
+export const searchRoutes = (
+    originStationId: StationId,
+    destinationStationId: StationId,
+    maximumOutsideTransferCount: number | null = null,
+): RouteResult[] => {
+    if (maximumOutsideTransferCount != null && !isValidMaximumOutsideTransferCount(maximumOutsideTransferCount)) {
+        throw new Error(`最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`);
+    }
+
     if (originStationId === destinationStationId) {
         return [];
     }
@@ -677,7 +689,8 @@ export const searchRoutes = (originStationId: StationId, destinationStationId: S
         allOutsideOpportunityMask &
         getOutsideOpportunityMaskBetweenEndpoints(originStationId, destinationStationId) &
         ~unavailableOutsideMask;
-    const maximumOutsideCount = countBits(availableOutsideMask);
+    const availableOutsideCount = countBits(availableOutsideMask);
+    const maximumOutsideCount = Math.min(availableOutsideCount, maximumOutsideTransferCount ?? availableOutsideCount);
 
     for (let targetOutsideCount = maximumOutsideCount; targetOutsideCount >= 1; targetOutsideCount -= 1) {
         const results: RouteResult[] = [];

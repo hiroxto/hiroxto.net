@@ -7,6 +7,7 @@ import { renderWithMantine } from '@/test/test-utils';
 import { TokyoMetroTransferSearchPage } from './tokyometro-transfer-search-page';
 
 const pushMock = vi.fn();
+const workerRequestMock = vi.fn<(request: RouteSearchRequest) => void>();
 
 const inarichoToIriyaRoute: RouteResult = {
     key: 'inaricho-ueno-iriya',
@@ -52,6 +53,7 @@ class WorkerMock {
     onerror: (() => void) | null = null;
 
     postMessage(request: RouteSearchRequest) {
+        workerRequestMock(request);
         const routes =
             request.originStationId === 'ayase' && request.destinationStationId === 'kita-ayase'
                 ? []
@@ -83,6 +85,7 @@ vi.mock('next/navigation', () => ({
 describe('TokyoMetroTransferSearchPage', () => {
     beforeEach(() => {
         pushMock.mockClear();
+        workerRequestMock.mockClear();
         vi.stubGlobal('Worker', WorkerMock);
     });
 
@@ -91,17 +94,33 @@ describe('TokyoMetroTransferSearchPage', () => {
     });
 
     it('初期表示では検索フォームとデータ基準日を表示し、結果は表示しない', () => {
-        renderWithMantine(<TokyoMetroTransferSearchPage initialFrom={null} initialTo={null} queryError={null} />);
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom={null}
+                initialTo={null}
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
+        );
 
         expect(screen.getByRole('textbox', { name: '乗車駅' })).toBeInTheDocument();
         expect(screen.getByRole('textbox', { name: '降車駅' })).toBeInTheDocument();
+        expect(screen.getByRole('textbox', { name: '最大改札外乗換回数' })).toHaveValue('指定しない');
+        expect(screen.getByText('最大回数は改札外乗換にのみ適用し、改札内乗換は制限しません。')).toBeInTheDocument();
         expect(screen.getByText('営業キロ・運賃は2026/07/22時点の情報')).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: '検索結果' })).not.toBeInTheDocument();
     });
 
-    it('駅を指定して検索すると共有可能なURLへ遷移する', async () => {
+    it('駅と最大改札外乗換回数を指定して検索すると共有可能なURLへ遷移する', async () => {
         const user = userEvent.setup();
-        renderWithMantine(<TokyoMetroTransferSearchPage initialFrom={null} initialTo={null} queryError={null} />);
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom={null}
+                initialTo={null}
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
+        );
 
         const fromInput = screen.getByRole('textbox', { name: '乗車駅' });
         await user.click(fromInput);
@@ -112,14 +131,27 @@ describe('TokyoMetroTransferSearchPage', () => {
         await user.click(toInput);
         await user.type(toInput, '入谷');
         await user.click(getActiveOption(toInput, /^入谷｜/));
+
+        const maximumOutsideTransferCountInput = screen.getByRole('textbox', { name: '最大改札外乗換回数' });
+        await user.click(maximumOutsideTransferCountInput);
+        await user.click(getActiveOption(maximumOutsideTransferCountInput, /^1回$/));
         await user.click(screen.getByRole('button', { name: '検索' }));
 
-        expect(pushMock).toHaveBeenCalledWith('/tools/tokyometro-transfer-search?from=inaricho&to=iriya');
+        expect(pushMock).toHaveBeenCalledWith(
+            '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1',
+        );
     });
 
     it('乗車駅と降車駅が同じ場合は入力エラーを表示する', async () => {
         const user = userEvent.setup();
-        renderWithMantine(<TokyoMetroTransferSearchPage initialFrom={null} initialTo={null} queryError={null} />);
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom={null}
+                initialTo={null}
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
+        );
 
         for (const label of ['乗車駅', '降車駅']) {
             const input = screen.getByRole('textbox', { name: label });
@@ -139,9 +171,21 @@ describe('TokyoMetroTransferSearchPage', () => {
         // 日比谷線の上野―入谷1.2kmの候補があるため、
         // 結果一覧には乗換回数・運賃・営業キロを検証できる表示が生じる。
         const user = userEvent.setup();
-        renderWithMantine(<TokyoMetroTransferSearchPage initialFrom="inaricho" initialTo="iriya" queryError={null} />);
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                queryError={null}
+            />,
+        );
 
         expect(await screen.findByRole('heading', { name: '検索結果' })).toBeInTheDocument();
+        expect(workerRequestMock).toHaveBeenCalledWith({
+            originStationId: 'inaricho',
+            destinationStationId: 'iriya',
+            maximumOutsideTransferCount: 1,
+        });
         expect(screen.getAllByText(/改札外乗換 \d+回/).length).toBeGreaterThan(0);
         expect(screen.getAllByText('IC').length).toBeGreaterThan(0);
         expect(screen.getAllByText('きっぷ').length).toBeGreaterThan(0);
@@ -154,7 +198,12 @@ describe('TokyoMetroTransferSearchPage', () => {
 
     it('改札外乗換を含む経路がない場合は指定のメッセージを表示する', async () => {
         renderWithMantine(
-            <TokyoMetroTransferSearchPage initialFrom="ayase" initialTo="kita-ayase" queryError={null} />,
+            <TokyoMetroTransferSearchPage
+                initialFrom="ayase"
+                initialTo="kita-ayase"
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
         );
 
         expect(await screen.findByText('改札外乗換のルートを構成できません')).toBeInTheDocument();
@@ -165,6 +214,7 @@ describe('TokyoMetroTransferSearchPage', () => {
             <TokyoMetroTransferSearchPage
                 initialFrom={null}
                 initialTo={null}
+                initialMaximumOutsideTransferCount={null}
                 queryError="指定された駅が見つかりません"
             />,
         );

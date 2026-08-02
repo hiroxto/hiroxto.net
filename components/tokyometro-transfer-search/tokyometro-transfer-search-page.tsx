@@ -5,13 +5,19 @@ import { useRouter } from 'next/navigation';
 import { type CSSProperties, type FormEvent, useEffect, useState, useTransition } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { LINE_DEFINITIONS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-transfer-search/data';
-import { formatDistance, type RouteResult, stations } from '@/lib/tokyometro-transfer-search/search';
+import {
+    formatDistance,
+    MAX_OUTSIDE_TRANSFER_COUNT,
+    type RouteResult,
+    stations,
+} from '@/lib/tokyometro-transfer-search/search';
 import type { RouteSearchRequest, RouteSearchResponse } from '@/lib/tokyometro-transfer-search/search-worker-protocol';
 import styles from './tokyometro-transfer-search-page.module.css';
 
 interface TokyoMetroTransferSearchPageProps {
     initialFrom: StationId | null;
     initialTo: StationId | null;
+    initialMaximumOutsideTransferCount: number | null;
     queryError: string | null;
 }
 
@@ -19,6 +25,15 @@ const stationOptions = stations.map((station) => ({
     value: station.id,
     label: `${station.name}｜${station.lineIds.map((lineId) => LINE_DEFINITIONS[lineId].name).join('・')}`,
 }));
+
+const unspecifiedMaximumOutsideTransferCount = 'unspecified';
+const maximumOutsideTransferCountOptions = [
+    { value: unspecifiedMaximumOutsideTransferCount, label: '指定しない' },
+    ...Array.from({ length: MAX_OUTSIDE_TRANSFER_COUNT }, (_, index) => ({
+        value: String(index + 1),
+        label: `${index + 1}回`,
+    })),
+];
 
 const formatYen = (value: number): string => `${value.toLocaleString('ja-JP')}円`;
 
@@ -157,11 +172,15 @@ function RouteCard({ route, routeNumber }: { route: RouteResult; routeNumber: nu
 export function TokyoMetroTransferSearchPage({
     initialFrom,
     initialTo,
+    initialMaximumOutsideTransferCount,
     queryError,
 }: TokyoMetroTransferSearchPageProps) {
     const router = useRouter();
     const [fromStationId, setFromStationId] = useState<string | null>(initialFrom);
     const [toStationId, setToStationId] = useState<string | null>(initialTo);
+    const [maximumOutsideTransferCount, setMaximumOutsideTransferCount] = useState<number | null>(
+        initialMaximumOutsideTransferCount,
+    );
     const [formError, setFormError] = useState<string | null>(null);
     const [searchError, setSearchError] = useState<string | null>(null);
     const [routes, setRoutes] = useState<RouteResult[] | null>(null);
@@ -171,8 +190,9 @@ export function TokyoMetroTransferSearchPage({
     useEffect(() => {
         setFromStationId(initialFrom);
         setToStationId(initialTo);
+        setMaximumOutsideTransferCount(initialMaximumOutsideTransferCount);
         setFormError(null);
-    }, [initialFrom, initialTo]);
+    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount]);
 
     useEffect(() => {
         if (initialFrom == null || initialTo == null) {
@@ -188,6 +208,7 @@ export function TokyoMetroTransferSearchPage({
         const request: RouteSearchRequest = {
             originStationId: initialFrom,
             destinationStationId: initialTo,
+            maximumOutsideTransferCount: initialMaximumOutsideTransferCount,
         };
 
         setRoutes(null);
@@ -214,7 +235,7 @@ export function TokyoMetroTransferSearchPage({
         return () => {
             worker.terminate();
         };
-    }, [initialFrom, initialTo]);
+    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -231,6 +252,10 @@ export function TokyoMetroTransferSearchPage({
 
         setFormError(null);
         const query = new URLSearchParams({ from: fromStationId, to: toStationId });
+
+        if (maximumOutsideTransferCount != null) {
+            query.set('maxOutsideTransfers', String(maximumOutsideTransferCount));
+        }
 
         startTransition(() => {
             router.push(`/tools/tokyometro-transfer-search?${query.toString()}`);
@@ -254,7 +279,7 @@ export function TokyoMetroTransferSearchPage({
                                     乗車区間を指定
                                 </Title>
                             </div>
-                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                            <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
                                 <Select
                                     label="乗車駅"
                                     placeholder="駅名または路線名で検索"
@@ -277,7 +302,27 @@ export function TokyoMetroTransferSearchPage({
                                     nothingFoundMessage="該当する駅がありません"
                                     comboboxProps={{ withinPortal: false }}
                                 />
+                                <Select
+                                    label="最大改札外乗換回数"
+                                    data={maximumOutsideTransferCountOptions}
+                                    value={
+                                        maximumOutsideTransferCount == null
+                                            ? unspecifiedMaximumOutsideTransferCount
+                                            : String(maximumOutsideTransferCount)
+                                    }
+                                    onChange={(value) => {
+                                        setMaximumOutsideTransferCount(
+                                            value == null || value === unspecifiedMaximumOutsideTransferCount
+                                                ? null
+                                                : Number(value),
+                                        );
+                                    }}
+                                    allowDeselect={false}
+                                />
                             </SimpleGrid>
+                            <Text size="xs" c="dimmed">
+                                最大回数は改札外乗換にのみ適用し、改札内乗換は制限しません。
+                            </Text>
                             <Group justify="space-between" align="end" gap="md">
                                 <Text size="xs" c="dimmed">
                                     営業キロ・運賃は2026/07/22時点の情報
@@ -314,7 +359,7 @@ export function TokyoMetroTransferSearchPage({
                                         検索結果
                                     </Title>
                                 </div>
-                                <Text fw={700}>最大乗換回数の上位 {routes.length.toLocaleString('ja-JP')}件</Text>
+                                <Text fw={700}>改札外乗換回数の上位 {routes.length.toLocaleString('ja-JP')}件</Text>
                             </Group>
                             <Divider />
 
