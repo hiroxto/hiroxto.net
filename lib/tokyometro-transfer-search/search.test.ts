@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { calculateFareBetweenStations, searchRoutes } from './search';
 
 describe('calculateFareBetweenStations', () => {
@@ -128,7 +128,11 @@ describe('searchRoutes', () => {
     }, 10_000);
 
     it('推定最大回数の探索を打ち切っても低い乗換回数の候補を返す', () => {
+        const performanceNowSpy = vi.spyOn(performance, 'now').mockReturnValue(5_000);
+        performanceNowSpy.mockReturnValueOnce(0);
+
         const result = searchRoutes('kita-ayase', 'nishi-funabashi');
+        performanceNowSpy.mockRestore();
 
         expect(result.truncated).toBe(true);
         expect(result.routes).toHaveLength(20);
