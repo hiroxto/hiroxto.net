@@ -374,7 +374,9 @@ export function TokyoMetroTransferSearchPage({
                             {routes.length === 0 ? (
                                 <Paper withBorder p="xl" radius="sm">
                                     <Text ta="center" fw={700}>
-                                        改札外乗換のルートを構成できません
+                                        {isSearchTruncated
+                                            ? '探索上限内では改札外乗換の候補を確認できませんでした'
+                                            : '改札外乗換のルートを構成できません'}
                                     </Text>
                                 </Paper>
                             ) : (

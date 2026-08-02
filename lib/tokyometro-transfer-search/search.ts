@@ -668,9 +668,12 @@ const countBits = (value: number): number => {
 };
 
 export const SEARCH_RESULT_LIMIT = 20;
-export const SEARCH_INITIAL_VISIT_LIMIT = 10_000_000;
-export const SEARCH_REFINEMENT_VISIT_LIMIT = 500_000;
+export const SEARCH_TARGET_VISIT_LIMIT = 5_000_000;
+export const SEARCH_DURATION_LIMIT_MS = 5_000;
+export const SEARCH_FALLBACK_DURATION_LIMIT_MS = 1_500;
 export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
+
+const SEARCH_DEADLINE_CHECK_INTERVAL = 1_000;
 
 export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
     Number.isInteger(value) && value >= 1 && value <= MAX_OUTSIDE_TRANSFER_COUNT;
@@ -698,12 +701,23 @@ export const searchRoutes = (
         ~unavailableOutsideMask;
     const availableOutsideCount = countBits(availableOutsideMask);
     const maximumOutsideCount = Math.min(availableOutsideCount, maximumOutsideTransferCount ?? availableOutsideCount);
-    let remainingInitialVisitCount = SEARCH_INITIAL_VISIT_LIMIT;
-    let remainingRefinementVisitCount = SEARCH_REFINEMENT_VISIT_LIMIT;
-    let truncated = false;
+    const searchDeadline = performance.now() + SEARCH_DURATION_LIMIT_MS;
+    let encounteredTruncation = false;
 
     for (let targetOutsideCount = maximumOutsideCount; targetOutsideCount >= 1; targetOutsideCount -= 1) {
+        if (performance.now() >= searchDeadline && targetOutsideCount > 1) {
+            encounteredTruncation = true;
+            continue;
+        }
+
         const results: RouteResult[] = [];
+        const targetDeadline =
+            targetOutsideCount === 1 && encounteredTruncation
+                ? Math.max(searchDeadline, performance.now() + SEARCH_FALLBACK_DURATION_LIMIT_MS)
+                : searchDeadline;
+        let remainingTargetVisitCount = SEARCH_TARGET_VISIT_LIMIT;
+        let remainingDeadlineCheckCount = 0;
+        let targetTruncated = false;
 
         const addResult = (result: RouteResult): void => {
             results.push(result);
@@ -734,21 +748,22 @@ export const searchRoutes = (
                 insideTransferCount: number,
                 actualDistanceTenths: number,
             ): void => {
-                const hasEnoughResults = results.length === SEARCH_RESULT_LIMIT;
-
-                if (
-                    (hasEnoughResults && remainingRefinementVisitCount === 0) ||
-                    (!hasEnoughResults && remainingInitialVisitCount === 0)
-                ) {
-                    truncated = true;
+                if (remainingTargetVisitCount === 0) {
+                    targetTruncated = true;
                     return;
                 }
 
-                if (hasEnoughResults) {
-                    remainingRefinementVisitCount -= 1;
-                } else {
-                    remainingInitialVisitCount -= 1;
+                if (remainingDeadlineCheckCount === 0) {
+                    if (performance.now() >= targetDeadline) {
+                        targetTruncated = true;
+                        return;
+                    }
+
+                    remainingDeadlineCheckCount = SEARCH_DEADLINE_CHECK_INTERVAL;
                 }
+
+                remainingTargetVisitCount -= 1;
+                remainingDeadlineCheckCount -= 1;
                 const worstResult = results.length === SEARCH_RESULT_LIMIT ? results.at(-1) : null;
 
                 if (worstResult != null) {
@@ -776,7 +791,7 @@ export const searchRoutes = (
                     );
 
                 for (const segment of segments) {
-                    if (truncated) {
+                    if (targetTruncated) {
                         return;
                     }
 
@@ -822,7 +837,7 @@ export const searchRoutes = (
                     }
 
                     for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
-                        if (truncated) {
+                        if (targetTruncated) {
                             return;
                         }
 
@@ -868,22 +883,26 @@ export const searchRoutes = (
             for (const lineId of stationLineIds.get(originStationId) ?? []) {
                 visit(originStationId, lineId, getStationBit(originStationId), 0, 0, 0);
 
-                if (truncated) {
+                if (targetTruncated) {
                     break;
                 }
             }
 
-            if (truncated) {
-                return { routes: results, truncated: true };
+            if (targetTruncated) {
+                break;
             }
         }
 
         if (results.length > 0) {
-            return { routes: results, truncated: false };
+            return { routes: results, truncated: encounteredTruncation || targetTruncated };
+        }
+
+        if (targetTruncated) {
+            encounteredTruncation = true;
         }
     }
 
-    return { routes: [], truncated: false };
+    return { routes: [], truncated: encounteredTruncation };
 };
 
 export const formatDistance = (distanceTenths: number): string => `${(distanceTenths / 10).toFixed(1)}km`;

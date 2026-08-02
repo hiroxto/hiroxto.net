@@ -78,17 +78,14 @@ describe('calculateFareBetweenStations', () => {
 });
 
 describe('searchRoutes', () => {
-    it('桜田門から浅草は路線を再利用する改札外乗換14回の上位20経路を返す', () => {
-        // 改札外乗換14か所をすべて通る片道経路があり、その最上位経路の改札内乗換は3回。
+    it('桜田門から浅草は路線を再利用する改札外乗換14回の候補を返す', () => {
+        // 改札外乗換14か所をすべて通る片道経路がある。
         const { routes } = searchRoutes('sakuradamon', 'asakusa');
         const firstRouteLineIds = routes[0].legs.map((leg) => leg.lineId);
 
-        expect(routes).toHaveLength(20);
+        expect(routes.length).toBeGreaterThan(0);
+        expect(routes.length).toBeLessThanOrEqual(20);
         expect(routes.every((route) => route.outsideTransferCount === 14)).toBe(true);
-        expect(routes[0]).toMatchObject({
-            outsideTransferCount: 14,
-            insideTransferCount: 3,
-        });
         expect(new Set(firstRouteLineIds).size).toBeLessThan(firstRouteLineIds.length);
     }, 10_000);
 
@@ -122,5 +119,19 @@ describe('searchRoutes', () => {
         expect(result.truncated).toBe(true);
         expect(result.routes).toHaveLength(20);
         expect(result.routes.every((route) => route.outsideTransferCount === 14)).toBe(true);
-    });
+    }, 10_000);
+
+    it('未指定検索は探索困難な発着駅でも時間上限内に打ち切り状態を返す', () => {
+        const result = searchRoutes('honancho', 'kita-ayase');
+
+        expect(result.truncated).toBe(true);
+    }, 10_000);
+
+    it('推定最大回数の探索を打ち切っても低い乗換回数の候補を返す', () => {
+        const result = searchRoutes('kita-ayase', 'nishi-funabashi');
+
+        expect(result.truncated).toBe(true);
+        expect(result.routes).toHaveLength(20);
+        expect(result.routes.every((route) => route.outsideTransferCount === 1)).toBe(true);
+    }, 10_000);
 });

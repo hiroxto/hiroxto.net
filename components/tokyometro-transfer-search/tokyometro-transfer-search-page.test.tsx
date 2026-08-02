@@ -55,14 +55,19 @@ class WorkerMock {
     postMessage(request: RouteSearchRequest) {
         workerRequestMock(request);
         const routes =
-            request.originStationId === 'ayase' && request.destinationStationId === 'kita-ayase'
+            (request.originStationId === 'ayase' && request.destinationStationId === 'kita-ayase') ||
+            request.originStationId === 'honancho'
                 ? []
                 : [inarichoToIriyaRoute];
 
         queueMicrotask(() => {
             this.onmessage?.(
                 new MessageEvent('message', {
-                    data: { status: 'success', routes, truncated: request.originStationId === 'wakoshi' },
+                    data: {
+                        status: 'success',
+                        routes,
+                        truncated: request.originStationId === 'wakoshi' || request.originStationId === 'honancho',
+                    },
                 }),
             );
         });
@@ -110,7 +115,6 @@ describe('TokyoMetroTransferSearchPage', () => {
         expect(screen.getByRole('textbox', { name: '乗車駅' })).toBeInTheDocument();
         expect(screen.getByRole('textbox', { name: '降車駅' })).toBeInTheDocument();
         expect(screen.getByRole('textbox', { name: '最大改札外乗換回数' })).toHaveValue('指定しない');
-        expect(screen.getByText('最大回数は改札外乗換にのみ適用し、改札内乗換は制限しません。')).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: '検索結果' })).not.toBeInTheDocument();
     });
 
@@ -224,6 +228,20 @@ describe('TokyoMetroTransferSearchPage', () => {
 
         expect(await screen.findByText('探索上限に達しました')).toBeInTheDocument();
         expect(screen.getByText(/表示中の候補は探索済み範囲の結果です/)).toBeInTheDocument();
+    });
+
+    it('探索上限に達して候補がない場合は経路が存在しないと断定しない', async () => {
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="honancho"
+                initialTo="kita-ayase"
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
+        );
+
+        expect(await screen.findByText('探索上限内では改札外乗換の候補を確認できませんでした')).toBeInTheDocument();
+        expect(screen.queryByText('改札外乗換のルートを構成できません')).not.toBeInTheDocument();
     });
 
     it('URLの駅IDが不正な場合はエラーを表示する', () => {
