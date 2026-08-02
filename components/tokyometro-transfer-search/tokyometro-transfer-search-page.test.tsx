@@ -97,7 +97,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         vi.unstubAllGlobals();
     });
 
-    it('初期表示では検索フォームとデータ基準日を表示し、結果は表示しない', () => {
+    it('初期表示では検索フォームを表示し、結果は表示しない', () => {
         renderWithMantine(
             <TokyoMetroTransferSearchPage
                 initialFrom={null}
@@ -111,7 +111,6 @@ describe('TokyoMetroTransferSearchPage', () => {
         expect(screen.getByRole('textbox', { name: '降車駅' })).toBeInTheDocument();
         expect(screen.getByRole('textbox', { name: '最大改札外乗換回数' })).toHaveValue('指定しない');
         expect(screen.getByText('最大回数は改札外乗換にのみ適用し、改札内乗換は制限しません。')).toBeInTheDocument();
-        expect(screen.getByText('営業キロ・運賃は2026/07/22時点の情報')).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: '検索結果' })).not.toBeInTheDocument();
     });
 
