@@ -210,13 +210,6 @@ TC-01のテスト計画書に明記されたチェックポイント期待値で
 7. `npm run lint:fix`、`npm run format:fix`、`npm run test`を実行する。
 8. UI確認時は新しいPlaywrightセッションとローカルサーバーを起動し、PC・スマートフォンの両方を確認する。
 
-## 11. 証跡
+## 11. 証跡の扱い
 
-- [TC-01 代表経路](../.playwright-cli/tc-01-representative.png)
-- [TC-02 代表経路](../.playwright-cli/tc-02-representative.png)
-- [TC-03 代表経路](../.playwright-cli/tc-03-representative.png)
-- [TC-04 代表経路](../.playwright-cli/tc-04-representative.png)
-- [TC-05 代表経路](../.playwright-cli/tc-05-representative.png)
-- [TC-06 代表経路](../.playwright-cli/tc-06-representative.png)
-
-スクリーンショットは現在の画面表示の証跡であり、公式値へ修正後の表示ではない。
+調査時のスクリーンショットはローカルの `.playwright-cli/` にのみ保存され、リポジトリには含まれていない。そのため、本アーカイブからは参照できない証跡リンクを掲載しない。
