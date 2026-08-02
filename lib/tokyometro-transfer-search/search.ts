@@ -285,7 +285,7 @@ export const stations: StationOption[] = stationIds.map((id) => ({
     lineIds: [...(stationLineIds.get(id) ?? [])],
 }));
 
-export const isStationId = (value: string): value is StationId => value in STATION_NAMES;
+export const isStationId = (value: string): value is StationId => Object.hasOwn(STATION_NAMES, value);
 
 const shortestDistanceCache = new Map<StationId, Map<StationId, number>>();
 

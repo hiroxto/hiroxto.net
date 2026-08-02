@@ -41,6 +41,23 @@ describe('parseTokyoMetroTransferSearchParams', () => {
         });
     });
 
+    it.each(['constructor', 'toString', '__proto__'])(
+        '駅IDがObject.prototypeのプロパティ名と一致する場合はエラーを返す',
+        (value) => {
+            expect(
+                parseTokyoMetroTransferSearchParams({
+                    from: value,
+                    to: 'iriya',
+                }),
+            ).toEqual({
+                fromStationId: null,
+                toStationId: null,
+                maximumOutsideTransferCount: null,
+                error: '指定された駅が見つかりません',
+            });
+        },
+    );
+
     it('乗車駅と降車駅が同じ場合は検索条件を破棄してエラーを返す', () => {
         expect(
             parseTokyoMetroTransferSearchParams({
