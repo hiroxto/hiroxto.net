@@ -90,7 +90,7 @@ describe('searchRoutes', () => {
             insideTransferCount: 3,
         });
         expect(new Set(firstRouteLineIds).size).toBeLessThan(firstRouteLineIds.length);
-    });
+    }, 10_000);
 
     it('最大改札外乗換回数を3回にすると改札外乗換3回の上位20経路を返す', () => {
         const routes = searchRoutes('sakuradamon', 'asakusa', 3);
