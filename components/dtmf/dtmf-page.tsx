@@ -46,12 +46,14 @@ const dtmfKeys: DtmfKey[][] = [
 
 const highFrequencies = [1209, 1336, 1477, 1633];
 const keyByLabel = new Map(dtmfKeys.flat().map((key) => [key.label, key]));
+const synthesizedToneDurationMs = 150;
 
 const findKeyForKeyboardEvent = (event: KeyboardEvent) => keyByLabel.get(event.key.toUpperCase());
 
 export function DtmfPage() {
     const audioContextRef = useRef<AudioContext | null>(null);
     const activeToneRef = useRef<ActiveTone | null>(null);
+    const synthesizedClickTimerRef = useRef<number | null>(null);
     const [activeKey, setActiveKey] = useState<DtmfKey | null>(null);
 
     const stopTone = useCallback((sourceId?: string) => {
@@ -125,6 +127,10 @@ export function DtmfPage() {
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.ctrlKey || event.metaKey || event.altKey) {
+                return;
+            }
+
             const key = findKeyForKeyboardEvent(event);
             if (key == null || event.repeat) {
                 return;
@@ -153,6 +159,10 @@ export function DtmfPage() {
 
     useEffect(
         () => () => {
+            if (synthesizedClickTimerRef.current != null) {
+                window.clearTimeout(synthesizedClickTimerRef.current);
+            }
+
             const activeTone = activeToneRef.current;
             if (activeTone != null) {
                 for (const oscillator of activeTone.oscillators) {
@@ -214,6 +224,22 @@ export function DtmfPage() {
                                                     aria-pressed={isActive}
                                                     style={{ touchAction: 'none' }}
                                                     onContextMenu={(event) => event.preventDefault()}
+                                                    onClick={(event) => {
+                                                        if (event.detail !== 0) {
+                                                            return;
+                                                        }
+
+                                                        if (synthesizedClickTimerRef.current != null) {
+                                                            window.clearTimeout(synthesizedClickTimerRef.current);
+                                                        }
+
+                                                        const sourceId = `synthesized-click:${key.label}`;
+                                                        startTone(key, sourceId);
+                                                        synthesizedClickTimerRef.current = window.setTimeout(() => {
+                                                            stopTone(sourceId);
+                                                            synthesizedClickTimerRef.current = null;
+                                                        }, synthesizedToneDurationMs);
+                                                    }}
                                                     onPointerDown={(event) => {
                                                         if (event.pointerType === 'mouse' && event.button !== 0) {
                                                             return;
