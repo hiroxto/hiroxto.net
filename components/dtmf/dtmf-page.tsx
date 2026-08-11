@@ -222,7 +222,6 @@ export function DtmfPage() {
                                                     px="xs"
                                                     variant={isActive ? 'filled' : 'light'}
                                                     aria-label={`${key.label}、${key.lowFrequency} Hzと${key.highFrequency} Hz`}
-                                                    aria-pressed={isActive}
                                                     style={{ touchAction: 'none' }}
                                                     onContextMenu={(event) => event.preventDefault()}
                                                     onClick={(event) => {
