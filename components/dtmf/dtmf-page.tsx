@@ -127,7 +127,8 @@ export function DtmfPage() {
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.ctrlKey || event.metaKey || event.altKey) {
+            const isAltGraph = event.getModifierState('AltGraph');
+            if (event.metaKey || (!isAltGraph && (event.ctrlKey || event.altKey))) {
                 return;
             }
 

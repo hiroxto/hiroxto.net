@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, createEvent, fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithMantine } from '@/test/test-utils';
 import { DtmfPage } from './dtmf-page';
@@ -138,6 +138,27 @@ describe('DtmfPage', () => {
         expect(wasNotCancelled).toBe(true);
         expect(screen.getByText('停止中')).toBeInTheDocument();
         expect(FakeAudioContext.latest).toBeNull();
+    });
+
+    it('AltGraphで#を入力している間は信号音を再生すること', () => {
+        renderPage();
+        const keyDownEvent = createEvent.keyDown(window, {
+            altKey: true,
+            code: 'Digit3',
+            ctrlKey: true,
+            key: '#',
+        });
+        Object.defineProperty(keyDownEvent, 'getModifierState', {
+            value: (modifier: string) => modifier === 'AltGraph',
+        });
+
+        fireEvent(window, keyDownEvent);
+
+        expect(screen.getByText('# (941 Hz + 1477 Hz)')).toBeInTheDocument();
+
+        fireEvent.keyUp(window, { altKey: true, code: 'Digit3', ctrlKey: true, key: '#' });
+
+        expect(screen.getByText('停止中')).toBeInTheDocument();
     });
 
     it('合成clickでは信号音を一定時間だけ再生すること', () => {
