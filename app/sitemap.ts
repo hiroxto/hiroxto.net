@@ -5,6 +5,7 @@ const sitemapEntries = [
     { path: '/', changeFrequency: 'yearly', priority: 1 },
     { path: '/tools', changeFrequency: 'yearly', priority: 0.2 },
     { path: '/tools/cl-sound', changeFrequency: 'yearly', priority: 0.8 },
+    { path: '/tools/dtmf', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/epgs-recorded-name', changeFrequency: 'yearly', priority: 0.2 },
     { path: '/tools/fare-ticket-route-planner', changeFrequency: 'yearly', priority: 0.8 },
     { path: '/tools/fare-ticket-route-planner/states', changeFrequency: 'yearly', priority: 0.4 },
