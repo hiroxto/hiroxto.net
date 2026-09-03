@@ -227,7 +227,37 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
 
         expect(await screen.findByText('探索上限に達しました')).toBeInTheDocument();
-        expect(screen.getByText(/表示中の候補は探索済み範囲の結果です/)).toBeInTheDocument();
+        expect(screen.getByText(/最大改札外乗換回数を指定してください/)).toBeInTheDocument();
+    });
+
+    it('最大改札外乗換回数を指定した検索の打ち切り時は現在より小さい回数を案内する', async () => {
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="wakoshi"
+                initialTo="nishi-funabashi"
+                initialMaximumOutsideTransferCount={10}
+                queryError={null}
+            />,
+        );
+
+        expect(await screen.findByText('探索上限に達しました')).toBeInTheDocument();
+        expect(screen.getByText(/最大改札外乗換回数を現在より小さくしてください/)).toBeInTheDocument();
+        expect(screen.queryByText(/最大改札外乗換回数を指定してください/)).not.toBeInTheDocument();
+    });
+
+    it('最大改札外乗換回数1回の検索を打ち切った場合は変更できない条件を案内しない', async () => {
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="wakoshi"
+                initialTo="nishi-funabashi"
+                initialMaximumOutsideTransferCount={1}
+                queryError={null}
+            />,
+        );
+
+        expect(await screen.findByText('探索上限に達しました')).toBeInTheDocument();
+        expect(screen.getByText(/探索上限のため完全な上位結果を取得できませんでした/)).toBeInTheDocument();
+        expect(screen.queryByText(/現在より小さくしてください/)).not.toBeInTheDocument();
     });
 
     it('探索上限に達して候補がない場合は経路が存在しないと断定しない', async () => {

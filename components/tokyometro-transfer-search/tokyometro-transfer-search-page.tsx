@@ -353,7 +353,11 @@ export function TokyoMetroTransferSearchPage({
 
                 {isSearchTruncated ? (
                     <Alert color="yellow" variant="light" title="探索上限に達しました">
-                        表示中の候補は探索済み範囲の結果です。完全な上位結果が必要な場合は最大改札外乗換回数を指定してください。
+                        {initialMaximumOutsideTransferCount == null
+                            ? '表示中の候補は探索済み範囲の結果です。完全な上位結果が必要な場合は最大改札外乗換回数を指定してください。'
+                            : initialMaximumOutsideTransferCount > 1
+                              ? '表示中の候補は探索済み範囲の結果です。完全な上位結果が必要な場合は最大改札外乗換回数を現在より小さくしてください。'
+                              : '表示中の候補は探索済み範囲の結果です。探索上限のため完全な上位結果を取得できませんでした。'}
                     </Alert>
                 ) : null}
 
