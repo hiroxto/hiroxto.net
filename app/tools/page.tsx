@@ -21,6 +21,10 @@ const tools = [
         title: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生',
     },
     {
+        href: '/tools/dtmf',
+        title: 'DTMF',
+    },
+    {
         href: '/tools/qr-code-gen',
         title: 'QRコード生成',
     },
