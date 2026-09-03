@@ -1,5 +1,6 @@
 import {
     CROSS_STATION_TRANSFERS,
+    FARE_CALCULATION_DISTANCE_OVERRIDES,
     LINE_DEFINITIONS,
     LINE_PATHS,
     type LineId,
@@ -292,10 +293,25 @@ export const stations: StationOption[] = stationIds.map((id) => ({
 
 export const isStationId = (value: string): value is StationId => Object.hasOwn(STATION_NAMES, value);
 
-const shortestDistanceCache = new Map<StationId, Map<StationId, number>>();
+const getStationPairKey = (firstStationId: StationId, secondStationId: StationId): string =>
+    firstStationId < secondStationId ? `${firstStationId}:${secondStationId}` : `${secondStationId}:${firstStationId}`;
 
-const getShortestDistances = (originStationId: StationId): Map<StationId, number> => {
-    const cached = shortestDistanceCache.get(originStationId);
+const fareCalculationDistanceOverrides = new Map(
+    FARE_CALCULATION_DISTANCE_OVERRIDES.map(([firstStationId, secondStationId, distanceTenths]) => [
+        getStationPairKey(firstStationId, secondStationId),
+        distanceTenths,
+    ]),
+);
+
+const actualShortestDistanceCache = new Map<StationId, Map<StationId, number>>();
+const fareShortestDistanceCache = new Map<StationId, Map<StationId, number>>();
+
+const calculateShortestDistances = (
+    originStationId: StationId,
+    cache: Map<StationId, Map<StationId, number>>,
+    getRideDistance: (fromStationId: StationId, edge: RideEdge) => number,
+): Map<StationId, number> => {
+    const cached = cache.get(originStationId);
 
     if (cached != null) {
         return cached;
@@ -325,7 +341,7 @@ const getShortestDistances = (originStationId: StationId): Map<StationId, number
         unsettled.delete(currentStationId);
 
         for (const edge of graph.get(currentStationId) ?? []) {
-            const nextDistance = currentDistance + (edge.kind === 'ride' ? edge.distanceTenths : 0);
+            const nextDistance = currentDistance + (edge.kind === 'ride' ? getRideDistance(currentStationId, edge) : 0);
 
             if (nextDistance < (distances.get(edge.stationId) ?? Number.POSITIVE_INFINITY)) {
                 distances.set(edge.stationId, nextDistance);
@@ -333,9 +349,25 @@ const getShortestDistances = (originStationId: StationId): Map<StationId, number
         }
     }
 
-    shortestDistanceCache.set(originStationId, distances);
+    cache.set(originStationId, distances);
     return distances;
 };
+
+const getShortestActualDistances = (originStationId: StationId): Map<StationId, number> =>
+    calculateShortestDistances(
+        originStationId,
+        actualShortestDistanceCache,
+        (_fromStationId, edge) => edge.distanceTenths,
+    );
+
+const getShortestFareDistances = (originStationId: StationId): Map<StationId, number> =>
+    calculateShortestDistances(
+        originStationId,
+        fareShortestDistanceCache,
+        (fromStationId, edge) =>
+            fareCalculationDistanceOverrides.get(getStationPairKey(fromStationId, edge.stationId)) ??
+            edge.distanceTenths,
+    );
 
 const getRegularFare = (distanceTenths: number): Fare => {
     const roundedKilometers = Math.max(1, Math.ceil(distanceTenths / 10));
@@ -364,7 +396,7 @@ const isSamePair = (first: StationId, second: StationId, pair: readonly [Station
 
 const getFare = (originStationId: StationId, destinationStationId: StationId, distanceTenths: number): Fare => {
     if (isSamePair(originStationId, destinationStationId, ['ayase', 'kita-senju'])) {
-        return { ic: 146, ticket: 150 };
+        return { ic: 155, ticket: 160 };
     }
 
     const sharedNambokuSection = new Set<StationId>(['meguro', 'shirokanedai', 'shirokane-takanawa']);
@@ -380,7 +412,7 @@ export const calculateFareBetweenStations = (
     originStationId: StationId,
     destinationStationId: StationId,
 ): Fare & { shortestDistanceTenths: number } => {
-    const shortestDistanceTenths = getShortestDistances(originStationId).get(destinationStationId);
+    const shortestDistanceTenths = getShortestFareDistances(originStationId).get(destinationStationId);
 
     if (shortestDistanceTenths == null || !Number.isFinite(shortestDistanceTenths)) {
         throw new Error('駅間の経路を構成できません');
@@ -691,7 +723,7 @@ export const searchRoutes = (
         return { routes: [], truncated: false };
     }
 
-    const shortestDistances = getShortestDistances(originStationId);
+    const shortestDistances = getShortestFareDistances(originStationId);
     const unavailableOutsideMask =
         (outsideOpportunityMaskByStation.get(originStationId) ?? 0) |
         (outsideOpportunityMaskByStation.get(destinationStationId) ?? 0);
@@ -768,7 +800,7 @@ export const searchRoutes = (
 
                 if (worstResult != null) {
                     const shortestRemainingDistance =
-                        getShortestDistances(stationId).get(destinationStationId) ?? Number.POSITIVE_INFINITY;
+                        getShortestActualDistances(stationId).get(destinationStationId) ?? Number.POSITIVE_INFINITY;
 
                     if (
                         insideTransferCount > worstResult.insideTransferCount ||

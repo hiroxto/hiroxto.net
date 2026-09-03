@@ -162,6 +162,21 @@ export const STATION_NAMES = {
 
 export type StationId = keyof typeof STATION_NAMES;
 
+/** 旅客営業規程第13条に定められた、隣接駅間の運賃計算キロ程（0.1km単位）。 */
+export const FARE_CALCULATION_DISTANCE_OVERRIDES = [
+    ['ayase', 'kita-senju', 25],
+    ['hibiya', 'kasumigaseki', 12],
+    ['kasumigaseki', 'kokkai-gijidomae', 7],
+    ['aoyama-itchome', 'nagatacho', 13],
+    ['kotake-mukaihara', 'senkawa', 10],
+    ['kanamecho', 'ikebukuro', 12],
+    ['tameike-sanno', 'toranomon', 6],
+    ['akasaka-mitsuke', 'tameike-sanno', 9],
+    ['tameike-sanno', 'nagatacho', 9],
+    ['nagatacho', 'yotsuya', 13],
+    ['shibuya', 'omote-sando', 13],
+] as const satisfies ReadonlyArray<readonly [StationId, StationId, number]>;
+
 type LinePathDefinition = {
     lineId: LineId;
     /** 各タプルの数値は直前駅からの営業キロを0.1km単位で表す。 */
