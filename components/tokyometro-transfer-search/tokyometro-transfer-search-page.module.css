@@ -1,0 +1,196 @@
+.searchPanel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #d9dde2;
+    border-top: 5px solid #161616;
+    background:
+        linear-gradient(90deg, rgb(243 151 0 / 8%) 1px, transparent 1px),
+        linear-gradient(rgb(0 167 219 / 7%) 1px, transparent 1px), #fbfbfa;
+    background-size: 28px 28px;
+}
+
+.searchPanel::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 9rem;
+    height: 5px;
+    background: linear-gradient(
+        90deg,
+        #f39700 0 11%,
+        #e60012 11% 22%,
+        #9caeb7 22% 33%,
+        #00a7db 33% 44%,
+        #00a650 44% 55%,
+        #d7c447 55% 66%,
+        #9b7cb6 66% 77%,
+        #00ada9 77% 88%,
+        #bb641d 88%
+    );
+    content: "";
+}
+
+.eyebrow {
+    color: #5d6268;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.resultCard {
+    overflow: hidden;
+    border-color: #cfd4da;
+    box-shadow: 0 6px 20px rgb(25 31 36 / 5%);
+}
+
+.resultHeader {
+    border-bottom: 1px solid #e2e5e8;
+    background: #f7f8f8;
+}
+
+.routeNumber {
+    color: #555c63;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.fareValue {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.025em;
+}
+
+.routeFlow {
+    display: grid;
+    gap: 0;
+}
+
+.stationRow {
+    display: grid;
+    grid-template-columns: 1.2rem minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: center;
+    min-height: 2rem;
+}
+
+.stationDot {
+    width: 0.72rem;
+    height: 0.72rem;
+    margin-inline: auto;
+    border: 2px solid #181b1e;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.lineSegment {
+    display: grid;
+    grid-template-columns: 1.2rem minmax(0, 1fr);
+    gap: 0.65rem;
+    min-height: 2.8rem;
+}
+
+.lineRail {
+    width: 0.32rem;
+    height: 100%;
+    margin-inline: auto;
+    border-radius: 999px;
+    background: var(--line-color);
+}
+
+.lineDetails {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.lineBadge {
+    display: inline-flex;
+    gap: 0.45rem;
+    align-items: center;
+    min-width: 0;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #d9dde1;
+    border-radius: 999px;
+    background: #fff;
+    color: #2b3035;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.lineCode {
+    display: grid;
+    width: 1.35rem;
+    height: 1.35rem;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 2px solid var(--line-color);
+    border-radius: 50%;
+    background: #fff;
+    color: #262a2e;
+    font-size: 0.68rem;
+    line-height: 1;
+}
+
+.transferRow {
+    display: grid;
+    grid-template-columns: 1.2rem minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: center;
+    padding-block: 0.25rem;
+}
+
+.transferMark {
+    width: 0;
+    height: 100%;
+    min-height: 1.8rem;
+    margin-inline: auto;
+    border-left: 2px dashed #7b8288;
+}
+
+.outsideTransfer {
+    border-color: #161616;
+    background: #161616;
+    color: #fff;
+}
+
+.insideTransfer {
+    border-color: #b7bdc3;
+    background: #fff;
+    color: #3e454c;
+}
+
+.debugDetails {
+    border-top: 1px dashed #cfd4d9;
+}
+
+.debugDetails summary {
+    width: fit-content;
+    cursor: pointer;
+    color: #555c63;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.debugDetails summary:hover {
+    color: #111;
+}
+
+@media (max-width: 47.99em) {
+    .resultHeader {
+        align-items: flex-start;
+    }
+
+    .fareSummary {
+        width: 100%;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e2e5e8;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .debugDetails summary {
+        scroll-behavior: auto;
+    }
+}
