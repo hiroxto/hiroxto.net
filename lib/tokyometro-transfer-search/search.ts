@@ -707,6 +707,12 @@ export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
 
 const SEARCH_DEADLINE_CHECK_INTERVAL = 1_000;
 
+const getFallbackTargetDeadline = (
+    currentTime: number,
+    fallbackDeadline: number,
+    remainingTargetCount: number,
+): number => currentTime + Math.max(1, (fallbackDeadline - currentTime) / remainingTargetCount);
+
 export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
     Number.isInteger(value) && value >= 1 && value <= MAX_OUTSIDE_TRANSFER_COUNT;
 
@@ -735,17 +741,20 @@ export const searchRoutes = (
     const maximumOutsideCount = Math.min(availableOutsideCount, maximumOutsideTransferCount ?? availableOutsideCount);
     const searchDeadline = performance.now() + SEARCH_DURATION_LIMIT_MS;
     let encounteredTruncation = false;
+    let fallbackDeadline: number | null = null;
 
     for (let targetOutsideCount = maximumOutsideCount; targetOutsideCount >= 1; targetOutsideCount -= 1) {
-        if (performance.now() >= searchDeadline && targetOutsideCount > 1) {
+        const currentTime = performance.now();
+
+        if (!encounteredTruncation && currentTime >= searchDeadline) {
             encounteredTruncation = true;
-            continue;
+            fallbackDeadline = currentTime + SEARCH_FALLBACK_DURATION_LIMIT_MS;
         }
 
         const results: RouteResult[] = [];
         const targetDeadline =
-            targetOutsideCount === 1 && encounteredTruncation
-                ? Math.max(searchDeadline, performance.now() + SEARCH_FALLBACK_DURATION_LIMIT_MS)
+            encounteredTruncation && fallbackDeadline != null
+                ? getFallbackTargetDeadline(currentTime, fallbackDeadline, targetOutsideCount)
                 : searchDeadline;
         let remainingTargetVisitCount = SEARCH_TARGET_VISIT_LIMIT;
         let remainingDeadlineCheckCount = 0;
@@ -931,6 +940,7 @@ export const searchRoutes = (
 
         if (targetTruncated) {
             encounteredTruncation = true;
+            fallbackDeadline ??= performance.now() + SEARCH_FALLBACK_DURATION_LIMIT_MS;
         }
     }
 

@@ -172,15 +172,19 @@ describe('searchRoutes', () => {
         expect(result.truncated).toBe(true);
     }, 10_000);
 
-    it('推定最大回数の探索を打ち切っても低い乗換回数の候補を返す', () => {
-        const performanceNowSpy = vi.spyOn(performance, 'now').mockReturnValue(5_000);
+    it('最大回数の探索期限を超過しても中間の乗換回数を探索する', () => {
+        let currentTime = 5_000;
+        const performanceNowSpy = vi.spyOn(performance, 'now').mockImplementation(() => {
+            currentTime += 1;
+            return currentTime;
+        });
         performanceNowSpy.mockReturnValueOnce(0);
 
         const result = searchRoutes('kita-ayase', 'nishi-funabashi');
         performanceNowSpy.mockRestore();
 
         expect(result.truncated).toBe(true);
-        expect(result.routes).toHaveLength(20);
-        expect(result.routes.every((route) => route.outsideTransferCount === 1)).toBe(true);
+        expect(result.routes.length).toBeGreaterThan(0);
+        expect(result.routes.every((route) => route.outsideTransferCount > 1)).toBe(true);
     }, 10_000);
 });
