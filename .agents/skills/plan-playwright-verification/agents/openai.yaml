@@ -1,4 +1,4 @@
 interface:
   display_name: "Playwright Verification Planning"
-  short_description: "変更内容からPlaywright動作確認の要否・範囲・観点を決定する"
+  short_description: "変更内容からPlaywrightによる動作確認の要否と範囲を判断し、必要な確認を実施する"
   default_prompt: "Use $plan-playwright-verification to decide and perform the appropriate Playwright verification for these code changes."
