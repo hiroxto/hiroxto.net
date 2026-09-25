@@ -130,7 +130,7 @@ describe('ControlButtons', () => {
         expect(useRouteStateStore.getState().routes[1]).toMatchObject({ line: '', station: '' });
     });
 
-    test('空経路クリアボタンで値のない経路を除外できる', async () => {
+    test('空経路クリアボタンで路線と接続駅が空の行を除外する', async () => {
         const user = userEvent.setup();
         useRouteStateStore.setState({
             routes: [

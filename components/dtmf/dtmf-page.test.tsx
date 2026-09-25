@@ -161,7 +161,7 @@ describe('DtmfPage', () => {
         expect(screen.getByText('停止中')).toBeInTheDocument();
     });
 
-    it('合成clickでは信号音を一定時間だけ再生すること', () => {
+    it('合成されたクリック操作では信号音を一定時間だけ再生する', () => {
         vi.useFakeTimers();
         renderPage();
         const button = screen.getByRole('button', { name: '1、697 Hzと1209 Hz' });
@@ -175,7 +175,7 @@ describe('DtmfPage', () => {
         expect(screen.getByText('停止中')).toBeInTheDocument();
     });
 
-    it('通常のポインターclickでは停止した信号音を再開しないこと', () => {
+    it('ポインター操作では停止済みの信号音を再開しない', () => {
         renderPage();
         const button = screen.getByRole('button', { name: '1、697 Hzと1209 Hz' });
         button.setPointerCapture = vi.fn();

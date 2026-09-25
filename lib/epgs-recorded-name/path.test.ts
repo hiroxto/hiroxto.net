@@ -14,7 +14,7 @@ describe('getDefaultSeason', () => {
 });
 
 describe('buildRecordedPath', () => {
-    it('通常時は year/season/programName を返すこと', () => {
+    it('通常の番組は年・シーズン・番組名を階層にしたパスを返す', () => {
         expect(
             buildRecordedPath({
                 year: '2026',
@@ -26,7 +26,7 @@ describe('buildRecordedPath', () => {
         ).toBe('2026/02_spring/my-anime');
     });
 
-    it('再放送なら repeat_ を付与すること', () => {
+    it('再放送の番組名には repeat_ を付ける', () => {
         expect(
             buildRecordedPath({
                 year: '2026',
@@ -38,7 +38,7 @@ describe('buildRecordedPath', () => {
         ).toBe('2026/02_spring/repeat_my-anime');
     });
 
-    it('分類不要なら末尾に 10_other を使うこと', () => {
+    it('分類不要の番組は番組名の代わりに 10_other を使う', () => {
         expect(
             buildRecordedPath({
                 year: '2026',

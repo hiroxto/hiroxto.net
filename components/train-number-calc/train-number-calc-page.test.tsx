@@ -11,7 +11,7 @@ describe('TrainNumberCalcPage', () => {
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
-    it('正常な数字入力で列車種別を表示すること', async () => {
+    it('有効な列車番号を入力すると列車種別を表示する', async () => {
         const user = userEvent.setup();
         renderWithMantine(<TrainNumberCalcPage />);
 

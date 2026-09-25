@@ -8,7 +8,7 @@ import {
 import type { SavedRouteState } from '@/lib/fare-ticket-route-planner/types';
 
 describe('control buttons ui', () => {
-    test('保存用ペイロード生成時に現在の経路状態をそのまま返すこと', () => {
+    test('新規保存用のデータに現在の経路設定を含める', () => {
         const payload = createSaveRoutePayload({
             type: '片道乗車券',
             month: '1',
@@ -20,7 +20,7 @@ describe('control buttons ui', () => {
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            notes: 'テストnotes',
+            notes: 'テスト用の備考',
         });
 
         expect(payload).toEqual({
@@ -34,11 +34,11 @@ describe('control buttons ui', () => {
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            notes: 'テストnotes',
+            notes: 'テスト用の備考',
         });
     });
 
-    test('更新用ペイロードが必要最小限のスナップショットを返すこと', () => {
+    test('更新用のデータに現在の経路設定を含める', () => {
         const payload = createUpdateRoutePayload({
             type: '片道乗車券',
             month: '1',
@@ -50,7 +50,7 @@ describe('control buttons ui', () => {
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            notes: 'テストnotes',
+            notes: 'テスト用の備考',
         });
 
         expect(payload).toEqual({
@@ -64,11 +64,11 @@ describe('control buttons ui', () => {
                 { id: 'route-1', line: '新幹線', station: '新大阪' },
                 { id: 'route-2', line: '東海道線', station: '' },
             ],
-            notes: 'テストnotes',
+            notes: 'テスト用の備考',
         });
     });
 
-    test('保存ラベルが東京から尼崎の経路文字列になること', () => {
+    test('保存済み経路の表示名に発駅・着駅・ID を含める', () => {
         const savedRoutes: SavedRouteState[] = [
             {
                 id: 'route-id',
@@ -91,7 +91,7 @@ describe('control buttons ui', () => {
         expect(labels).toEqual([{ value: 'route-id', label: '東京 → 尼崎 / ID: route-id' }]);
     });
 
-    test('同一カレンダー日付を曜日ではなく日付で比較すること', () => {
+    test('時刻が違っても同じ日付なら一致し、同じ曜日でも別の日付なら一致しない', () => {
         expect(isSameCalendarDate(new Date('2026-03-17T09:00:00+09:00'), new Date('2026-03-17T18:00:00+09:00'))).toBe(
             true,
         );

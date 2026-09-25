@@ -12,7 +12,7 @@ vi.mock('qrcode.react', () => ({
 }));
 
 describe('QrCodeGenPage', () => {
-    it('初期状態ではフォームと Canvas プレビューを表示すること', () => {
+    it('初期状態で入力欄と Canvas のプレビューを表示する', () => {
         renderWithMantine(<QrCodeGenPage />);
 
         expect(screen.getByLabelText('埋め込む値')).toBeInTheDocument();
@@ -21,7 +21,7 @@ describe('QrCodeGenPage', () => {
         expect(screen.queryByTestId('qr-svg')).not.toBeInTheDocument();
     });
 
-    it('レンダリング方式を切り替えられること', async () => {
+    it('描画方式を切り替えると選択した方式で表示する', async () => {
         const user = userEvent.setup();
         renderWithMantine(<QrCodeGenPage />);
 
