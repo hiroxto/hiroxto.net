@@ -16,7 +16,7 @@ describe('EpgsRecordedNamePage', () => {
         vi.restoreAllMocks();
     });
 
-    it('分類不要を選ぶと 10_other を使い入力を無効化すること', async () => {
+    it('分類不要を選ぶと番組名欄が無効になり、パスに 10_other が入る', async () => {
         const user = userEvent.setup();
         renderWithMantine(<EpgsRecordedNamePage />);
 
@@ -28,7 +28,7 @@ describe('EpgsRecordedNamePage', () => {
         expect(screen.getByLabelText('再放送')).toBeDisabled();
     });
 
-    it('コピー操作で出力値をクリップボードに書き込むこと', async () => {
+    it('コピーボタンを押すと生成したパスをクリップボードに書き込む', async () => {
         const user = userEvent.setup();
         const writeText = vi.spyOn(navigator.clipboard, 'writeText');
         renderWithMantine(<EpgsRecordedNamePage />);

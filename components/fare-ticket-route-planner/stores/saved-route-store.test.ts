@@ -21,7 +21,7 @@ describe('useSavedRouteStore', () => {
         useSavedRouteStore.setState({ routes: [] });
     });
 
-    test('新規保存できる', () => {
+    test('経路を新規保存すると一覧に追加される', () => {
         useSavedRouteStore.getState().saveRoute(routeState);
 
         const savedRoutes = useSavedRouteStore.getState().routes;
@@ -41,7 +41,7 @@ describe('useSavedRouteStore', () => {
         });
     });
 
-    test('更新できる', () => {
+    test('保存済み経路を更新すると一覧に反映される', () => {
         useSavedRouteStore.setState({
             routes: [{ id: 'saved', createdAtTs: 1, route: routeState }],
         });
@@ -51,7 +51,7 @@ describe('useSavedRouteStore', () => {
         expect(useSavedRouteStore.getState().routes[0]?.route.notes).toBe('更新後');
     });
 
-    test('個別削除と一括削除ができる', () => {
+    test('保存済み経路を個別にも一括でも削除できる', () => {
         useSavedRouteStore.setState({
             routes: [
                 { id: 'saved-1', createdAtTs: 1, route: routeState },

@@ -83,19 +83,19 @@ function createAllLimitCheckResult({
 }
 
 describe('date2String()', () => {
-    it('日本時間の文字列にフォーマットできること', () => {
+    it('日時を日本時間の文字列に変換する', () => {
         expect(date2String(new Date('2024-10-01T03:34:56Z'))).toBe('2024-10-01 12:34:56');
     });
 });
 
 describe('createdAt2Date()', () => {
-    it('タイムスタンプをDateに変換できること', () => {
+    it('チェックインのタイムスタンプを Date に変換する', () => {
         expect(createdAt2Date(1728108666)).toStrictEqual(new Date('2024-10-05T06:11:06Z'));
     });
 });
 
 describe('checkLimits()', () => {
-    it('閾値未満なら規制されないこと', () => {
+    it('期間内のチェックイン数が閾値未満なら規制しない', () => {
         const now = new Date('2024-10-01T03:34:56Z');
         const checkins = [
             createCheckin('1', '2024-10-01T03:33:30Z'),
@@ -110,7 +110,7 @@ describe('checkLimits()', () => {
         expect(result.unLimitingAt).toBeNull();
     });
 
-    it('閾値以上なら規制され解除日時を返すこと', () => {
+    it('期間内のチェックイン数が閾値以上なら規制し、解除日時を返す', () => {
         const now = new Date('2024-10-01T03:34:56Z');
         const checkins = [
             createCheckin('1', '2024-10-01T03:33:00Z'),
@@ -150,7 +150,7 @@ describe('checkAllLimits()', () => {
 });
 
 describe('getMostFurthestDate()', () => {
-    it('最も遠い日時を返すこと', () => {
+    it('最も遅い日時を返す', () => {
         const now = new Date('2024-03-20T12:00:00Z');
         const result = getMostFurthestDate([new Date('2024-03-20T13:00:00Z'), new Date('2024-03-20T15:00:00Z')], now);
 
@@ -159,7 +159,7 @@ describe('getMostFurthestDate()', () => {
 });
 
 describe('getJstDayRange()', () => {
-    it('日本時間の日付境界を返すこと', () => {
+    it('日本時間で対象日の開始・終了日時を返す', () => {
         const target = new Date('2024-10-01T03:34:56Z');
         const range = getJstDayRange(target);
 
@@ -169,7 +169,7 @@ describe('getJstDayRange()', () => {
 });
 
 describe('getNextJstMidnight()', () => {
-    it('次の日本時間の0時を返すこと', () => {
+    it('次に訪れる日本時間の0時を返す', () => {
         const target = new Date('2024-10-01T03:34:56Z');
 
         expect(getNextJstMidnight(target)).toStrictEqual(new Date('2024-10-01T15:00:00Z'));
@@ -190,7 +190,7 @@ describe('getNextRefreshAt()', () => {
         expect(getNextRefreshAt(checkins, now)).toStrictEqual(new Date('2024-10-01T03:36:20Z'));
     });
 
-    it('非規制でも対象チェックインがあれば各基準の最古チェックインから最も近い解除日時を返すこと', () => {
+    it('規制されていなくても対象のチェックインがあれば、次に判定を更新する日時を返す', () => {
         const now = new Date('2024-10-01T03:34:56Z');
         const checkins = [
             createCheckin('4', '2024-10-01T03:33:50Z'),
@@ -208,7 +208,7 @@ describe('getNextRefreshAt()', () => {
         expect(getNextRefreshAt([], now)).toStrictEqual(new Date('2024-10-01T15:00:00Z'));
     });
 
-    it('一部の条件が規制中でも他条件の非規制判定更新時刻を優先して返すこと', () => {
+    it('一部の条件が規制中でも、先に判定を更新する条件の日時を返す', () => {
         const now = new Date('2024-10-01T03:34:56Z');
         const checkins = [
             createCheckin('1', '2024-10-01T03:26:00Z'),
@@ -267,7 +267,7 @@ describe('getNextAutoFetchAt()', () => {
 });
 
 describe('getNextManualAutoFetchAt()', () => {
-    it('非規制から規制状態になったときは規制解除基準で返すこと', () => {
+    it('手動取得で非規制から規制中に変わったら、規制解除日時を基準に次回取得日時を返す', () => {
         const triggeredAt = new Date('2024-10-01T03:34:56Z');
         const fetchedAt = new Date('2024-10-01T03:35:00Z');
         const nextResult = createAllLimitCheckResult({
@@ -280,7 +280,7 @@ describe('getNextManualAutoFetchAt()', () => {
         );
     });
 
-    it('すでに規制中でないまま手動取得しても次回日時は押下時刻基準で返すこと', () => {
+    it('手動取得後も非規制なら操作時刻を基準に次回取得日時を返す', () => {
         const triggeredAt = new Date('2024-10-01T03:34:56Z');
         const fetchedAt = new Date('2024-10-01T03:35:00Z');
         const nextResult = createAllLimitCheckResult();
@@ -292,7 +292,7 @@ describe('getNextManualAutoFetchAt()', () => {
 });
 
 describe('evaluateAutoFetchStability()', () => {
-    it('初回は比較値を保存して未変動回数を増やさないこと', () => {
+    it('初回は比較値を保存し、変動がない回数を増やさない', () => {
         expect(evaluateAutoFetchStability({ previousCount: null, unchangedCount: 0 }, 4)).toStrictEqual({
             previousCount: 4,
             unchangedCount: 0,
@@ -300,7 +300,7 @@ describe('evaluateAutoFetchStability()', () => {
         });
     });
 
-    it('比較値が変わったら未変動回数をリセットすること', () => {
+    it('比較値が変わったら、変動がない回数をリセットする', () => {
         expect(evaluateAutoFetchStability({ previousCount: 4, unchangedCount: 3 }, 5)).toStrictEqual({
             previousCount: 5,
             unchangedCount: 0,
@@ -308,7 +308,7 @@ describe('evaluateAutoFetchStability()', () => {
         });
     });
 
-    it('同じ比較値が3回続いたら停止対象にすること', () => {
+    it('比較値が3回続けて変わらなければ停止対象と判定する', () => {
         expect(evaluateAutoFetchStability({ previousCount: 4, unchangedCount: 2 }, 4)).toStrictEqual({
             previousCount: 4,
             unchangedCount: 3,
@@ -318,7 +318,7 @@ describe('evaluateAutoFetchStability()', () => {
 });
 
 describe('resolveAutoFetchSuccess()', () => {
-    it('継続する場合は次回自動取得日時を返すこと', () => {
+    it('自動取得を続ける場合は次回取得日時を返す', () => {
         const fetchedAt = new Date('2024-10-01T03:34:56Z');
         const result = createAllLimitCheckResult();
 
@@ -332,7 +332,7 @@ describe('resolveAutoFetchSuccess()', () => {
         );
     });
 
-    it('未変動が3回続いたら自動取得を停止すること', () => {
+    it('取得件数が3回続けて変わらなければ自動取得を停止する', () => {
         const fetchedAt = new Date('2024-10-01T03:34:56Z');
         const result = createAllLimitCheckResult();
 
@@ -344,7 +344,7 @@ describe('resolveAutoFetchSuccess()', () => {
         });
     });
 
-    it('取得完了時点ですでに自動取得が無効なら再有効化しないこと', () => {
+    it('取得完了前に自動取得が無効になっていた場合は再開しない', () => {
         const fetchedAt = new Date('2024-10-01T03:34:56Z');
         const result = createAllLimitCheckResult();
 

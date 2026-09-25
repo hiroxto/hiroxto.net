@@ -11,7 +11,7 @@ describe('TimesCarEstimateComparisonPage', () => {
         expect(screen.queryByRole('heading', { name: '比較結果' })).not.toBeInTheDocument();
     });
 
-    it('通常利用でカーシェア利用料金・レンタカー利用料金・距離・ガソリン単価・燃費を入力すると総額と差額を表示すること', async () => {
+    it('通常利用の料金と走行条件を入力すると、両サービスの総額と差額を表示する', async () => {
         const user = userEvent.setup();
         renderWithMantine(<TimesCarEstimateComparisonPage />);
 
@@ -26,7 +26,7 @@ describe('TimesCarEstimateComparisonPage', () => {
         expect(screen.getByText('カーシェアのほうが1,000円安いです')).toBeInTheDocument();
     });
 
-    it('カーシェア距離料金を全距離課金に切り替えると利用距離全体の距離料金を含む結果を表示すること', async () => {
+    it('全距離課金に切り替えると、走行距離全体の距離料金を含めた結果を表示する', async () => {
         const user = userEvent.setup();
         renderWithMantine(<TimesCarEstimateComparisonPage />);
 

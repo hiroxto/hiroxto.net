@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { compareTimesCarEstimate } from './calc';
 
 describe('compareTimesCarEstimate', () => {
-    it('通常利用で20kmを超えて走行すると20km超過分の距離料金を含むカーシェア総額を返すこと', () => {
+    it('通常利用で20 kmを超えた場合は、超過分の距離料金をカーシェア総額に加える', () => {
         expect(
             compareTimesCarEstimate({
                 carShareUsageFee: 5000,
@@ -20,7 +20,7 @@ describe('compareTimesCarEstimate', () => {
         });
     });
 
-    it('全距離課金を選ぶと利用距離全体の距離料金を含むカーシェア総額を返すこと', () => {
+    it('全距離課金では、走行距離全体の距離料金をカーシェア総額に加える', () => {
         expect(
             compareTimesCarEstimate({
                 carShareUsageFee: 5000,
@@ -38,7 +38,7 @@ describe('compareTimesCarEstimate', () => {
         });
     });
 
-    it('ガソリン代に円未満の端数が出る場合は四捨五入したレンタカー総額を返すこと', () => {
+    it('ガソリン代に1円未満の端数が出た場合は四捨五入してレンタカー総額を返す', () => {
         expect(
             compareTimesCarEstimate({
                 carShareUsageFee: 8000,
@@ -54,7 +54,7 @@ describe('compareTimesCarEstimate', () => {
         });
     });
 
-    it('カーシェア総額とレンタカー総額が同じ場合は差額0円として同額判定を返すこと', () => {
+    it('両サービスの総額が同じ場合は差額0円と同額判定を返す', () => {
         expect(
             compareTimesCarEstimate({
                 carShareUsageFee: 3400,

@@ -11,7 +11,7 @@ export const seasonsList: Season[] = [
     {
         name: '冬アニメ',
         value: '01_winter',
-        // 準備期間を考慮して放送月より1月前からの3ヶ月分を入れる
+        // 番組の準備期間を考慮し、放送開始月の1か月前から3か月間を冬アニメとして扱う。
         isCurrentSeason: (month) => [12, 1, 2].includes(month),
     },
     {

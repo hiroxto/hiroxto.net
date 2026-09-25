@@ -12,7 +12,7 @@ export function FareTicketRoutePlannerPage() {
         <SiteSubpageFrame
             items={[{ label: 'Tools', href: '/tools' }, { label: '乗車券の経路作成' }]}
             title="乗車券の経路作成"
-            description="複雑な経路の乗車券作る際の補助ツール"
+            description="複雑な経路の乗車券を作る際の補助ツール"
             pageSize="xl"
         >
             <div className="grid grid-cols-12 xl:gap-4">
