@@ -37,9 +37,9 @@ export function EpgsRecordedNamePage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'Tools', href: '/tools' }, { label: '録画サーバーの保存先のパスを生成' }]}
-            title="録画サーバーの保存先のパスを生成"
-            description="録画サーバーの保存先として使うパスをルールに沿って生成。"
+            items={[{ label: 'Tools', href: '/tools' }, { label: '録画サーバー用の保存先パスを生成' }]}
+            title="録画サーバー用の保存先パスを生成"
+            description="録画サーバー用の保存先パスをルールに沿って生成します。"
         >
             <Stack gap="xl">
                 <section>
@@ -144,7 +144,7 @@ export function EpgsRecordedNamePage() {
                                         秋アニメは<Code>04_autumn</Code>
                                     </ListItem>
                                     <ListItem>
-                                        連続した複数のシーズンに跨がって放送する場合，初回放送の時期を利用し，時期が変わっても同じディレクトリに保存する
+                                        複数のシーズンにまたがる番組は、放送開始時のシーズンを使う。次のシーズンに入っても保存先は変えない。
                                     </ListItem>
                                 </List>
                             </ListItem>

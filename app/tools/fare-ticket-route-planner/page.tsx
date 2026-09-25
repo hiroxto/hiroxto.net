@@ -3,7 +3,7 @@ import { FareTicketRoutePlannerPage } from '@/components/fare-ticket-route-plann
 import { getRequestOrigin } from '@/lib/metadata/request-origin';
 
 const title = '乗車券の経路作成';
-const description = '複雑な経路の乗車券作る際の補助ツール';
+const description = '複雑な経路の乗車券を作る際の補助ツール';
 
 export async function generateMetadata(): Promise<Metadata> {
     const requestOrigin = await getRequestOrigin();
