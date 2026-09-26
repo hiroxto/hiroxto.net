@@ -5,7 +5,7 @@ Code of hiroxto.net
 ## ローカルでの確認
 
 開発中は `npm run dev` を実行し、`http://localhost:3000` にアクセスする。
-Cloudflare Workers 向けのビルドとキャッシュを確認する場合は、次の順に実行する。
+Cloudflare Workers 向けのビルドと配信を確認する場合は、次の順に実行する。
 
 ```sh
 npm run build:cf
@@ -20,9 +20,9 @@ OG URL とサイトマップの URL は、ローカル・プレビュー環境�
 
 ## 静的生成とキャッシュ
 
-ページはビルド時に静的生成し、OpenNext の Workers Static Assets キャッシュから配信する。
+ページはビルド時に静的生成する。OpenNext の増分キャッシュとキャッシュ割り込みは使用せず、
+ページへのアクセスは NextServer で処理する。静的ファイルは Workers Static Assets から配信する。
 メタ情報の生成でリクエストヘッダーを参照すると動的描画になるため、URL の基準には
 `lib/metadata/site-origin.ts` の固定値を使用する。
 
-このキャッシュは読み取り専用であり、コンテンツの更新には再ビルドとデプロイが必要。
-ISR による再検証は使用しない。
+コンテンツの更新には再ビルドとデプロイが必要。ISR による再検証は使用しない。
