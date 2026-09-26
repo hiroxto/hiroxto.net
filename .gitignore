@@ -141,3 +141,4 @@ next-env.d.ts
 .open-next
 
 .playwright-cli/
+.wrangler/

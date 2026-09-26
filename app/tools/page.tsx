@@ -2,7 +2,7 @@ import { List, ListItem, Stack } from '@mantine/core';
 import type { Metadata } from 'next';
 import { InternalLink } from '@/components/common/internal-link';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
-import { getRequestOrigin } from '@/lib/metadata/request-origin';
+import { siteOrigin } from '@/lib/metadata/site-origin';
 
 const title = 'Tools';
 const description = '便利(?)ツール類';
@@ -46,21 +46,16 @@ const tools = [
     },
 ] as const;
 
-export async function generateMetadata(): Promise<Metadata> {
-    const requestOrigin = await getRequestOrigin();
-    const pageUrl = new URL('/tools', requestOrigin);
-
-    return {
+export const metadata: Metadata = {
+    title,
+    description,
+    openGraph: {
         title,
         description,
-        openGraph: {
-            title,
-            description,
-            url: pageUrl,
-            type: 'website',
-        },
-    };
-}
+        url: new URL('/tools', siteOrigin),
+        type: 'website',
+    },
+};
 
 export default function ToolsPage() {
     return (
