@@ -1,25 +1,20 @@
 import type { Metadata } from 'next';
 import { FareTicketRoutePlannerPage } from '@/components/fare-ticket-route-planner/fare-ticket-route-planner-page';
-import { getRequestOrigin } from '@/lib/metadata/request-origin';
+import { siteOrigin } from '@/lib/metadata/site-origin';
 
 const title = '乗車券の経路作成';
 const description = '複雑な経路の乗車券を作る際の補助ツール';
 
-export async function generateMetadata(): Promise<Metadata> {
-    const requestOrigin = await getRequestOrigin();
-    const pageUrl = new URL('/tools/fare-ticket-route-planner', requestOrigin);
-
-    return {
+export const metadata: Metadata = {
+    title,
+    description,
+    openGraph: {
         title,
         description,
-        openGraph: {
-            title,
-            description,
-            url: pageUrl,
-            type: 'website',
-        },
-    };
-}
+        url: new URL('/tools/fare-ticket-route-planner', siteOrigin),
+        type: 'website',
+    },
+};
 
 export default function FareTicketRoutePlannerToolPage() {
     return <FareTicketRoutePlannerPage />;
