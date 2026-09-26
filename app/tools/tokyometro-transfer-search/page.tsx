@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { TokyoMetroTransferSearchPage } from '@/components/tokyometro-transfer-search/tokyometro-transfer-search-page';
-import { getRequestOrigin } from '@/lib/metadata/request-origin';
+import { siteOrigin } from '@/lib/metadata/site-origin';
 import {
     parseTokyoMetroTransferSearchParams,
     type TokyoMetroTransferSearchParams,
@@ -13,21 +13,16 @@ interface TokyoMetroTransferSearchToolPageProps {
     searchParams: Promise<TokyoMetroTransferSearchParams>;
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-    const requestOrigin = await getRequestOrigin();
-    const pageUrl = new URL('/tools/tokyometro-transfer-search', requestOrigin);
-
-    return {
+export const metadata: Metadata = {
+    title,
+    description,
+    openGraph: {
         title,
         description,
-        openGraph: {
-            title,
-            description,
-            url: pageUrl,
-            type: 'website',
-        },
-    };
-}
+        url: new URL('/tools/tokyometro-transfer-search', siteOrigin),
+        type: 'website',
+    },
+};
 
 export default async function TokyoMetroTransferSearchToolPage({
     searchParams,
