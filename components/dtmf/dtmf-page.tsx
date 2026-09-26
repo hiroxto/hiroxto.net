@@ -289,7 +289,7 @@ export function DtmfPage() {
                                 : `${activeKey.label} (${activeKey.lowFrequency} Hz + ${activeKey.highFrequency} Hz)`}
                         </Text>
                         <Text size="sm" c="dimmed" mt={4}>
-                            ボタン押下中に信号音を再生します。物理キーボードの0-9，*，#，A-Dでも操作可能。
+                            ボタン押下中に信号音が鳴ります。キーボードの0〜9、*、#、A〜Dでも再生できます。
                         </Text>
                     </div>
                 </Stack>

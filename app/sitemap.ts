@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { getRequestOrigin } from '@/lib/metadata/request-origin';
+import { siteOrigin } from '@/lib/metadata/site-origin';
 
 const sitemapEntries = [
     { path: '/', changeFrequency: 'yearly', priority: 1 },
@@ -26,11 +26,9 @@ const sitemapEntries = [
     priority: number;
 }>;
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const origin = await getRequestOrigin();
-
+export default function sitemap(): MetadataRoute.Sitemap {
     return sitemapEntries.map((entry) => ({
-        url: new URL(entry.path, origin).toString(),
+        url: new URL(entry.path, siteOrigin).toString(),
         changeFrequency: entry.changeFrequency,
         priority: entry.priority,
     }));

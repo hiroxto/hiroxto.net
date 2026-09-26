@@ -1,16 +1,22 @@
 'use client';
 
 import { Button, Checkbox, Code, Grid, List, ListItem, Select, Stack, Text, TextInput, Title } from '@mantine/core';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { buildRecordedPath, getDefaultSeason, type SeasonValue, seasonsList } from '@/lib/epgs-recorded-name/path';
 
 export function EpgsRecordedNamePage() {
-    const [year, setYear] = useState(String(new Date().getFullYear()));
-    const [season, setSeason] = useState<SeasonValue>(getDefaultSeason(new Date().getMonth() + 1));
+    const [year, setYear] = useState('');
+    const [season, setSeason] = useState<SeasonValue>('01_winter');
     const [isUnclassifiable, setIsUnclassifiable] = useState(false);
     const [isRepeat, setIsRepeat] = useState(false);
     const [programName, setProgramName] = useState('');
+
+    useEffect(() => {
+        const now = new Date();
+        setYear(String(now.getFullYear()));
+        setSeason(getDefaultSeason(now.getMonth() + 1));
+    }, []);
 
     const output = useMemo(
         () =>
@@ -37,9 +43,9 @@ export function EpgsRecordedNamePage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'Tools', href: '/tools' }, { label: '録画サーバーの保存先のパスを生成' }]}
-            title="録画サーバーの保存先のパスを生成"
-            description="録画サーバーの保存先として使うパスをルールに沿って生成。"
+            items={[{ label: 'Tools', href: '/tools' }, { label: '録画サーバー用の保存先パスを生成' }]}
+            title="録画サーバー用の保存先パスを生成"
+            description="録画サーバー用の保存先パスをルールに沿って生成します。"
         >
             <Stack gap="xl">
                 <section>
@@ -144,7 +150,7 @@ export function EpgsRecordedNamePage() {
                                         秋アニメは<Code>04_autumn</Code>
                                     </ListItem>
                                     <ListItem>
-                                        連続した複数のシーズンに跨がって放送する場合，初回放送の時期を利用し，時期が変わっても同じディレクトリに保存する
+                                        複数のシーズンにまたがる番組は、放送開始時のシーズンを使う。次のシーズンに入っても保存先は変えない。
                                     </ListItem>
                                 </List>
                             </ListItem>

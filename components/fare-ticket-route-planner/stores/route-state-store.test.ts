@@ -26,7 +26,7 @@ describe('useRouteStateStore', () => {
         expect(state.routes[0]).toMatchObject({ line: '東海道線', station: '東京' });
     });
 
-    test('空経路クリアで値のある経路だけ残す', () => {
+    test('空経路クリア後は値のある経路だけ残る', () => {
         useRouteStateStore.setState({
             routes: [
                 { id: '1', line: '', station: '' },
@@ -74,7 +74,7 @@ describe('useRouteStateStore', () => {
         vi.useRealTimers();
     });
 
-    test('全経路クリアで1行だけ残す', () => {
+    test('全経路クリア後は路線名が空の経路を1行だけ残す', () => {
         useRouteStateStore.setState({
             routes: [
                 { id: '1', line: '東海道線', station: '東京' },

@@ -36,7 +36,7 @@ describe('Output', () => {
         expect(output).toHaveTextContent('備考: メモ');
     });
 
-    it('dateOption=skip かつ空備考では余計な文言を表示しないこと', () => {
+    it('利用開始日を省略し備考が空の場合は、どちらの項目も表示しない', () => {
         useRouteStateStore.setState({
             dateOption: 'skip',
             notes: '',

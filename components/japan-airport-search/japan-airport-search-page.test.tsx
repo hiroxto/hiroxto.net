@@ -9,7 +9,7 @@ describe('JapanAirportSearchPage', () => {
     it('初期状態では空港一覧が表示されること', () => {
         renderWithMantine(<JapanAirportSearchPage />);
 
-        // ヘッダー行があるため+1する
+        // 表の行数には見出し行も含まれる。
         expect(screen.getAllByRole('row')).toHaveLength(japanAirports.length + 1);
     });
 

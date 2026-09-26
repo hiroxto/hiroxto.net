@@ -48,7 +48,7 @@ describe('ClSoundPage', () => {
         FakeAudioContext.latest = null;
     });
 
-    it('Play Success Tone ボタン押下で成功音を再生すること', async () => {
+    it('Play Success Tone ボタンを押すと成功音を再生する', async () => {
         const user = userEvent.setup();
         vi.stubGlobal('AudioContext', FakeAudioContext);
         renderWithMantine(<ClSoundPage />);
@@ -65,7 +65,7 @@ describe('ClSoundPage', () => {
         ]);
     });
 
-    it('Play Alert Tone ボタン押下で警告音を再生すること', async () => {
+    it('Play Alert Tone ボタンを押すと警告音を再生する', async () => {
         const user = userEvent.setup();
         vi.stubGlobal('AudioContext', FakeAudioContext);
         renderWithMantine(<ClSoundPage />);

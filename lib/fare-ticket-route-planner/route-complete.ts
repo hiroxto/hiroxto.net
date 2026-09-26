@@ -1,4 +1,4 @@
-// 路線と接続駅のマップ。基本的に会社線は含まない。
+// 路線ごとの接続駅。原則として会社線は含めない。
 export const lineToStations = new Map<string, string[]>([
     // 新幹線
     [
@@ -81,7 +81,7 @@ export const lineToStations = new Map<string, string[]>([
         ],
     ],
 
-    // 在来線 (概ね北から)
+    // 在来線（おおむね北から順に記載）
     ['札沼線', ['桑園']],
     ['石勝線', ['南千歳', '追分', '新得']],
     ['石北線', ['新旭川', '網走']],
@@ -297,7 +297,7 @@ export const lineToStations = new Map<string, string[]>([
     ['奈良線', ['木津', '京都']],
     ['片町線', ['木津', '放出', '鴫野', '京橋']],
     ['おおさか東線', ['久宝寺', '放出', '鴫野', '新大阪']],
-    // どう扱うのが正解か分からないので一旦そのまま突っ込む
+    // 大阪環状線の内回り・外回りの区別は未整理のため、同じ路線として扱う。
     ['大阪環状線 外/内', ['天王寺', '鶴橋', '大阪', '西九条', '今宮']],
     ['JR東西', ['京橋', '尼崎']],
     ['桜島線', ['西九条']],
@@ -360,7 +360,7 @@ export const lineToStations = new Map<string, string[]>([
     ['瀬戸大橋線', ['岡山', '茶屋町', '宇多津']],
 ]);
 
-// 接続駅と路線のマップ
+// 接続駅ごとの路線。
 export const stationToLines = new Map<string, string[]>();
 
 for (const [line, stations] of lineToStations) {

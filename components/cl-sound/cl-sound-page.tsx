@@ -61,8 +61,8 @@ export function ClSoundPage() {
                 <section>
                     <Title order={3}>仕様</Title>
                     <Text mt="xs">
-                        EMVCoが出しているContactless Specifications for Payment Systemsという仕様書にEMV
-                        Contactlessの仕様全般が書かれていて，オーディオ関連は9.1.2 Audio Indicationに書かれている。
+                        Contactless Specifications for Payment Systemsの9.1.2 Audio
+                        Indicationにオーディオ関連の仕様が書かれている。
                     </Text>
                     <Text mt={6}>
                         読み取り完了音はSuccess

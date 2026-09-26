@@ -6,8 +6,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const contentDirPath = path.resolve(__dirname, '../lib/train-number/content');
 const generatedDirPath = path.resolve(__dirname, '../lib/train-number/gen');
 
-// 生成対象のファイル名はこの配列で管理する。
-// 新しい改正版を追加するときは、対応する content/*.md を追加し、この配列へ同じファイル名を追記する。
+// 生成対象のファイル名を列挙する。
+// 改正版を追加するときは、対応する content/*.md と同じファイル名を追記する。
 const fileNames = ['2018-03-17', '2019-03-16', '2020-03-14', '2021-03-13'] as const;
 
 const normalizeLineEndings = (value: string): string => value.replaceAll('\r\n', '\n');

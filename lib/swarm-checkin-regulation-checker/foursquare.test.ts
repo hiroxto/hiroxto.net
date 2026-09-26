@@ -36,7 +36,7 @@ describe('FoursquareClient', () => {
         expect(options).toEqual({ method: 'GET' });
     });
 
-    test('API エラー時は status を含む例外を投げる', async () => {
+    test('API エラー時は HTTP ステータスを含む例外を投げる', async () => {
         vi.spyOn(globalThis, 'fetch').mockResolvedValue({
             ok: false,
             status: 401,

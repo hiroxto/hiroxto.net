@@ -99,16 +99,14 @@ export const SwarmCheckinRegulationCheckerPage = () => {
     }, []);
 
     /**
-     * 履歴取得の共通入口。
-     * `manual` はユーザーが明示的に押した取得で、結果表示は更新するが、未変動回数による自動取得停止判定には使わない。
-     * 自動取得が有効な場合だけ、「手動取得した今」から interval 秒後を次回自動取得日時として再スケジュールする。
-     * ただし手動取得の結果が「非規制 → 規制」に変わった場合は、次回自動取得日時を
-     * 「規制解除日時 + interval 秒」に切り替える。
+     * チェックイン履歴を取得し、取得方法に応じて次回の自動取得日時を更新する。
+     * `manual` は画面の取得ボタンによる操作。結果は表示するが、変動がない回数には加えない。
+     * 自動取得が有効なら、操作時刻から interval 秒後に次回の取得を予定する。
+     * 取得結果が非規制から規制中に変わった場合は、規制解除日時から interval 秒後に変更する。
      *
-     * `auto` はタイマー起点の取得で、結果表示を更新したうえで、規制件数の変動有無をキャッシュと比較する。
-     * 変動なしが 3 回続いたら自動取得を停止し、キャッシュと連続回数をリセットする。
-     * 停止しない場合は、規制中なら「規制解除日時 + interval 秒」、非規制なら「取得完了時刻 + interval 秒」を次回実行日時にする。
-     * 自動取得が失敗した場合は、連続再試行を避けるためその時点で自動取得を無効化する。
+     * `auto` はタイマーによる取得。取得件数を前回と比較し、3 回続けて変動がなければ自動取得を停止する。
+     * 続行する場合、規制中は規制解除日時から、非規制なら取得完了時刻から interval 秒後に次回取得する。
+     * 取得に失敗した場合は自動取得を無効にし、連続した再試行を防ぐ。
      */
     const pullCheckins = useCallback(
         async (trigger: 'manual' | 'auto', triggeredAt: Date) => {
@@ -124,7 +122,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                 setComparisonNow(fetchedAt);
 
                 if (trigger === 'auto') {
-                    /** 自動取得だけを停止判定の対象にし、手動取得では未変動回数を進めない。 */
+                    /** 自動取得の結果だけで、変動がない回数を更新する。 */
                     const nextState = resolveAutoFetchSuccess(
                         { previousCount: autoFetchCachedCount, unchangedCount: autoFetchUnchangedCount },
                         nextResult,
@@ -138,7 +136,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                     setAutoFetchCachedCount(nextState.previousCount);
                     setAutoFetchUnchangedCount(nextState.unchangedCount);
                 } else if (autoFetchEnabled) {
-                    /** 手動取得で規制入りした場合だけ、規制解除基準へ次回自動取得日時を切り替える。 */
+                    /** 手動取得で規制中に変わった場合は、規制解除日時を基準に次回取得する。 */
                     setNextAutoFetchAt(
                         getNextManualAutoFetchAt(
                             limitCheckResult.isLimited,
@@ -151,7 +149,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                 }
             } catch (error) {
                 if (trigger === 'auto' && autoFetchEnabled) {
-                    /** 自動取得失敗時は即時無効化し、以後の自動再試行を止める。 */
+                    /** 自動取得に失敗したら無効にし、再試行を止める。 */
                     const nextState = resolveAutoFetchFailure();
                     setAutoFetchEnabled(nextState.autoFetchEnabled);
                     setNextAutoFetchAt(nextState.nextAutoFetchAt);
@@ -196,7 +194,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
             return;
         }
 
-        // 自動取得は毎秒の現在時刻監視ではなく、次回実行日時に向けた単発タイマーで予約する。
+        // 次回の取得日時に合わせて、タイマーを1回だけ設定する。
         const timeoutId = window.setTimeout(
             () => {
                 void pullCheckins('auto', new Date());

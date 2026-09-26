@@ -4,7 +4,7 @@ import { renderWithMantine } from '@/test/test-utils';
 import { TrainNumberPage } from './train-number-page';
 
 describe('TrainNumberPage', () => {
-    it('markdown を HTML として表示すること', () => {
+    it('Markdown の内容を HTML として表示する', () => {
         renderWithMantine(
             <TrainNumberPage
                 title="2018年3月17日 改正"

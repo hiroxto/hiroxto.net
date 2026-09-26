@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderTrainNumberMarkdown } from './marked';
 
 describe('renderTrainNumberMarkdown', () => {
-    it('markdown を HTML に変換し見出し ID を付与すること', () => {
+    it('Markdown を HTML に変換し、見出しに ID を付ける', () => {
         const html = renderTrainNumberMarkdown(`# 2018年3月17日 改正
 
 - [入出場](#入出場)

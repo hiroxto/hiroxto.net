@@ -80,7 +80,7 @@ export function TrainNumberCalcPage() {
                     </Title>
                     <List mt={6} listStyleType="disc" withPadding>
                         <ListItem>
-                            桁数が1,2,4桁で、4桁のときの百位が<Code>0</Code>の場合、<strong>特急客</strong>。
+                            1桁・2桁の番号、または百の位が<Code>0</Code>の4桁の番号は、<strong>特急客</strong>。
                         </ListItem>
                         <ListItem>
                             桁数が3,4桁かつ、百位が<Code>0</Code>以外で下2桁が<Code>00〜19</Code>の場合、
@@ -92,7 +92,7 @@ export function TrainNumberCalcPage() {
                         </ListItem>
                         <ListItem>
                             千位が<Code>6</Code>以上の場合は種別の頭に<Code>臨</Code>が付く。(e.g.{' '}
-                            <strong>臨特急</strong>, <strong>臨急客</strong>, <strong>臨客</strong>)
+                            <strong>臨特急客</strong>, <strong>臨急客</strong>, <strong>臨客</strong>)
                         </ListItem>
                     </List>
 

@@ -11,8 +11,8 @@ export interface JapanAirport {
 /**
  * 日本の飛行場・空港データ
  *
- * 配列は都道府県コード昇順、同一都道府県内では ICAO 空港コード昇順で管理する。
- * データを追加・更新する際も、このソート順を維持した状態で並べておくこと。
+ * 都道府県コードの昇順に並べ、同じ都道府県内では ICAO 空港コードの昇順に並べる。
+ * データを追加・更新するときも、この順序を維持する。
  */
 export const japanAirports = [
     { officialName: '旭川飛行場', aliases: [], icaoCode: 'RJCA', iataCode: null, prefectureCode: '01' },
