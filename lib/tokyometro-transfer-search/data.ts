@@ -449,6 +449,18 @@ export const SAME_STATION_OUTSIDE_TRANSFERS = [
     ['shinjuku-sanchome', 'marunouchi', 'fukutoshin'],
 ] as const satisfies ReadonlyArray<readonly [StationId, LineId, LineId]>;
 
+/** 改札外に加えて改札内の通路も利用できる乗換。大手町駅の公式設備案内に基づく。
+ * https://www.tokyometro.jp/station/otemachi/accessibility/index.html
+ */
+export const SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS = [
+    ['otemachi', 'marunouchi', 'tozai'],
+    ['otemachi', 'marunouchi', 'chiyoda'],
+    ['otemachi', 'marunouchi', 'hanzomon'],
+    ['otemachi', 'tozai', 'chiyoda'],
+    ['otemachi', 'tozai', 'hanzomon'],
+    ['otemachi', 'chiyoda', 'hanzomon'],
+] as const satisfies ReadonlyArray<readonly [StationId, LineId, LineId]>;
+
 export const CROSS_STATION_TRANSFERS = [
     {
         fromStationId: 'akasaka-mitsuke',

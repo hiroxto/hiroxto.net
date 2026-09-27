@@ -4,6 +4,7 @@ import {
     LINE_DEFINITIONS,
     LINE_PATHS,
     type LineId,
+    SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS,
     SAME_STATION_OUTSIDE_TRANSFERS,
     STATION_NAMES,
     type StationId,
@@ -86,6 +87,8 @@ export type RouteResult = {
 export type RouteSearchResult = {
     routes: RouteResult[];
     truncated: boolean;
+    /** 未探索部分を含む改札外乗換回数の上限。候補の回数と一致すれば最大回数は確定。 */
+    outsideTransferUpperBound: number;
 };
 
 export type StationOption = {
@@ -162,8 +165,17 @@ const outsideTransferKeys = new Set(
     ),
 );
 
-const getSameStationTransferType = (stationId: StationId, fromLineId: LineId, toLineId: LineId): TransferType =>
-    outsideTransferKeys.has([stationId, ...[fromLineId, toLineId].sort()].join(':')) ? 'outside' : 'inside';
+const insideAndOutsideTransferKeys = new Set(
+    SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS.map(([stationId, firstLineId, secondLineId]) =>
+        [stationId, ...[firstLineId, secondLineId].sort()].join(':'),
+    ),
+);
+
+const getSameStationTransferTypes = (stationId: StationId, fromLineId: LineId, toLineId: LineId): TransferType[] => {
+    const key = [stationId, ...[fromLineId, toLineId].sort()].join(':');
+    if (insideAndOutsideTransferKeys.has(key)) return ['outside', 'inside'];
+    return outsideTransferKeys.has(key) ? ['outside'] : ['inside'];
+};
 
 const stationBits = new Map(stationIds.map((stationId, index) => [stationId, BigInt(1) << BigInt(index)]));
 
@@ -283,6 +295,44 @@ const getOutsideOpportunityMaskBetweenEndpoints = (
     }
 
     return mask;
+};
+
+const physicalNeighbors = new Map(
+    [...physicalStationGraph].map(([stationId, neighbors]) => [
+        stationId,
+        [...neighbors].map((id) => ({ id, bit: getStationBit(id) })),
+    ]),
+);
+const outsideOpportunityStationMasks = outsideOpportunities.map(({ stationIds }) =>
+    stationIds.reduce((mask, id) => mask | getStationBit(id), BigInt(0)),
+);
+
+const canReachRequiredStations = (
+    stationId: StationId,
+    destinationStationId: StationId,
+    visitedStationMask: bigint,
+    requiredOutsideMask: number,
+): boolean => {
+    const currentBit = getStationBit(stationId);
+    let requiredStationMask = getStationBit(destinationStationId);
+    for (let index = 0; index < outsideOpportunityStationMasks.length; index += 1) {
+        if ((requiredOutsideMask & (1 << index)) !== 0) requiredStationMask |= outsideOpportunityStationMasks[index];
+    }
+    if ((requiredStationMask & (visitedStationMask & ~currentBit)) !== BigInt(0)) return false;
+    let seen = visitedStationMask;
+    requiredStationMask &= ~currentBit;
+    const pending = [stationId];
+    while (pending.length > 0 && requiredStationMask !== BigInt(0)) {
+        const current = pending.pop();
+        if (current == null) break;
+        for (const neighbor of physicalNeighbors.get(current) ?? []) {
+            if ((seen & neighbor.bit) !== BigInt(0)) continue;
+            seen |= neighbor.bit;
+            requiredStationMask &= ~neighbor.bit;
+            pending.push(neighbor.id);
+        }
+    }
+    return requiredStationMask === BigInt(0);
 };
 
 export const stations: StationOption[] = stationIds.map((id) => ({
@@ -548,22 +598,24 @@ const getMacroTransfers = (stationId: StationId, fromLineId: LineId): MacroTrans
             continue;
         }
 
-        const transferType = getSameStationTransferType(stationId, fromLineId, toLineId);
-        transfers.push({
-            step: {
-                kind: 'transfer',
-                fromStationId: stationId,
-                toStationId: stationId,
-                fromLineId,
-                toLineId,
-                type: transferType,
-            },
-            outsideOpportunityBit:
-                transferType === 'outside'
-                    ? (sameStationOutsideOpportunityBits.get([stationId, ...[fromLineId, toLineId].sort()].join(':')) ??
-                      0)
-                    : 0,
-        });
+        for (const transferType of getSameStationTransferTypes(stationId, fromLineId, toLineId)) {
+            transfers.push({
+                step: {
+                    kind: 'transfer',
+                    fromStationId: stationId,
+                    toStationId: stationId,
+                    fromLineId,
+                    toLineId,
+                    type: transferType,
+                },
+                outsideOpportunityBit:
+                    transferType === 'outside'
+                        ? (sameStationOutsideOpportunityBits.get(
+                              [stationId, ...[fromLineId, toLineId].sort()].join(':'),
+                          ) ?? 0)
+                        : 0,
+            });
+        }
     }
 
     for (const [connectionIndex, connection] of CROSS_STATION_TRANSFERS.entries()) {
@@ -700,18 +752,18 @@ const countBits = (value: number): number => {
 };
 
 export const SEARCH_RESULT_LIMIT = 20;
-export const SEARCH_TARGET_VISIT_LIMIT = 5_000_000;
+export const SEARCH_VISIT_LIMIT = 5_000_000;
 export const SEARCH_DURATION_LIMIT_MS = 5_000;
-export const SEARCH_FALLBACK_DURATION_LIMIT_MS = 1_500;
 export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
 
 const SEARCH_DEADLINE_CHECK_INTERVAL = 1_000;
 
-const getFallbackTargetDeadline = (
-    currentTime: number,
-    fallbackDeadline: number,
-    remainingTargetCount: number,
-): number => currentTime + Math.max(1, (fallbackDeadline - currentTime) / remainingTargetCount);
+export type RouteSearchBudget = {
+    /** 検索全体で許可する訪問数。 */
+    visitLimit?: number;
+    /** 前処理を含む検索時間の目安。再帰入口で定期的に確認する。 */
+    durationLimitMs?: number;
+};
 
 export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
     Number.isInteger(value) && value >= 1 && value <= MAX_OUTSIDE_TRANSFER_COUNT;
@@ -720,16 +772,29 @@ export const searchRoutes = (
     originStationId: StationId,
     destinationStationId: StationId,
     maximumOutsideTransferCount: number | null = null,
+    budget: RouteSearchBudget = {},
 ): RouteSearchResult => {
     if (maximumOutsideTransferCount != null && !isValidMaximumOutsideTransferCount(maximumOutsideTransferCount)) {
         throw new Error(`最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`);
     }
 
+    const visitLimit = budget.visitLimit ?? SEARCH_VISIT_LIMIT;
+    const durationLimitMs = budget.durationLimitMs ?? SEARCH_DURATION_LIMIT_MS;
+    if (
+        !Number.isSafeInteger(visitLimit) ||
+        visitLimit < 0 ||
+        !Number.isFinite(durationLimitMs) ||
+        durationLimitMs < 0
+    ) {
+        throw new Error('探索予算は0以上の有限値で指定してください（訪問数は整数）');
+    }
+    const searchDeadline = performance.now() + durationLimitMs;
     if (originStationId === destinationStationId) {
-        return { routes: [], truncated: false };
+        return { routes: [], truncated: false, outsideTransferUpperBound: 0 };
     }
 
     const shortestDistances = getShortestFareDistances(originStationId);
+    const shortestActualDistancesToDestination = getShortestActualDistances(destinationStationId);
     const unavailableOutsideMask =
         (outsideOpportunityMaskByStation.get(originStationId) ?? 0) |
         (outsideOpportunityMaskByStation.get(destinationStationId) ?? 0);
@@ -739,29 +804,24 @@ export const searchRoutes = (
         ~unavailableOutsideMask;
     const availableOutsideCount = countBits(availableOutsideMask);
     const maximumOutsideCount = Math.min(availableOutsideCount, maximumOutsideTransferCount ?? availableOutsideCount);
-    const searchDeadline = performance.now() + SEARCH_DURATION_LIMIT_MS;
-    let encounteredTruncation = false;
-    let fallbackDeadline: number | null = null;
+    let remainingVisitCount = visitLimit;
+    let seedRoutes: RouteResult[] = [];
+    // 最初の完成経路に最大100ms・1万訪問を割り当て、残りを最大回数と上位候補の探索に使う。
+    const targets = Array.from({ length: maximumOutsideCount }, (_, index) => maximumOutsideCount - index);
+    if (maximumOutsideCount > 1) targets.unshift(1);
 
-    for (let targetOutsideCount = maximumOutsideCount; targetOutsideCount >= 1; targetOutsideCount -= 1) {
-        const currentTime = performance.now();
-
-        if (!encounteredTruncation && currentTime >= searchDeadline) {
-            encounteredTruncation = true;
-            fallbackDeadline = currentTime + SEARCH_FALLBACK_DURATION_LIMIT_MS;
-        }
-
+    for (const [targetIndex, targetOutsideCount] of targets.entries()) {
+        const isSeedSearch = maximumOutsideCount > 1 && targetIndex === 0;
         const results: RouteResult[] = [];
-        const targetDeadline =
-            encounteredTruncation && fallbackDeadline != null
-                ? getFallbackTargetDeadline(currentTime, fallbackDeadline, targetOutsideCount)
-                : searchDeadline;
-        let remainingTargetVisitCount = SEARCH_TARGET_VISIT_LIMIT;
+        const targetDeadline = isSeedSearch ? Math.min(searchDeadline, performance.now() + 100) : searchDeadline;
+        let remainingTargetVisitCount = isSeedSearch ? Math.min(10_000, remainingVisitCount) : remainingVisitCount;
         let remainingDeadlineCheckCount = 0;
         let targetTruncated = false;
+        let seedFound = false;
 
         const addResult = (result: RouteResult): void => {
             results.push(result);
+            seedFound = isSeedSearch;
             results.sort(compareRoutes);
 
             if (results.length > SEARCH_RESULT_LIMIT) {
@@ -789,7 +849,7 @@ export const searchRoutes = (
                 insideTransferCount: number,
                 actualDistanceTenths: number,
             ): void => {
-                if (remainingTargetVisitCount === 0) {
+                if (remainingTargetVisitCount === 0 || remainingVisitCount === 0) {
                     targetTruncated = true;
                     return;
                 }
@@ -804,12 +864,13 @@ export const searchRoutes = (
                 }
 
                 remainingTargetVisitCount -= 1;
+                remainingVisitCount -= 1;
                 remainingDeadlineCheckCount -= 1;
                 const worstResult = results.length === SEARCH_RESULT_LIMIT ? results.at(-1) : null;
 
                 if (worstResult != null) {
                     const shortestRemainingDistance =
-                        getShortestActualDistances(stationId).get(destinationStationId) ?? Number.POSITIVE_INFINITY;
+                        shortestActualDistancesToDestination.get(stationId) ?? Number.POSITIVE_INFINITY;
 
                     if (
                         insideTransferCount > worstResult.insideTransferCount ||
@@ -821,6 +882,16 @@ export const searchRoutes = (
                 }
 
                 const remainingRequiredMask = requiredOutsideMask & ~usedOutsideMask;
+                if (
+                    !canReachRequiredStations(
+                        stationId,
+                        destinationStationId,
+                        visitedStationMask,
+                        remainingRequiredMask,
+                    )
+                ) {
+                    return;
+                }
                 const segments = getMacroSegments(stationId, lineId, destinationStationId)
                     .filter((segment) => (visitedStationMask & segment.stationMask) === BigInt(0))
                     .sort(
@@ -832,7 +903,7 @@ export const searchRoutes = (
                     );
 
                 for (const segment of segments) {
-                    if (targetTruncated) {
+                    if (targetTruncated || seedFound) {
                         return;
                     }
 
@@ -878,7 +949,7 @@ export const searchRoutes = (
                     }
 
                     for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
-                        if (targetTruncated) {
+                        if (targetTruncated || seedFound) {
                             return;
                         }
 
@@ -924,27 +995,30 @@ export const searchRoutes = (
             for (const lineId of stationLineIds.get(originStationId) ?? []) {
                 visit(originStationId, lineId, getStationBit(originStationId), 0, 0, 0);
 
-                if (targetTruncated) {
+                if (targetTruncated || seedFound) {
                     break;
                 }
             }
 
-            if (targetTruncated) {
+            if (targetTruncated || seedFound) {
                 break;
             }
         }
 
-        if (results.length > 0) {
-            return { routes: results, truncated: encounteredTruncation || targetTruncated };
+        if (isSeedSearch) {
+            seedRoutes = results;
+            continue;
         }
-
-        if (targetTruncated) {
-            encounteredTruncation = true;
-            fallbackDeadline ??= performance.now() + SEARCH_FALLBACK_DURATION_LIMIT_MS;
+        if (results.length > 0 || targetTruncated) {
+            return {
+                routes: results.length > 0 ? results : seedRoutes,
+                truncated: targetTruncated,
+                outsideTransferUpperBound: targetOutsideCount,
+            };
         }
     }
 
-    return { routes: [], truncated: encounteredTruncation };
+    return { routes: [], truncated: false, outsideTransferUpperBound: 0 };
 };
 
 export const formatDistance = (distanceTenths: number): string => `${(distanceTenths / 10).toFixed(1)}km`;

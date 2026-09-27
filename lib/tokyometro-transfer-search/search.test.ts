@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { LINE_PATHS, type StationId } from './data';
 import { calculateFareBetweenStations, searchRoutes } from './search';
 
 describe('calculateFareBetweenStations', () => {
@@ -110,6 +111,38 @@ describe('calculateFareBetweenStations', () => {
 });
 
 describe('searchRoutes', () => {
+    it('東京から浅草の上限1回検索には大手町で改札内乗換する6.4kmの候補を含む', () => {
+        // 公式営業キロ: 東京―大手町0.6 + 大手町―三越前0.7 + 三越前―浅草5.1。
+        const result = searchRoutes('tokyo', 'asakusa', 1);
+        expect(result.truncated).toBe(false);
+        expect(result.outsideTransferUpperBound).toBe(1);
+        expect(result.routes[0]).toMatchObject({
+            outsideTransferCount: 1,
+            insideTransferCount: 1,
+            actualDistanceTenths: 64,
+            legs: [
+                { fromStationId: 'tokyo', toStationId: 'otemachi', lineId: 'marunouchi' },
+                { fromStationId: 'otemachi', toStationId: 'mitsukoshimae', lineId: 'hanzomon' },
+                { fromStationId: 'mitsukoshimae', toStationId: 'asakusa', lineId: 'ginza' },
+            ],
+            transfers: [{ type: 'inside' }, { type: 'outside' }],
+        });
+    });
+
+    it.each([
+        ['honancho', 'kita-ayase'],
+        ['kita-ayase', 'honancho'],
+    ] as const)(
+        '%sから%sは改札外乗換14回の既知の経路を発見する',
+        (from, to) => {
+            // レビューで確認した駅を再訪しない14回の経路は、両方向で利用できる。
+            const result = searchRoutes(from, to);
+            expect(result.routes.length).toBeGreaterThan(0);
+            expect(result.routes[0].outsideTransferCount).toBe(14);
+        },
+        10_000,
+    );
+
     it('桜田門から浅草は路線を再利用する改札外乗換14回の候補を返す', () => {
         // 改札外乗換14か所をすべて通る片道経路がある。
         const { routes } = searchRoutes('sakuradamon', 'asakusa');
@@ -148,43 +181,126 @@ describe('searchRoutes', () => {
         expect(route?.fare).toEqual({ ic: 178, ticket: 180 });
     });
 
+    it('表参道から外苑前は途中の改札外出場駅までの運賃を下回らない', () => {
+        // 発着間0.7kmは178円だが、池袋8.8km・上野9.6kmまでの収受額は209円。
+        const result = searchRoutes('omote-sando', 'gaiemmae');
+        expect(result.routes.length).toBeGreaterThan(0);
+        for (const route of result.routes) {
+            expect(route.outsideTransferCount).toBe(14);
+            expect(route.shortestDistanceTenths).toBe(7);
+            expect(route.fare).toEqual({ ic: 209, ticket: 210 });
+            expect(route.fareCheckpoints).toContainEqual({
+                stationId: 'ikebukuro',
+                shortestDistanceTenths: 88,
+                fare: { ic: 209, ticket: 210 },
+            });
+        }
+    }, 10_000);
+
+    it.each([
+        { from: 'sakuradamon', to: 'nijubashimae', exit: 'yurakucho', distance: 10 },
+        { from: 'nijubashimae', to: 'sakuradamon', exit: 'hibiya', distance: 7 },
+    ] as const)('$fromから$toの異駅名乗換は出場する側の$exitを運賃計算に使う', ({ from, to, exit, distance }) => {
+        const result = searchRoutes(from, to, 1);
+        expect(result.routes[0]).toMatchObject({
+            outsideTransferCount: 1,
+            insideTransferCount: 0,
+            actualDistanceTenths: 17,
+            fareCheckpoints: [{ stationId: exit, shortestDistanceTenths: distance, fare: { ic: 178, ticket: 180 } }],
+        });
+    });
+
+    it('返す全経路で区間接続・距離合計・乗換回数が一致し、経路が重複しない', () => {
+        const { routes } = searchRoutes('tokyo', 'asakusa', 3);
+        expect(routes).toHaveLength(20);
+        expect(new Set(routes.map((route) => route.key)).size).toBe(routes.length);
+        for (const route of routes) {
+            expect(route.legs[0].fromStationId).toBe('tokyo');
+            expect(route.legs.at(-1)?.toStationId).toBe('asakusa');
+            expect(route.transfers).toHaveLength(route.legs.length - 1);
+            // 公開データの隣接関係から各区間を展開し、途中駅の再訪も検出する。
+            const visited = new Set<StationId>();
+            for (const leg of route.legs) {
+                const queue: StationId[][] = [[leg.fromStationId]];
+                let expanded: StationId[] | undefined;
+                while (queue.length > 0) {
+                    const path = queue.shift();
+                    if (!path) throw new Error('展開待ちの経路がありません');
+                    const current = path[path.length - 1];
+                    if (current === leg.toStationId) {
+                        expanded = path;
+                        break;
+                    }
+                    for (const line of LINE_PATHS.filter((line) => line.lineId === leg.lineId)) {
+                        const ids: readonly StationId[] = line.stations.map(([id]) => id);
+                        const index = ids.indexOf(current);
+                        if (index < 0) continue;
+                        for (const neighbor of [ids[index - 1], ids[index + 1]]) {
+                            if (neighbor && !path.includes(neighbor)) queue.push([...path, neighbor]);
+                        }
+                    }
+                }
+                expect(expanded).toBeDefined();
+                if (!expanded) throw new Error('乗車区間を展開できません');
+                // 同駅の乗換では、直前の区間終点と次の区間始点を一度だけ数える。
+                if (!visited.has(leg.fromStationId)) visited.add(leg.fromStationId);
+                for (const station of expanded.slice(1)) {
+                    expect(visited.has(station), `再訪駅: ${station}`).toBe(false);
+                    visited.add(station);
+                }
+            }
+
+            expect(route.actualDistanceTenths).toBe(route.legs.reduce((total, leg) => total + leg.distanceTenths, 0));
+            expect(route.transfers.filter((transfer) => transfer.type === 'outside')).toHaveLength(3);
+            expect(route.transfers.filter((transfer) => transfer.type === 'inside')).toHaveLength(
+                route.insideTransferCount,
+            );
+            for (const [index, transfer] of route.transfers.entries()) {
+                expect(transfer).toMatchObject({
+                    fromStationId: route.legs[index].toStationId,
+                    fromLineId: route.legs[index].lineId,
+                    toStationId: route.legs[index + 1].fromStationId,
+                    toLineId: route.legs[index + 1].lineId,
+                });
+            }
+        }
+    });
+
     it('乗車駅と降車駅が同じ場合は経路を返さない', () => {
         // 片道経路は異なる発着駅を前提とするため、同駅指定の期待件数は0件。
-        expect(searchRoutes('ginza', 'ginza')).toEqual({ routes: [], truncated: false });
+        expect(searchRoutes('ginza', 'ginza')).toEqual({ routes: [], truncated: false, outsideTransferUpperBound: 0 });
     });
 
     it('出発駅を再訪しないと到達できない場合は経路を返さない', () => {
         // 北綾瀬へは綾瀬を経由する必要があるため、綾瀬発の片道経路では改札外乗換を挟めない。
-        expect(searchRoutes('ayase', 'kita-ayase')).toEqual({ routes: [], truncated: false });
+        expect(searchRoutes('ayase', 'kita-ayase')).toEqual({
+            routes: [],
+            truncated: false,
+            outsideTransferUpperBound: 0,
+        });
     });
 
-    it('未指定検索の探索量が上限に達した場合は見つかった候補と打ち切り状態を返す', () => {
-        const result = searchRoutes('wakoshi', 'nishi-funabashi');
-
-        expect(result.truncated).toBe(true);
-        expect(result.routes).toHaveLength(20);
-        expect(result.routes.every((route) => route.outsideTransferCount === 14)).toBe(true);
-    }, 10_000);
-
-    it('未指定検索は探索困難な発着駅でも時間上限内に打ち切り状態を返す', () => {
-        const result = searchRoutes('honancho', 'kita-ayase');
-
-        expect(result.truncated).toBe(true);
-    }, 10_000);
-
-    it('最大回数の探索期限を超過しても中間の乗換回数を探索する', () => {
-        let currentTime = 5_000;
-        const performanceNowSpy = vi.spyOn(performance, 'now').mockImplementation(() => {
-            currentTime += 1;
-            return currentTime;
+    it('訪問予算が0の場合は候補未発見と未確定の上限を返す', () => {
+        expect(searchRoutes('tokyo', 'asakusa', 1, { visitLimit: 0 })).toEqual({
+            routes: [],
+            truncated: true,
+            outsideTransferUpperBound: 1,
         });
-        performanceNowSpy.mockReturnValueOnce(0);
+    });
 
-        const result = searchRoutes('kita-ayase', 'nishi-funabashi');
-        performanceNowSpy.mockRestore();
-
+    it('探索を途中で打ち切っても先に見つけた完成経路を返す', () => {
+        const result = searchRoutes('tokyo', 'asakusa', null, { visitLimit: 10_000 });
         expect(result.truncated).toBe(true);
         expect(result.routes.length).toBeGreaterThan(0);
-        expect(result.routes.every((route) => route.outsideTransferCount > 1)).toBe(true);
-    }, 10_000);
+        expect(result.outsideTransferUpperBound).toBe(14);
+        expect(result.routes[0].outsideTransferCount).toBeLessThan(14);
+    });
+
+    it('時間予算が0の場合は未探索の候補を完全な結果としない', () => {
+        expect(searchRoutes('tokyo', 'asakusa', 1, { durationLimitMs: 0 })).toEqual({
+            routes: [],
+            truncated: true,
+            outsideTransferUpperBound: 1,
+        });
+    });
 });

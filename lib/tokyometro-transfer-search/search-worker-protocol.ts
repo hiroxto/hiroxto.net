@@ -1,5 +1,5 @@
 import type { StationId } from './data';
-import type { RouteResult } from './search';
+import type { RouteSearchResult } from './search';
 
 export type RouteSearchRequest = {
     originStationId: StationId;
@@ -8,11 +8,7 @@ export type RouteSearchRequest = {
 };
 
 export type RouteSearchResponse =
-    | {
-          status: 'success';
-          routes: RouteResult[];
-          truncated: boolean;
-      }
+    | ({ status: 'success' } & RouteSearchResult)
     | {
           status: 'error';
           message: string;

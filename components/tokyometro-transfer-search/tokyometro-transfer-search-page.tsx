@@ -185,6 +185,7 @@ export function TokyoMetroTransferSearchPage({
     const [searchError, setSearchError] = useState<string | null>(null);
     const [routes, setRoutes] = useState<RouteResult[] | null>(null);
     const [isSearchTruncated, setIsSearchTruncated] = useState(false);
+    const [outsideTransferUpperBound, setOutsideTransferUpperBound] = useState(0);
     const [isSearching, setIsSearching] = useState(false);
     const [isPending, startTransition] = useTransition();
 
@@ -222,6 +223,7 @@ export function TokyoMetroTransferSearchPage({
             if (data.status === 'success') {
                 setRoutes(data.routes);
                 setIsSearchTruncated(data.truncated);
+                setOutsideTransferUpperBound(data.outsideTransferUpperBound);
             } else {
                 setSearchError(data.message);
             }
@@ -353,11 +355,14 @@ export function TokyoMetroTransferSearchPage({
 
                 {isSearchTruncated ? (
                     <Alert color="yellow" variant="light" title="探索上限に達しました">
-                        {initialMaximumOutsideTransferCount == null
-                            ? '表示中の候補は探索済み範囲の結果です。完全な上位結果が必要な場合は最大改札外乗換回数を指定してください。'
-                            : initialMaximumOutsideTransferCount > 1
-                              ? '表示中の候補は探索済み範囲の結果です。完全な上位結果が必要な場合は最大改札外乗換回数を現在より小さくしてください。'
-                              : '表示中の候補は探索済み範囲の結果です。探索上限のため完全な上位結果を取得できませんでした。'}
+                        <Text size="sm">表示中の候補は探索済み範囲の結果です。</Text>
+                        <Text size="sm">
+                            {routes?.[0] == null
+                                ? `最大回数は未確定です（上限${outsideTransferUpperBound}回）。`
+                                : routes[0].outsideTransferCount === outsideTransferUpperBound
+                                  ? `最大改札外乗換回数は${outsideTransferUpperBound}回で確定しています。候補の順位は未確定です。`
+                                  : `見つかった最大は${routes[0].outsideTransferCount}回です。最大回数は未確定です（上限${outsideTransferUpperBound}回）。`}
+                        </Text>
                     </Alert>
                 ) : null}
 
