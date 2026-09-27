@@ -247,41 +247,8 @@ const expectedLinePaths = [
     },
 ] as const satisfies ReadonlyArray<ExpectedLinePath>;
 
-const findAdjacentDistance = (lineId: LineId, fromStationId: StationId, toStationId: StationId): number => {
-    const path = LINE_PATHS.find(
-        (linePath) =>
-            linePath.lineId === lineId &&
-            linePath.stations.some(
-                ([stationId], index) =>
-                    index > 0 && linePath.stations[index - 1][0] === fromStationId && stationId === toStationId,
-            ),
-    );
-    const toStationIndex = path?.stations.findIndex(([stationId]) => stationId === toStationId) ?? -1;
-
-    if (path == null || toStationIndex < 1 || path.stations[toStationIndex - 1][0] !== fromStationId) {
-        throw new Error(`${lineId}:${fromStationId}―${toStationId}の隣接区間が見つかりません`);
-    }
-
-    return path.stations[toStationIndex][1];
-};
-
 describe('LINE_PATHS', () => {
     it('全路線の駅順と全隣接駅間営業キロが別表第1号表と一致する', () => {
         expect(LINE_PATHS).toEqual(expectedLinePaths);
     });
-
-    it.each([
-        ['ginza', 'shibuya', 'omote-sando', 12],
-        ['ginza', 'akasaka-mitsuke', 'tameike-sanno', 7],
-        ['ginza', 'tameike-sanno', 'toranomon', 8],
-        ['hibiya', 'kamiyacho', 'toranomon-hills', 5],
-        ['hibiya', 'toranomon-hills', 'kasumigaseki', 8],
-        ['nanboku', 'tameike-sanno', 'nagatacho', 7],
-        ['nanboku', 'nagatacho', 'yotsuya', 15],
-    ] as const)(
-        '%s線の%s―%sを単独で検証すると営業キロが正しい',
-        (lineId, fromStationId, toStationId, expectedDistanceTenths) => {
-            expect(findAdjacentDistance(lineId, fromStationId, toStationId)).toBe(expectedDistanceTenths);
-        },
-    );
 });
