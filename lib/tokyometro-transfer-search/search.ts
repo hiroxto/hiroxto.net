@@ -807,7 +807,7 @@ export const searchRoutes = (
     let remainingVisitCount = visitLimit;
     let seedRoutes: RouteResult[] = [];
     let truncatedUpperBound = 0;
-    // 最初の完成経路に最大100ms・1万訪問を割り当て、残り時間を未探索の回数へ均等に配分する。
+    // 最初の完成経路に最大100ms・1万訪問を割り当て、残りの時間・訪問数を未探索の回数へ均等に配分する。
     const targets = Array.from({ length: maximumOutsideCount }, (_, index) => maximumOutsideCount - index);
     if (maximumOutsideCount > 1) targets.unshift(1);
 
@@ -818,7 +818,9 @@ export const searchRoutes = (
         let targetDeadline = isSeedSearch
             ? Math.min(searchDeadline, targetStart + 100)
             : targetStart + Math.max(0, searchDeadline - targetStart) / targetOutsideCount;
-        let remainingTargetVisitCount = isSeedSearch ? Math.min(10_000, remainingVisitCount) : remainingVisitCount;
+        let remainingTargetVisitCount = isSeedSearch
+            ? Math.min(10_000, remainingVisitCount)
+            : Math.floor(remainingVisitCount / targetOutsideCount);
         let remainingDeadlineCheckCount = 0;
         let targetTruncated = false;
         let seedFound = false;
@@ -829,6 +831,7 @@ export const searchRoutes = (
             // 完成経路が見つかれば、それより少ない回数を調べる必要はない。
             if (!isSeedSearch) {
                 targetDeadline = searchDeadline;
+                remainingTargetVisitCount = remainingVisitCount;
             }
             results.sort(compareRoutes);
 

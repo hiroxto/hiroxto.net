@@ -305,6 +305,18 @@ describe('searchRoutes', () => {
         expect(result.routes[0].outsideTransferCount).toBeLessThan(14);
     });
 
+    it.each([
+        ['wakoshi', 'nishi-funabashi'],
+        ['honancho', 'kita-ayase'],
+    ] as const)('%sから%sの上限10回検索は訪問予算を中間回数にも残す', (from, to) => {
+        // どちらの区間にも5回の候補がある。10回の探索だけで予算を使い切らない。
+        const result = searchRoutes(from, to, 10, { visitLimit: 100_000 });
+        expect(result.truncated).toBe(true);
+        expect(result.outsideTransferUpperBound).toBe(10);
+        expect(result.routes.length).toBeGreaterThan(0);
+        expect(result.routes[0].outsideTransferCount).toBeGreaterThanOrEqual(5);
+    });
+
     it('上位回数の時間切れ後も中間回数を探索し、上位の未確定状態を保持する', () => {
         // 時計を一定速度で進め、実行環境に依存せず時間予算の消費を再現する。
         let now = 0;
