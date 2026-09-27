@@ -104,6 +104,7 @@ describe('TokyoMetroTransferSearchPage', () => {
 
     afterEach(() => {
         vi.unstubAllGlobals();
+        vi.restoreAllMocks();
     });
 
     it('初期表示では検索フォームを表示し、結果は表示しない', () => {
@@ -206,6 +207,40 @@ describe('TokyoMetroTransferSearchPage', () => {
         expect(screen.getAllByText(/実走営業キロ:/).length).toBeGreaterThan(0);
         expect(screen.getAllByText(/運賃計算用最短営業キロ:/).length).toBeGreaterThan(0);
     });
+
+    it.each(['Workerのエラー', '検索処理のエラー'] as const)(
+        '%s後に同じ条件で検索し直すと結果を表示する',
+        async (failure) => {
+            vi.spyOn(WorkerMock.prototype, 'postMessage').mockImplementationOnce(function (this: WorkerMock) {
+                queueMicrotask(() => {
+                    if (failure === 'Workerのエラー') {
+                        this.onerror?.();
+                    } else {
+                        this.onmessage?.(
+                            new MessageEvent('message', {
+                                data: { status: 'error', message: '経路検索に失敗しました' },
+                            }),
+                        );
+                    }
+                });
+            });
+            const user = userEvent.setup();
+            renderWithMantine(
+                <TokyoMetroTransferSearchPage
+                    initialFrom="inaricho"
+                    initialTo="iriya"
+                    initialMaximumOutsideTransferCount={1}
+                    queryError={null}
+                />,
+            );
+
+            expect(await screen.findByText('経路検索に失敗しました')).toBeInTheDocument();
+            await user.click(screen.getByRole('button', { name: '検索' }));
+
+            expect(await screen.findByRole('heading', { name: '検索結果' })).toBeInTheDocument();
+            expect(screen.queryByText('経路検索に失敗しました')).not.toBeInTheDocument();
+        },
+    );
 
     it('改札外乗換を含む経路がない場合は指定のメッセージを表示する', async () => {
         renderWithMantine(

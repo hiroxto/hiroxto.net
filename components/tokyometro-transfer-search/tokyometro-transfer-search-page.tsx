@@ -187,6 +187,7 @@ export function TokyoMetroTransferSearchPage({
     const [isSearchTruncated, setIsSearchTruncated] = useState(false);
     const [outsideTransferUpperBound, setOutsideTransferUpperBound] = useState(0);
     const [isSearching, setIsSearching] = useState(false);
+    const [searchAttempt, setSearchAttempt] = useState(0);
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
@@ -196,6 +197,7 @@ export function TokyoMetroTransferSearchPage({
         setFormError(null);
     }, [initialFrom, initialTo, initialMaximumOutsideTransferCount]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: 同一条件の送信でもWorkerを再起動する。
     useEffect(() => {
         if (initialFrom == null || initialTo == null) {
             setRoutes(null);
@@ -241,7 +243,7 @@ export function TokyoMetroTransferSearchPage({
         return () => {
             worker.terminate();
         };
-    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount]);
+    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount, searchAttempt]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -257,6 +259,15 @@ export function TokyoMetroTransferSearchPage({
         }
 
         setFormError(null);
+        if (
+            fromStationId === initialFrom &&
+            toStationId === initialTo &&
+            maximumOutsideTransferCount === initialMaximumOutsideTransferCount
+        ) {
+            setSearchAttempt((attempt) => attempt + 1);
+            return;
+        }
+
         const query = new URLSearchParams({ from: fromStationId, to: toStationId });
 
         if (maximumOutsideTransferCount != null) {
