@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LINE_PATHS, type StationId } from './data';
 import { calculateFareBetweenStations, searchRoutes } from './search';
 
@@ -111,6 +111,15 @@ describe('calculateFareBetweenStations', () => {
 });
 
 describe('searchRoutes', () => {
+    beforeEach(() => {
+        // 経路の検証は実行環境の速度に依存させず、打ち切りは探索予算で個別に再現する。
+        vi.spyOn(performance, 'now').mockReturnValue(0);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('東京から浅草の上限1回検索には大手町で改札内乗換する6.4kmの候補を含む', () => {
         // 公式営業キロ: 東京―大手町0.6 + 大手町―三越前0.7 + 三越前―浅草5.1。
         const result = searchRoutes('tokyo', 'asakusa', 1);
