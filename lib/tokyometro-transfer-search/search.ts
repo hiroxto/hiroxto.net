@@ -806,14 +806,18 @@ export const searchRoutes = (
     const maximumOutsideCount = Math.min(availableOutsideCount, maximumOutsideTransferCount ?? availableOutsideCount);
     let remainingVisitCount = visitLimit;
     let seedRoutes: RouteResult[] = [];
-    // 最初の完成経路に最大100ms・1万訪問を割り当て、残りを最大回数と上位候補の探索に使う。
+    let truncatedUpperBound = 0;
+    // 最初の完成経路に最大100ms・1万訪問を割り当て、残り時間を未探索の回数へ均等に配分する。
     const targets = Array.from({ length: maximumOutsideCount }, (_, index) => maximumOutsideCount - index);
     if (maximumOutsideCount > 1) targets.unshift(1);
 
     for (const [targetIndex, targetOutsideCount] of targets.entries()) {
         const isSeedSearch = maximumOutsideCount > 1 && targetIndex === 0;
         const results: RouteResult[] = [];
-        const targetDeadline = isSeedSearch ? Math.min(searchDeadline, performance.now() + 100) : searchDeadline;
+        const targetStart = performance.now();
+        let targetDeadline = isSeedSearch
+            ? Math.min(searchDeadline, targetStart + 100)
+            : targetStart + Math.max(0, searchDeadline - targetStart) / targetOutsideCount;
         let remainingTargetVisitCount = isSeedSearch ? Math.min(10_000, remainingVisitCount) : remainingVisitCount;
         let remainingDeadlineCheckCount = 0;
         let targetTruncated = false;
@@ -822,6 +826,10 @@ export const searchRoutes = (
         const addResult = (result: RouteResult): void => {
             results.push(result);
             seedFound = isSeedSearch;
+            // 完成経路が見つかれば、それより少ない回数を調べる必要はない。
+            if (!isSeedSearch) {
+                targetDeadline = searchDeadline;
+            }
             results.sort(compareRoutes);
 
             if (results.length > SEARCH_RESULT_LIMIT) {
@@ -1009,16 +1017,23 @@ export const searchRoutes = (
             seedRoutes = results;
             continue;
         }
-        if (results.length > 0 || targetTruncated) {
+        if (targetTruncated) {
+            truncatedUpperBound = Math.max(truncatedUpperBound, targetOutsideCount);
+        }
+        if (results.length > 0) {
             return {
-                routes: results.length > 0 ? results : seedRoutes,
-                truncated: targetTruncated,
-                outsideTransferUpperBound: targetOutsideCount,
+                routes: results,
+                truncated: truncatedUpperBound > 0,
+                outsideTransferUpperBound: Math.max(truncatedUpperBound, targetOutsideCount),
             };
         }
     }
 
-    return { routes: [], truncated: false, outsideTransferUpperBound: 0 };
+    return {
+        routes: truncatedUpperBound > 0 ? seedRoutes : [],
+        truncated: truncatedUpperBound > 0,
+        outsideTransferUpperBound: truncatedUpperBound,
+    };
 };
 
 export const formatDistance = (distanceTenths: number): string => `${(distanceTenths / 10).toFixed(1)}km`;

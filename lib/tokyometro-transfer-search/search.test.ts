@@ -305,6 +305,20 @@ describe('searchRoutes', () => {
         expect(result.routes[0].outsideTransferCount).toBeLessThan(14);
     });
 
+    it('上位回数の時間切れ後も中間回数を探索し、上位の未確定状態を保持する', () => {
+        // 時計を一定速度で進め、実行環境に依存せず時間予算の消費を再現する。
+        let now = 0;
+        vi.mocked(performance.now).mockImplementation(() => {
+            now += 50;
+            return now;
+        });
+        const result = searchRoutes('wakoshi', 'nishi-funabashi', 10);
+        expect(result.truncated).toBe(true);
+        expect(result.outsideTransferUpperBound).toBe(10);
+        expect(result.routes.length).toBeGreaterThan(0);
+        expect(result.routes[0].outsideTransferCount).toBeGreaterThanOrEqual(5);
+    });
+
     it('時間予算が0の場合は未探索の候補を完全な結果としない', () => {
         expect(searchRoutes('tokyo', 'asakusa', 1, { durationLimitMs: 0 })).toEqual({
             routes: [],
