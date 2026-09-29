@@ -340,7 +340,7 @@ export function TokyoMetroTransferSearchPage({
                             </Text>
                             <Group justify="space-between" align="end" gap="md">
                                 <Text size="xs" c="dimmed">
-                                    営業キロ・運賃は2026/07/22時点の情報
+                                    営業キロ・運賃は2026/09/29時点の情報
                                 </Text>
                                 <Button type="submit" color="dark" loading={isPending || isSearching} px="xl">
                                     検索
