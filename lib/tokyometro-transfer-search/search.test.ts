@@ -154,6 +154,7 @@ describe('searchRoutes', () => {
 
     it('桜田門から浅草は路線を再利用する改札外乗換14回の候補を返す', () => {
         // 改札外乗換14か所をすべて通る片道経路がある。
+        // 時計を固定した探索はCIで約16秒かかるため、実時間のテスト期限には余裕を持たせる。
         const { routes } = searchRoutes('sakuradamon', 'asakusa');
         const firstRouteLineIds = routes[0].legs.map((leg) => leg.lineId);
 
@@ -161,7 +162,7 @@ describe('searchRoutes', () => {
         expect(routes.length).toBeLessThanOrEqual(20);
         expect(routes.every((route) => route.outsideTransferCount === 14)).toBe(true);
         expect(new Set(firstRouteLineIds).size).toBeLessThan(firstRouteLineIds.length);
-    }, 10_000);
+    }, 30_000);
 
     it('最大改札外乗換回数を3回にすると改札外乗換3回の上位20経路を返す', () => {
         const { routes } = searchRoutes('sakuradamon', 'asakusa', 3);
