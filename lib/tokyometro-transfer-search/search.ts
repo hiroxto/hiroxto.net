@@ -757,6 +757,9 @@ export const SEARCH_DURATION_LIMIT_MS = 5_000;
 export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
 
 const SEARCH_DEADLINE_CHECK_INTERVAL = 1_000;
+// 候補発見は残り予算の1/4を目安にする。少ない予算では最初の候補を得るため1万訪問まで使う。
+const DISCOVERY_BUDGET_DIVISOR = 4;
+const DISCOVERY_VISIT_LIMIT = 125_000;
 
 export type RouteSearchBudget = {
     /** 検索全体で許可する訪問数。 */
@@ -805,34 +808,35 @@ export const searchRoutes = (
     const availableOutsideCount = countBits(availableOutsideMask);
     const maximumOutsideCount = Math.min(availableOutsideCount, maximumOutsideTransferCount ?? availableOutsideCount);
     let remainingVisitCount = visitLimit;
-    let seedRoutes: RouteResult[] = [];
+    let bestRoutes: RouteResult[] = [];
     let truncatedUpperBound = 0;
-    // 最初の完成経路に最大100ms・1万訪問を割り当て、残りの時間・訪問数を未探索の回数へ均等に配分する。
-    const targets = Array.from({ length: maximumOutsideCount }, (_, index) => maximumOutsideCount - index);
-    if (maximumOutsideCount > 1) targets.unshift(1);
+    // 指定上限によらず同じ順序・予算で探索し、発見済みの最大回数を保持する。
+    const targets: (number | null)[] = Array.from({ length: maximumOutsideCount }, (_, index) => index + 1);
+    targets.push(null); // 候補発見後、残り予算で最大回数の候補を順位付けする。
 
-    for (const [targetIndex, targetOutsideCount] of targets.entries()) {
-        const isSeedSearch = maximumOutsideCount > 1 && targetIndex === 0;
+    for (const target of targets) {
+        const isRankingSearch = target === null;
+        const targetOutsideCount = target ?? bestRoutes[0]?.outsideTransferCount;
+        if (targetOutsideCount == null) continue;
         const results: RouteResult[] = [];
         const targetStart = performance.now();
-        let targetDeadline = isSeedSearch
-            ? Math.min(searchDeadline, targetStart + 100)
-            : targetStart + Math.max(0, searchDeadline - targetStart) / targetOutsideCount;
-        let remainingTargetVisitCount = isSeedSearch
-            ? Math.min(10_000, remainingVisitCount)
-            : Math.floor(remainingVisitCount / targetOutsideCount);
+        const budgetDivisor = isRankingSearch ? 1 : DISCOVERY_BUDGET_DIVISOR;
+        const targetDeadline = targetStart + Math.max(0, searchDeadline - targetStart) / budgetDivisor;
+        const targetVisitLimit = isRankingSearch
+            ? remainingVisitCount
+            : Math.min(
+                  remainingVisitCount,
+                  DISCOVERY_VISIT_LIMIT,
+                  Math.max(10_000, Math.floor(remainingVisitCount / budgetDivisor)),
+              );
+        let remainingTargetVisitCount = targetVisitLimit;
         let remainingDeadlineCheckCount = 0;
         let targetTruncated = false;
-        let seedFound = false;
+        let candidateFound = false;
 
         const addResult = (result: RouteResult): void => {
             results.push(result);
-            seedFound = isSeedSearch;
-            // 完成経路が見つかれば、それより少ない回数を調べる必要はない。
-            if (!isSeedSearch) {
-                targetDeadline = searchDeadline;
-                remainingTargetVisitCount = remainingVisitCount;
-            }
+            candidateFound = !isRankingSearch;
             results.sort(compareRoutes);
 
             if (results.length > SEARCH_RESULT_LIMIT) {
@@ -914,7 +918,7 @@ export const searchRoutes = (
                     );
 
                 for (const segment of segments) {
-                    if (targetTruncated || seedFound) {
+                    if (targetTruncated || candidateFound) {
                         return;
                     }
 
@@ -960,7 +964,7 @@ export const searchRoutes = (
                     }
 
                     for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
-                        if (targetTruncated || seedFound) {
+                        if (targetTruncated || candidateFound) {
                             return;
                         }
 
@@ -1006,36 +1010,32 @@ export const searchRoutes = (
             for (const lineId of stationLineIds.get(originStationId) ?? []) {
                 visit(originStationId, lineId, getStationBit(originStationId), 0, 0, 0);
 
-                if (targetTruncated || seedFound) {
+                if (targetTruncated || candidateFound) {
                     break;
                 }
             }
 
-            if (targetTruncated || seedFound) {
+            if (targetTruncated || candidateFound) {
                 break;
             }
         }
 
-        if (isSeedSearch) {
-            seedRoutes = results;
-            continue;
-        }
-        if (targetTruncated) {
+        if (targetTruncated || candidateFound) {
             truncatedUpperBound = Math.max(truncatedUpperBound, targetOutsideCount);
         }
         if (results.length > 0) {
-            return {
-                routes: results,
-                truncated: truncatedUpperBound > 0,
-                outsideTransferUpperBound: Math.max(truncatedUpperBound, targetOutsideCount),
-            };
+            bestRoutes = results;
+        }
+        if (isRankingSearch && !targetTruncated && truncatedUpperBound === targetOutsideCount) {
+            truncatedUpperBound = 0;
         }
     }
 
+    const bestOutsideCount = bestRoutes[0]?.outsideTransferCount ?? 0;
     return {
-        routes: truncatedUpperBound > 0 ? seedRoutes : [],
-        truncated: truncatedUpperBound > 0,
-        outsideTransferUpperBound: truncatedUpperBound,
+        routes: bestRoutes,
+        truncated: truncatedUpperBound > 0 && truncatedUpperBound >= bestOutsideCount,
+        outsideTransferUpperBound: Math.max(truncatedUpperBound, bestOutsideCount),
     };
 };
 

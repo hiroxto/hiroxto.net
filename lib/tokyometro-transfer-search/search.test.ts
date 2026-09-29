@@ -170,6 +170,34 @@ describe('searchRoutes', () => {
         expect(routes.every((route) => route.outsideTransferCount === 3)).toBe(true);
     });
 
+    it('桜田門から浅草の上限を4回から10回・14回へ増やしても20万訪問で発見した乗換回数を減らさない', () => {
+        // レビューの再現例では上限4回・20万訪問で3回の候補を発見できる。
+        let previousCount = 3;
+        for (const maximum of [4, 10, 14]) {
+            const result = searchRoutes('sakuradamon', 'asakusa', maximum, { visitLimit: 200_000 });
+            expect(result.routes.length).toBeGreaterThan(0);
+            // 上限を緩める前の結果との比較自体が、検証する仕様。
+            expect(result.routes[0].outsideTransferCount).toBeGreaterThanOrEqual(previousCount);
+            previousCount = result.routes[0].outsideTransferCount;
+        }
+    }, 10_000);
+
+    it('時間予算を消費しても桜田門から浅草の上限4回で見つけた4回以上の候補を上限10回で保持する', () => {
+        let previousCount = 4;
+        for (const maximum of [4, 10]) {
+            let now = 0;
+            vi.mocked(performance.now).mockImplementation(() => {
+                now += 5;
+                return now;
+            });
+            const result = searchRoutes('sakuradamon', 'asakusa', maximum);
+            expect(result.routes.length).toBeGreaterThan(0);
+            expect(result.routes[0].outsideTransferCount).toBeGreaterThanOrEqual(previousCount);
+            expect(result.outsideTransferUpperBound).toBeGreaterThanOrEqual(result.routes[0].outsideTransferCount);
+            previousCount = result.routes[0].outsideTransferCount;
+        }
+    }, 20_000);
+
     it('最大改札外乗換回数を1回にしても改札内乗換は1回に制限しない', () => {
         const { routes } = searchRoutes('sakuradamon', 'asakusa', 1);
 
