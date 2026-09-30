@@ -185,6 +185,7 @@ describe('searchRoutes', () => {
     }, 10_000);
 
     it('時間予算を消費しても桜田門から浅草の上限4回で見つけた4回以上の候補を上限10回で保持する', () => {
+        // 模擬時計での5秒制限でも2回の探索は全件並列実行で20秒を超えるため、実時間の期限を別に確保する。
         let previousCount = 4;
         for (const maximum of [4, 10]) {
             let now = 0;
@@ -198,7 +199,7 @@ describe('searchRoutes', () => {
             expect(result.outsideTransferUpperBound).toBeGreaterThanOrEqual(result.routes[0].outsideTransferCount);
             previousCount = result.routes[0].outsideTransferCount;
         }
-    }, 20_000);
+    }, 60_000);
 
     it('最大改札外乗換回数を1回にしても改札内乗換は1回に制限しない', () => {
         const { routes } = searchRoutes('sakuradamon', 'asakusa', 1);
