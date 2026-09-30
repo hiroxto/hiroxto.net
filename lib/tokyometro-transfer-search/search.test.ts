@@ -145,11 +145,12 @@ describe('searchRoutes', () => {
         '%sから%sは改札外乗換14回の既知の経路を発見する',
         (from, to) => {
             // レビューで確認した駅を再訪しない14回の経路は、両方向で利用できる。
+            // 時計を固定した探索は全件並列実行で10秒を超えるため、実時間の期限に余裕を持たせる。
             const result = searchRoutes(from, to);
             expect(result.routes.length).toBeGreaterThan(0);
             expect(result.routes[0].outsideTransferCount).toBe(14);
         },
-        10_000,
+        30_000,
     );
 
     it('桜田門から浅草は路線を再利用する改札外乗換14回の候補を返す', () => {
