@@ -1,10 +1,29 @@
 'use client';
 
-import { Alert, Badge, Button, Divider, Group, Paper, Select, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import {
+    Alert,
+    Badge,
+    Button,
+    Divider,
+    Group,
+    type OptionsFilter,
+    Paper,
+    Select,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import { useRouter } from 'next/navigation';
 import { type CSSProperties, type FormEvent, useEffect, useState, useTransition } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
-import { LINE_DEFINITIONS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-transfer-search/data';
+import {
+    LINE_DEFINITIONS,
+    type LineId,
+    STATION_NAMES,
+    STATION_READINGS,
+    type StationId,
+} from '@/lib/tokyometro-transfer-search/data';
 import {
     formatDistance,
     MAX_OUTSIDE_TRANSFER_COUNT,
@@ -23,8 +42,16 @@ interface TokyoMetroTransferSearchPageProps {
 
 const stationOptions = stations.map((station) => ({
     value: station.id,
+    reading: STATION_READINGS[station.id],
     label: `${station.name}｜${station.lineIds.map((lineId) => LINE_DEFINITIONS[lineId].name).join('・')}`,
 }));
+
+function filterStationOptions({ search, limit }: Parameters<OptionsFilter>[0]) {
+    const query = search.trim().toLowerCase();
+    return stationOptions
+        .filter((option) => option.label.toLowerCase().includes(query) || option.reading.includes(query))
+        .slice(0, limit);
+}
 
 const unspecifiedMaximumOutsideTransferCount = 'unspecified';
 const maximumOutsideTransferCountOptions = [
@@ -296,6 +323,7 @@ export function TokyoMetroTransferSearchPage({
                                     label="乗車駅"
                                     placeholder="駅名または路線名で検索"
                                     data={stationOptions}
+                                    filter={filterStationOptions}
                                     value={fromStationId}
                                     onChange={setFromStationId}
                                     searchable
@@ -306,6 +334,7 @@ export function TokyoMetroTransferSearchPage({
                                     label="降車駅"
                                     placeholder="駅名または路線名で検索"
                                     data={stationOptions}
+                                    filter={filterStationOptions}
                                     value={toStationId}
                                     onChange={setToStationId}
                                     searchable

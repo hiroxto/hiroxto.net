@@ -154,6 +154,45 @@ describe('TokyoMetroTransferSearchPage', () => {
         expect(screen.queryByRole('heading', { name: '検索結果' })).not.toBeInTheDocument();
     });
 
+    it.each([
+        ['乗車駅', 'こうじまち', /^麴町｜/],
+        ['降車駅', 'こうじ', /^麴町｜/],
+        ['乗車駅', 'おもてさんどう', /^表参道｜/],
+        ['降車駅', '麴町', /^麴町｜/],
+        ['乗車駅', '有楽町線', /^麴町｜/],
+    ])('%sで「%s」を検索して該当駅を選択できる', async (label, query, optionName) => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom={null}
+                initialTo={null}
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
+        );
+        const input = screen.getByRole('textbox', { name: label });
+        await user.click(input);
+        await user.type(input, query);
+        await user.click(getActiveOption(input, optionName));
+        expect((input as HTMLInputElement).value).toMatch(optionName);
+    });
+
+    it('路線名のひらがなでは駅候補を表示しない', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom={null}
+                initialTo={null}
+                initialMaximumOutsideTransferCount={null}
+                queryError={null}
+            />,
+        );
+        const input = screen.getByRole('textbox', { name: '乗車駅' });
+        await user.click(input);
+        await user.type(input, 'ゆうらくちょうせん');
+        expect(screen.getByText('該当する駅がありません')).toBeInTheDocument();
+    });
+
     it('駅と最大改札外乗換回数を指定して検索すると共有可能なURLへ遷移する', async () => {
         const user = userEvent.setup();
         renderWithMantine(
