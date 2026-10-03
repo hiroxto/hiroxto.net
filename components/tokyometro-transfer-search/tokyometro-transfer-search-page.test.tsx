@@ -48,6 +48,8 @@ const inarichoToIriyaRoute: RouteResult = {
     ],
 };
 
+let workerRoute = inarichoToIriyaRoute;
+
 class WorkerMock {
     onmessage: ((event: MessageEvent<RouteSearchResponse>) => void) | null = null;
     onerror: (() => void) | null = null;
@@ -58,7 +60,7 @@ class WorkerMock {
             (request.originStationId === 'ayase' && request.destinationStationId === 'kita-ayase') ||
             request.originStationId === 'honancho'
                 ? []
-                : [inarichoToIriyaRoute];
+                : [workerRoute];
 
         queueMicrotask(() => {
             this.onmessage?.(
@@ -97,6 +99,7 @@ vi.mock('next/navigation', () => ({
 
 describe('TokyoMetroTransferSearchPage', () => {
     beforeEach(() => {
+        workerRoute = inarichoToIriyaRoute;
         pushMock.mockClear();
         workerRequestMock.mockClear();
         vi.stubGlobal('Worker', WorkerMock);
@@ -105,6 +108,34 @@ describe('TokyoMetroTransferSearchPage', () => {
     afterEach(() => {
         vi.unstubAllGlobals();
         vi.restoreAllMocks();
+    });
+
+    it.each([
+        { from: 'ueno', to: 'ueno', type: 'outside', station: '上野', label: '改札外乗換' },
+        { from: 'ueno', to: 'ueno', type: 'inside', station: '上野', label: '改札内乗換' },
+        { from: 'yurakucho', to: 'hibiya', type: 'outside', station: '有楽町 / 日比谷', label: '改札外乗換' },
+        { from: 'hibiya', to: 'yurakucho', type: 'outside', station: '日比谷 / 有楽町', label: '改札外乗換' },
+    ] as const)('$station の駅名の後ろに $label を表示する', async ({ from, to, type, station, label }) => {
+        workerRoute = {
+            ...inarichoToIriyaRoute,
+            legs: [
+                { ...inarichoToIriyaRoute.legs[0], toStationId: from },
+                { ...inarichoToIriyaRoute.legs[1], fromStationId: to },
+            ],
+            transfers: [{ ...inarichoToIriyaRoute.transfers[0], fromStationId: from, toStationId: to, type }],
+        };
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                queryError={null}
+            />,
+        );
+
+        const stationName = await screen.findByText(station, { exact: true });
+        expect(stationName.parentElement).toHaveTextContent(`${station}${label}`);
+        expect(screen.getAllByText(station, { exact: true })).toHaveLength(1);
     });
 
     it('初期表示では検索フォームを表示し、結果は表示しない', () => {

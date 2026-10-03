@@ -3,10 +3,6 @@
     overflow: hidden;
     border: 1px solid #d9dde2;
     border-top: 5px solid #161616;
-    background:
-        linear-gradient(90deg, rgb(243 151 0 / 8%) 1px, transparent 1px),
-        linear-gradient(rgb(0 167 219 / 7%) 1px, transparent 1px), #fbfbfa;
-    background-size: 28px 28px;
 }
 
 .searchPanel::after {
@@ -28,14 +24,6 @@
         #bb641d 88%
     );
     content: "";
-}
-
-.eyebrow {
-    color: #5d6268;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
 }
 
 .resultCard {
@@ -131,22 +119,6 @@
     color: #262a2e;
     font-size: 0.68rem;
     line-height: 1;
-}
-
-.transferRow {
-    display: grid;
-    grid-template-columns: 1.2rem minmax(0, 1fr);
-    gap: 0.65rem;
-    align-items: center;
-    padding-block: 0.25rem;
-}
-
-.transferMark {
-    width: 0;
-    height: 100%;
-    min-height: 1.8rem;
-    margin-inline: auto;
-    border-left: 2px dashed #7b8288;
 }
 
 .outsideTransfer {

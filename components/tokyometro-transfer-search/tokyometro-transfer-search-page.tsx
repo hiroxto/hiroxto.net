@@ -73,13 +73,14 @@ function RouteFlow({ route }: { route: RouteResult }) {
                         </div>
                         <div className={styles.stationRow}>
                             <span className={styles.stationDot} />
-                            <Text fw={750}>{STATION_NAMES[leg.toStationId]}</Text>
-                        </div>
-
-                        {transfer != null ? (
-                            <div className={styles.transferRow}>
-                                <span className={styles.transferMark} />
-                                <Group gap="xs" wrap="wrap">
+                            <Group gap="xs" wrap="wrap">
+                                <Text fw={750}>
+                                    {STATION_NAMES[leg.toStationId]}
+                                    {transfer != null && transfer.fromStationId !== transfer.toStationId
+                                        ? ` / ${STATION_NAMES[transfer.toStationId]}`
+                                        : ''}
+                                </Text>
+                                {transfer != null ? (
                                     <Badge
                                         radius="xs"
                                         variant="outline"
@@ -89,14 +90,9 @@ function RouteFlow({ route }: { route: RouteResult }) {
                                     >
                                         {transfer.type === 'outside' ? '改札外乗換' : '改札内乗換'}
                                     </Badge>
-                                    {transfer.fromStationId !== transfer.toStationId ? (
-                                        <Text size="sm" c="dimmed">
-                                            {STATION_NAMES[transfer.toStationId]}へ
-                                        </Text>
-                                    ) : null}
-                                </Group>
-                            </div>
-                        ) : null}
+                                ) : null}
+                            </Group>
+                        </div>
                     </div>
                 );
             })}
@@ -137,7 +133,7 @@ function RouteCard({ route, routeNumber }: { route: RouteResult; routeNumber: nu
         <Paper withBorder radius="sm" className={styles.resultCard}>
             <Group justify="space-between" align="center" gap="md" p="md" className={styles.resultHeader}>
                 <Stack gap={6}>
-                    <Text className={styles.routeNumber}>ROUTE {String(routeNumber).padStart(3, '0')}</Text>
+                    <Text className={styles.routeNumber}>経路 {String(routeNumber).padStart(3, '0')}</Text>
                     <Badge color="dark" variant="filled" radius="xs" size="lg">
                         {transferLabel}
                     </Badge>
@@ -291,8 +287,7 @@ export function TokyoMetroTransferSearchPage({
                     <form onSubmit={handleSubmit}>
                         <Stack gap="lg">
                             <div>
-                                <Text className={styles.eyebrow}>Search parameters</Text>
-                                <Title order={2} size="h3" mt={4}>
+                                <Title order={2} size="h3">
                                     乗車区間を指定
                                 </Title>
                             </div>
@@ -394,8 +389,7 @@ export function TokyoMetroTransferSearchPage({
                         <Stack gap="lg">
                             <Group justify="space-between" align="end">
                                 <div>
-                                    <Text className={styles.eyebrow}>Route manifest</Text>
-                                    <Title id="search-results-title" order={2} size="h3" mt={4}>
+                                    <Title id="search-results-title" order={2} size="h3">
                                         検索結果
                                     </Title>
                                 </div>
