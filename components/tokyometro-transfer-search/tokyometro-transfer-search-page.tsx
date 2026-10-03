@@ -342,9 +342,21 @@ export function TokyoMetroTransferSearchPage({
                                 <Text size="xs" c="dimmed">
                                     営業キロ・運賃は2026/09/29時点の情報
                                 </Text>
-                                <Button type="submit" color="dark" loading={isPending || isSearching} px="xl">
-                                    検索
-                                </Button>
+                                <Group gap="sm">
+                                    <Button
+                                        type="button"
+                                        variant="default"
+                                        onClick={() => {
+                                            setFromStationId(toStationId);
+                                            setToStationId(fromStationId);
+                                        }}
+                                    >
+                                        発着逆転
+                                    </Button>
+                                    <Button type="submit" color="dark" loading={isPending || isSearching} px="xl">
+                                        検索
+                                    </Button>
+                                </Group>
                             </Group>
                         </Stack>
                     </form>

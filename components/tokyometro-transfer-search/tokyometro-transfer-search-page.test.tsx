@@ -154,6 +154,39 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
     });
 
+    it('発着逆転で選択駅を入れ替える', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        const fromInput = screen.getByRole('textbox', { name: '乗車駅' });
+        const toInput = screen.getByRole('textbox', { name: '降車駅' });
+        await user.click(fromInput);
+        await user.clear(fromInput);
+        await user.type(fromInput, '銀座');
+        await user.click(getActiveOption(fromInput, /^銀座｜/));
+
+        await user.click(screen.getByRole('button', { name: '発着逆転' }));
+
+        expect((fromInput as HTMLInputElement).value).toMatch(/^入谷｜/);
+        expect((toInput as HTMLInputElement).value).toMatch(/^銀座｜/);
+        expect(screen.getByRole('textbox', { name: '最大改札外乗換回数' })).toHaveValue('1回');
+        expect(screen.getByRole('heading', { name: '検索結果' })).toBeInTheDocument();
+        expect(pushMock).not.toHaveBeenCalled();
+        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(pushMock).toHaveBeenCalledWith(
+            '/tools/tokyometro-transfer-search?from=iriya&to=ginza&maxOutsideTransfers=1',
+        );
+    });
+
     it('乗車駅と降車駅が同じ場合は入力エラーを表示する', async () => {
         const user = userEvent.setup();
         renderWithMantine(
