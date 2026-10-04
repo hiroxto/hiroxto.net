@@ -191,10 +191,10 @@ describe('searchRoutes', () => {
         expect(routes.every((route) => route.outsideTransferCount === 3)).toBe(true);
     });
 
-    it('20万訪問で得られる上位20件を改札内乗換数・距離・経路キーの順に保持する', () => {
-        // 変更前の実装で取得した結果。時間制限はbeforeEachの固定時計で除外する。
+    it('20万訪問で既知候補以上の上位20件を改札内乗換数・距離・経路キーの順に保持する', () => {
+        // 変更前の確定済み出力を品質の下限とする。探索が進んで順位が改善することは許容する。
         const { routes } = searchRoutes('sakuradamon', 'asakusa', 3, { visitLimit: 200_000 });
-        expect(routes.map((route) => [route.insideTransferCount, route.actualDistanceTenths])).toEqual([
+        const previousRanks = [
             [0, 86],
             [0, 113],
             [1, 104],
@@ -215,12 +215,31 @@ describe('searchRoutes', () => {
             [1, 160],
             [1, 160],
             [1, 166],
-        ]);
+        ];
+        expect(routes).toHaveLength(20);
+        for (const [index, route] of routes.entries()) {
+            expect(route.outsideTransferCount).toBe(3);
+            const [insideCount, distance] = previousRanks[index];
+            expect(route.insideTransferCount).toBeLessThanOrEqual(insideCount);
+            if (route.insideTransferCount === insideCount) {
+                expect(route.actualDistanceTenths).toBeLessThanOrEqual(distance);
+            }
+            const next = routes[index + 1];
+            if (!next) continue;
+            expect(route.insideTransferCount).toBeLessThanOrEqual(next.insideTransferCount);
+            if (route.insideTransferCount === next.insideTransferCount) {
+                expect(route.actualDistanceTenths).toBeLessThanOrEqual(next.actualDistanceTenths);
+                if (route.actualDistanceTenths === next.actualDistanceTenths) {
+                    expect(route.key.localeCompare(next.key)).toBeLessThan(0);
+                }
+            }
+        }
         // 同じ乗換数・距離の2件は、経路キーで上野乗換が仲御徒町乗換より先になる。
-        expect(routes.slice(2, 4).map((route) => route.transfers.at(-1)?.fromStationId)).toEqual([
-            'ueno',
-            'naka-okachimachi',
-        ]);
+        expect(
+            routes
+                .filter((route) => route.insideTransferCount === 1 && route.actualDistanceTenths === 104)
+                .map((route) => route.transfers.at(-1)?.fromStationId),
+        ).toEqual(['ueno', 'naka-okachimachi']);
     });
 
     it('桜田門から浅草の上限を4回から10回・14回へ増やしても20万訪問で発見した乗換回数を減らさない', () => {
@@ -251,6 +270,14 @@ describe('searchRoutes', () => {
             previousCount = result.routes[0].outsideTransferCount;
         }
     }, 60_000);
+
+    it('東京から浅草の上限1回は3000訪問で複数候補を保持する', () => {
+        // 最初の候補までの探索を順位付けで繰り返すと、2件目に予算が届かない。
+        const result = searchRoutes('tokyo', 'asakusa', 1, { visitLimit: 3_000 });
+        expect(result.routes.length).toBeGreaterThanOrEqual(2);
+        expect(new Set(result.routes.map((route) => route.key)).size).toBe(result.routes.length);
+        expect(result.truncated).toBe(true);
+    });
 
     it('最大改札外乗換回数を1回にしても改札内乗換は1回に制限しない', () => {
         const { routes } = searchRoutes('sakuradamon', 'asakusa', 1);

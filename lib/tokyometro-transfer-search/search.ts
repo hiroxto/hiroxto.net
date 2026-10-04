@@ -19,7 +19,7 @@
  *    同一路線で乗り続ける区間は、乗換駅または着駅までをMacroSegmentにまとめて扱う。
  *    駅の再訪、必須地点の通過による乗換機会の喪失、残りの必須駅への到達不能を除外する。
  *    各回数の候補探索は最初の1件で終了し、それまでに見つけた最大回数の候補を保持する。
- * 4. 残りの予算で、発見済みの最大回数について改めて探索し、上位20件を保持する。
+ * 4. 残りの予算で、発見済みの最大回数について中断位置から探索を続け、上位20件を保持する。
  *    比較順は改札外乗換の多い順、改札内乗換の少ない順、実乗車距離の短い順、経路キー順。
  *    最大回数の候補だけを返し、20件未満でも少ない回数の経路で補充しない。
  *    20件そろった後は、改札内乗換数と着駅までの最短実距離を使い、順位を改善できない枝を除く。
@@ -1085,47 +1085,16 @@ export const searchRoutes = (
     let remainingVisitCount = visitLimit;
     // これまでに発見した最大回数の候補。さらに多い回数が見つかったら置き換える。
     let bestRoutes: RouteResult[] = [];
-    // 探索が完了していない回数の最大値。0は未確定の回数がない状態。
-    let truncatedUpperBound = 0;
-    // 指定上限によらず同じ順序・予算で探索し、発見済みの最大回数を保持する。
-    // 1回から上限までの候補探索と、最後の順位付け探索を表すnull。
-    const targets: (number | null)[] = Array.from({ length: maximumOutsideCount }, (_, index) => index + 1);
-    targets.push(null); // 候補発見後、残り予算で最大回数の候補を順位付けする。
-
-    for (const target of targets) {
-        // 最初の候補で止めず、最大回数の上位候補を探す段階か。
-        const isRankingSearch = target === null;
-        // 今回ちょうどこの回数の改札外乗換を含む経路を探す。
-        const targetOutsideCount = target ?? bestRoutes[0]?.outsideTransferCount;
-        if (targetOutsideCount == null) continue;
-        // 今回の探索で見つけた候補。比較順に整列し、最大20件を保持する。
+    // 回数ごとに候補と探索位置を保存し、予算追加時に続行する。
+    const createTargetSearch = (targetOutsideCount: number) => {
         const results: RouteResult[] = [];
-        // 今回の探索開始時刻。
-        const targetStart = performance.now();
-        // 候補探索は残り予算の1/4、順位付け探索は全量を配分するための除数。
-        const budgetDivisor = isRankingSearch ? 1 : DISCOVERY_BUDGET_DIVISOR;
-        // 今回の探索に配分した時間の期限。
-        const targetDeadline = targetStart + Math.max(0, searchDeadline - targetStart) / budgetDivisor;
-        // 今回の探索に配分する訪問数。全体の残量を超えない。
-        const targetVisitLimit = isRankingSearch
-            ? remainingVisitCount
-            : Math.min(
-                  remainingVisitCount,
-                  DISCOVERY_VISIT_LIMIT,
-                  Math.max(10_000, Math.floor(remainingVisitCount / budgetDivisor)),
-              );
-        // 今回の探索で使える残り訪問数。
-        let remainingTargetVisitCount = targetVisitLimit;
-        // 次の期限確認までの訪問数。初回も確認するため0から始める。
+        let targetDeadline = 0;
+        let remainingTargetVisitCount = 0;
         let remainingDeadlineCheckCount = 0;
-        // 今回の探索が訪問数または時間の制限に達したか。
-        let targetTruncated = false;
-        // 候補探索で最初の1件を見つけたか。順位付け探索では常にfalse。
-        let candidateFound = false;
+        let complete = false;
 
-        /** 候補を順位順に挿入して上限超過分を除き、候補探索なら最初の発見を通知する。 */
+        /** 候補を順位順に挿入して上限超過分を除く。 */
         const addResult = (result: RouteResult): void => {
-            candidateFound = !isRankingSearch;
             // 上限に達していて最下位を改善しない候補は、配列を変更せずに捨てる。
             if (results.length === SEARCH_RESULT_LIMIT && compareRoutes(result, results[results.length - 1]) >= 0) {
                 return;
@@ -1146,220 +1115,233 @@ export const searchRoutes = (
             }
         };
 
-        for (
-            // 今回すべて使用する改札外乗換地点の組合せ。利用可能な集合の部分集合を順に列挙する。
-            let requiredOutsideMask = availableOutsideMask;
-            requiredOutsideMask > 0;
-            requiredOutsideMask = (requiredOutsideMask - 1) & availableOutsideMask
-        ) {
-            if (countBits(requiredOutsideMask) !== targetOutsideCount) {
-                continue;
-            }
-
-            // 現在の経路に含む乗車区間。再帰から戻る際に末尾を取り除く。
-            const segmentStack: MacroSegment[] = [];
-            // 各乗車区間の直後の乗換。segmentStackの添字と対応する。
-            const transferStack: MacroTransfer[] = [];
-
-            /**
-             * 現在駅・路線から乗車区間と乗換を交互に選ぶ深さ優先探索。
-             * visitedStationMaskは発駅と乗換先を含む訪問済み駅、usedOutsideMaskは使用済みの必須地点。
-             * insideTransferCountとactualDistanceTenthsは現在までの改札内乗換数と実乗車距離。
-             * 再帰入口で予算を消費し、順位・到達可能性・再訪・必須地点の使用条件で枝を除く。
-             */
-            const visit = (
-                stationId: StationId,
-                lineId: LineId,
-                visitedStationMask: bigint,
-                usedOutsideMask: number,
-                insideTransferCount: number,
-                actualDistanceTenths: number,
-            ): void => {
-                if (remainingTargetVisitCount === 0 || remainingVisitCount === 0) {
-                    targetTruncated = true;
-                    return;
+        // ジェネレーターの中断により、組合せ・路線・再帰位置と経路スタックを保持する。
+        function* explore(): Generator<'budget' | 'candidate', void> {
+            for (
+                // 今回すべて使用する改札外乗換地点の組合せ。利用可能な集合の部分集合を順に列挙する。
+                let requiredOutsideMask = availableOutsideMask;
+                requiredOutsideMask > 0;
+                requiredOutsideMask = (requiredOutsideMask - 1) & availableOutsideMask
+            ) {
+                if (countBits(requiredOutsideMask) !== targetOutsideCount) {
+                    continue;
                 }
 
-                if (remainingDeadlineCheckCount === 0) {
-                    if (performance.now() >= targetDeadline) {
-                        targetTruncated = true;
-                        return;
+                // 現在の経路に含む乗車区間。再帰から戻る際に末尾を取り除く。
+                const segmentStack: MacroSegment[] = [];
+                // 各乗車区間の直後の乗換。segmentStackの添字と対応する。
+                const transferStack: MacroTransfer[] = [];
+
+                /**
+                 * 現在駅・路線から乗車区間と乗換を交互に選ぶ深さ優先探索。
+                 * visitedStationMaskは発駅と乗換先を含む訪問済み駅、usedOutsideMaskは使用済みの必須地点。
+                 * insideTransferCountとactualDistanceTenthsは現在までの改札内乗換数と実乗車距離。
+                 * 再帰入口で予算を消費し、順位・到達可能性・再訪・必須地点の使用条件で枝を除く。
+                 */
+                const visit = function* (
+                    stationId: StationId,
+                    lineId: LineId,
+                    visitedStationMask: bigint,
+                    usedOutsideMask: number,
+                    insideTransferCount: number,
+                    actualDistanceTenths: number,
+                ): Generator<'budget' | 'candidate', void> {
+                    // 再開時にはrunが新しい予算と期限を設定している。
+                    while (
+                        remainingTargetVisitCount === 0 ||
+                        remainingVisitCount === 0 ||
+                        (remainingDeadlineCheckCount === 0 && performance.now() >= targetDeadline)
+                    ) {
+                        yield 'budget';
+                    }
+                    if (remainingDeadlineCheckCount === 0) {
+                        remainingDeadlineCheckCount = SEARCH_DEADLINE_CHECK_INTERVAL;
                     }
 
-                    remainingDeadlineCheckCount = SEARCH_DEADLINE_CHECK_INTERVAL;
-                }
+                    remainingTargetVisitCount -= 1;
+                    remainingVisitCount -= 1;
+                    remainingDeadlineCheckCount -= 1;
+                    // 20件そろった場合の最下位候補。これを改善できない枝を除く基準。
+                    const worstResult = results.length === SEARCH_RESULT_LIMIT ? results.at(-1) : null;
 
-                remainingTargetVisitCount -= 1;
-                remainingVisitCount -= 1;
-                remainingDeadlineCheckCount -= 1;
-                // 20件そろった場合の最下位候補。これを改善できない枝を除く基準。
-                const worstResult = results.length === SEARCH_RESULT_LIMIT ? results.at(-1) : null;
+                    if (worstResult != null) {
+                        // 現在駅から着駅までの実乗車距離の下限。訪問制約を緩めた最短距離を使う。
+                        const shortestRemainingDistance =
+                            shortestActualDistancesToDestination.get(stationId) ?? Number.POSITIVE_INFINITY;
 
-                if (worstResult != null) {
-                    // 現在駅から着駅までの実乗車距離の下限。訪問制約を緩めた最短距離を使う。
-                    const shortestRemainingDistance =
-                        shortestActualDistancesToDestination.get(stationId) ?? Number.POSITIVE_INFINITY;
+                        if (
+                            insideTransferCount > worstResult.insideTransferCount ||
+                            (insideTransferCount === worstResult.insideTransferCount &&
+                                actualDistanceTenths + shortestRemainingDistance > worstResult.actualDistanceTenths)
+                        ) {
+                            return;
+                        }
+                    }
 
+                    // 今回の組合せのうち、まだ使用していない改札外乗換地点。
+                    const remainingRequiredMask = requiredOutsideMask & ~usedOutsideMask;
                     if (
-                        insideTransferCount > worstResult.insideTransferCount ||
-                        (insideTransferCount === worstResult.insideTransferCount &&
-                            actualDistanceTenths + shortestRemainingDistance > worstResult.actualDistanceTenths)
+                        !canReachRequiredStations(
+                            stationId,
+                            destinationStationId,
+                            visitedStationMask,
+                            remainingRequiredMask,
+                        )
                     ) {
                         return;
                     }
-                }
+                    // 再訪する区間を除き、未使用の必須地点を含む区間、距離、駅IDの順に並べた候補。
+                    const segments = getMacroSegments(stationId, lineId, destinationStationId)
+                        .filter((segment) => (visitedStationMask & segment.stationMask) === BigInt(0))
+                        .sort(
+                            (first, second) =>
+                                Number((second.outsideOpportunityMask & remainingRequiredMask) !== 0) -
+                                    Number((first.outsideOpportunityMask & remainingRequiredMask) !== 0) ||
+                                first.distanceTenths - second.distanceTenths ||
+                                first.toStationId.localeCompare(second.toStationId),
+                        );
 
-                // 今回の組合せのうち、まだ使用していない改札外乗換地点。
-                const remainingRequiredMask = requiredOutsideMask & ~usedOutsideMask;
-                if (
-                    !canReachRequiredStations(
-                        stationId,
-                        destinationStationId,
-                        visitedStationMask,
-                        remainingRequiredMask,
-                    )
-                ) {
-                    return;
-                }
-                // 再訪する区間を除き、未使用の必須地点を含む区間、距離、駅IDの順に並べた候補。
-                const segments = getMacroSegments(stationId, lineId, destinationStationId)
-                    .filter((segment) => (visitedStationMask & segment.stationMask) === BigInt(0))
-                    .sort(
-                        (first, second) =>
-                            Number((second.outsideOpportunityMask & remainingRequiredMask) !== 0) -
-                                Number((first.outsideOpportunityMask & remainingRequiredMask) !== 0) ||
-                            first.distanceTenths - second.distanceTenths ||
-                            first.toStationId.localeCompare(second.toStationId),
-                    );
+                    for (const segment of segments) {
+                        // 乗車区間が通る未使用の必須乗換地点。終点で使えない地点の通過を検出する。
+                        const touchedRequiredMask =
+                            segment.outsideOpportunityMask & requiredOutsideMask & ~usedOutsideMask;
 
-                for (const segment of segments) {
-                    if (targetTruncated || candidateFound) {
-                        return;
-                    }
+                        // 1区間の終点で使える乗換地点は一つ。複数の必須地点を通ると未使用のまま通過する。
+                        if (countBits(touchedRequiredMask) > 1) {
+                            continue;
+                        }
 
-                    // 乗車区間が通る未使用の必須乗換地点。終点で使えない地点の通過を検出する。
-                    const touchedRequiredMask = segment.outsideOpportunityMask & requiredOutsideMask & ~usedOutsideMask;
+                        // 今回の乗車区間の通過駅を加えた訪問済み駅の集合。
+                        const nextVisitedStationMask = visitedStationMask | segment.stationMask;
+                        // 今回の区間を加えた実乗車距離。単位は0.1km。
+                        const nextDistanceTenths = actualDistanceTenths + segment.distanceTenths;
+                        segmentStack.push(segment);
 
-                    // 1区間の終点で使える乗換地点は一つ。複数の必須地点を通ると未使用のまま通過する。
-                    if (countBits(touchedRequiredMask) > 1) {
-                        continue;
-                    }
+                        if (segment.toStationId === destinationStationId) {
+                            if (touchedRequiredMask === 0 && usedOutsideMask === requiredOutsideMask) {
+                                // 区間と乗換のスタックを経路順に展開した移動記録。
+                                const steps: TraversalStep[] = [];
 
-                    // 今回の乗車区間の通過駅を加えた訪問済み駅の集合。
-                    const nextVisitedStationMask = visitedStationMask | segment.stationMask;
-                    // 今回の区間を加えた実乗車距離。単位は0.1km。
-                    const nextDistanceTenths = actualDistanceTenths + segment.distanceTenths;
-                    segmentStack.push(segment);
+                                for (const [segmentIndex, routeSegment] of segmentStack.entries()) {
+                                    steps.push(...routeSegment.rideSteps);
 
-                    if (segment.toStationId === destinationStationId) {
-                        if (touchedRequiredMask === 0 && usedOutsideMask === requiredOutsideMask) {
-                            // 区間と乗換のスタックを経路順に展開した移動記録。
-                            const steps: TraversalStep[] = [];
+                                    // この乗車区間の直後に行った乗換。最終区間には存在しない。
+                                    const transfer = transferStack[segmentIndex];
 
-                            for (const [segmentIndex, routeSegment] of segmentStack.entries()) {
-                                steps.push(...routeSegment.rideSteps);
+                                    if (transfer != null) {
+                                        steps.push(transfer.step);
+                                    }
+                                }
 
-                                // この乗車区間の直後に行った乗換。最終区間には存在しない。
-                                const transfer = transferStack[segmentIndex];
+                                // 移動記録から生成した表示用候補。改札外乗換がなければnull。
+                                const result = buildRouteResult(
+                                    originStationId,
+                                    destinationStationId,
+                                    steps,
+                                    shortestDistances,
+                                    nextDistanceTenths,
+                                );
 
-                                if (transfer != null) {
-                                    steps.push(transfer.step);
+                                if (result != null) {
+                                    addResult(result);
+                                    yield 'candidate';
                                 }
                             }
 
-                            // 移動記録から生成した表示用候補。改札外乗換がなければnull。
-                            const result = buildRouteResult(
-                                originStationId,
-                                destinationStationId,
-                                steps,
-                                shortestDistances,
+                            segmentStack.pop();
+                            continue;
+                        }
+
+                        for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
+                            // 今回選ぶ乗換が改札外乗換か。
+                            const isOutside = transfer.step.type === 'outside';
+
+                            // 改札外は指定した未使用地点に限り、区間内で触れた必須地点をここで使用する。
+                            // 改札内を選ぶ場合は、区間内で未使用の必須地点を通っていてはいけない。
+                            if (
+                                (isOutside &&
+                                    ((requiredOutsideMask & transfer.outsideOpportunityBit) === 0 ||
+                                        (usedOutsideMask & transfer.outsideOpportunityBit) !== 0 ||
+                                        touchedRequiredMask !== transfer.outsideOpportunityBit)) ||
+                                (!isOutside && touchedRequiredMask !== 0)
+                            ) {
+                                continue;
+                            }
+
+                            // 異駅名間の乗換として駅IDが変わるか。
+                            const changesStation = transfer.step.toStationId !== transfer.step.fromStationId;
+
+                            if (
+                                changesStation &&
+                                (nextVisitedStationMask & getStationBit(transfer.step.toStationId)) !== BigInt(0)
+                            ) {
+                                continue;
+                            }
+
+                            // 乗換先の駅も加えた訪問済み駅の集合。同駅の乗換なら変化しない。
+                            const afterTransferVisitedMask =
+                                nextVisitedStationMask | getStationBit(transfer.step.toStationId);
+                            transferStack.push(transfer);
+                            yield* visit(
+                                transfer.step.toStationId,
+                                transfer.step.toLineId,
+                                afterTransferVisitedMask,
+                                usedOutsideMask | transfer.outsideOpportunityBit,
+                                insideTransferCount + Number(!isOutside),
                                 nextDistanceTenths,
                             );
-
-                            if (result != null) {
-                                addResult(result);
-                            }
+                            transferStack.pop();
                         }
 
                         segmentStack.pop();
-                        continue;
                     }
+                };
 
-                    for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
-                        if (targetTruncated || candidateFound) {
-                            return;
-                        }
-
-                        // 今回選ぶ乗換が改札外乗換か。
-                        const isOutside = transfer.step.type === 'outside';
-
-                        // 改札外は指定した未使用地点に限り、区間内で触れた必須地点をここで使用する。
-                        // 改札内を選ぶ場合は、区間内で未使用の必須地点を通っていてはいけない。
-                        if (
-                            (isOutside &&
-                                ((requiredOutsideMask & transfer.outsideOpportunityBit) === 0 ||
-                                    (usedOutsideMask & transfer.outsideOpportunityBit) !== 0 ||
-                                    touchedRequiredMask !== transfer.outsideOpportunityBit)) ||
-                            (!isOutside && touchedRequiredMask !== 0)
-                        ) {
-                            continue;
-                        }
-
-                        // 異駅名間の乗換として駅IDが変わるか。
-                        const changesStation = transfer.step.toStationId !== transfer.step.fromStationId;
-
-                        if (
-                            changesStation &&
-                            (nextVisitedStationMask & getStationBit(transfer.step.toStationId)) !== BigInt(0)
-                        ) {
-                            continue;
-                        }
-
-                        // 乗換先の駅も加えた訪問済み駅の集合。同駅の乗換なら変化しない。
-                        const afterTransferVisitedMask =
-                            nextVisitedStationMask | getStationBit(transfer.step.toStationId);
-                        transferStack.push(transfer);
-                        visit(
-                            transfer.step.toStationId,
-                            transfer.step.toLineId,
-                            afterTransferVisitedMask,
-                            usedOutsideMask | transfer.outsideOpportunityBit,
-                            insideTransferCount + Number(!isOutside),
-                            nextDistanceTenths,
-                        );
-                        transferStack.pop();
-                    }
-
-                    segmentStack.pop();
-                }
-            };
-
-            for (const lineId of stationLineIds.get(originStationId) ?? []) {
-                visit(originStationId, lineId, getStationBit(originStationId), 0, 0, 0);
-
-                if (targetTruncated || candidateFound) {
-                    break;
+                for (const lineId of stationLineIds.get(originStationId) ?? []) {
+                    yield* visit(originStationId, lineId, getStationBit(originStationId), 0, 0, 0);
                 }
             }
-
-            if (targetTruncated || candidateFound) {
-                break;
-            }
         }
 
-        // 最初の候補で終了した回数も、順位付けが済むまでは未確定として記録する。
-        if (targetTruncated || candidateFound) {
-            truncatedUpperBound = Math.max(truncatedUpperBound, targetOutsideCount);
-        }
-        // 今回の探索で候補を得られなかった場合は、それまでの最大回数の候補を残す。
-        if (results.length > 0) {
-            bestRoutes = results;
-        }
-        // 最大回数の順位付けが完了し、より多い回数に未探索部分がなければ未確定状態を解消する。
-        if (isRankingSearch && !targetTruncated && truncatedUpperBound === targetOutsideCount) {
-            truncatedUpperBound = 0;
-        }
+        const iterator = explore();
+        return {
+            results,
+            get complete() {
+                return complete;
+            },
+            run: (deadline: number, visits: number, stopAtCandidate: boolean): void => {
+                if (complete) return;
+                targetDeadline = deadline;
+                remainingTargetVisitCount = visits;
+                remainingDeadlineCheckCount = 0;
+                while (true) {
+                    const next = iterator.next();
+                    if (next.done) {
+                        complete = true;
+                        return;
+                    }
+                    if (next.value === 'budget' || stopAtCandidate) return;
+                }
+            },
+        };
+    };
+    const searches = Array.from({ length: maximumOutsideCount }, (_, index) => createTargetSearch(index + 1));
+    for (const search of searches) {
+        const targetStart = performance.now();
+        search.run(
+            targetStart + Math.max(0, searchDeadline - targetStart) / DISCOVERY_BUDGET_DIVISOR,
+            Math.min(
+                remainingVisitCount,
+                DISCOVERY_VISIT_LIMIT,
+                Math.max(10_000, Math.floor(remainingVisitCount / DISCOVERY_BUDGET_DIVISOR)),
+            ),
+            true,
+        );
+        if (search.results.length > 0) bestRoutes = search.results;
     }
+    const bestSearch = searches[(bestRoutes[0]?.outsideTransferCount ?? 0) - 1];
+    bestSearch?.run(searchDeadline, remainingVisitCount, false);
+    const truncatedUpperBound = searches.reduce((maximum, search, index) => (search.complete ? maximum : index + 1), 0);
 
     // 発見できた候補の最大改札外乗換回数。候補がなければ0。
     const bestOutsideCount = bestRoutes[0]?.outsideTransferCount ?? 0;
