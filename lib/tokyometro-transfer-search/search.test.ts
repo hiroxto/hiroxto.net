@@ -3,6 +3,25 @@ import { LINE_PATHS, type StationId } from './data';
 import { calculateFareBetweenStations, searchRoutes } from './search';
 
 describe('calculateFareBetweenStations', () => {
+    it.each([
+        ['ueno-hirokoji', 'naka-okachimachi', 10],
+        ['naka-okachimachi', 'ueno-hirokoji', 10],
+        ['ginza', 'ginza-itchome', 9],
+        ['ginza-itchome', 'ginza', 9],
+    ] as const)('%sから%sは徒歩接続だけでなく列車経由の最短距離で計算する', (origin, destination, distance) => {
+        // 上野経由は銀座線0.5 + 日比谷線0.5 = 1.0km。
+        // 日比谷・有楽町経由は日比谷線0.4 + 有楽町線0.5 = 0.9km。
+        expect(calculateFareBetweenStations(origin, destination)).toEqual({
+            shortestDistanceTenths: distance,
+            ic: 178,
+            ticket: 180,
+        });
+    });
+
+    it('上野広小路から秋葉原は仲御徒町への徒歩乗換を含む1.0kmで計算する', () => {
+        expect(calculateFareBetweenStations('ueno-hirokoji', 'akihabara').shortestDistanceTenths).toBe(10);
+    });
+
     it('渋谷から浅草は運賃計算キロ程13.1kmの距離帯運賃になる', () => {
         // 旅客営業規程の別表第1号表と第13条から独立して求めた最短キロ程は13.1km。
         // 14kmへ切り上げられるため、12〜19km帯のIC252円・きっぷ260円。
@@ -219,6 +238,19 @@ describe('searchRoutes', () => {
         expect(route).toBeDefined();
         expect(route?.shortestDistanceTenths).toBe(60);
         expect(route?.fare).toEqual({ ic: 178, ticket: 180 });
+    });
+
+    it('上野広小路から仲御徒町を最大1回で検索すると上野乗換の表示距離は1.0kmになる', () => {
+        const { routes } = searchRoutes('ueno-hirokoji', 'naka-okachimachi', 1);
+        const route = routes.find((candidate) =>
+            candidate.transfers.some((transfer) => transfer.fromStationId === 'ueno'),
+        );
+
+        expect(route).toMatchObject({
+            shortestDistanceTenths: 10,
+            actualDistanceTenths: 10,
+            fare: { ic: 178, ticket: 180 },
+        });
     });
 
     it('表参道から外苑前は途中の改札外出場駅までの運賃を下回らない', () => {

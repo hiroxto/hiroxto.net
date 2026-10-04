@@ -358,15 +358,9 @@ const fareShortestDistanceCache = new Map<StationId, Map<StationId, number>>();
 
 const calculateShortestDistances = (
     originStationId: StationId,
-    cache: Map<StationId, Map<StationId, number>>,
     getRideDistance: (fromStationId: StationId, edge: RideEdge) => number,
+    excludedTransferDestination?: StationId,
 ): Map<StationId, number> => {
-    const cached = cache.get(originStationId);
-
-    if (cached != null) {
-        return cached;
-    }
-
     const distances = new Map<StationId, number>(stationIds.map((stationId) => [stationId, Number.POSITIVE_INFINITY]));
     const unsettled = new Set(stationIds);
     distances.set(originStationId, 0);
@@ -391,6 +385,13 @@ const calculateShortestDistances = (
         unsettled.delete(currentStationId);
 
         for (const edge of graph.get(currentStationId) ?? []) {
+            if (
+                edge.kind === 'transfer' &&
+                currentStationId === originStationId &&
+                edge.stationId === excludedTransferDestination
+            ) {
+                continue;
+            }
             const nextDistance = currentDistance + (edge.kind === 'ride' ? getRideDistance(currentStationId, edge) : 0);
 
             if (nextDistance < (distances.get(edge.stationId) ?? Number.POSITIVE_INFINITY)) {
@@ -399,25 +400,38 @@ const calculateShortestDistances = (
         }
     }
 
-    cache.set(originStationId, distances);
     return distances;
 };
 
-const getShortestActualDistances = (originStationId: StationId): Map<StationId, number> =>
-    calculateShortestDistances(
-        originStationId,
-        actualShortestDistanceCache,
-        (_fromStationId, edge) => edge.distanceTenths,
-    );
+const getShortestActualDistances = (originStationId: StationId): Map<StationId, number> => {
+    const cached = actualShortestDistanceCache.get(originStationId);
+    if (cached != null) return cached;
 
-const getShortestFareDistances = (originStationId: StationId): Map<StationId, number> =>
-    calculateShortestDistances(
-        originStationId,
-        fareShortestDistanceCache,
-        (fromStationId, edge) =>
-            fareCalculationDistanceOverrides.get(getStationPairKey(fromStationId, edge.stationId)) ??
-            edge.distanceTenths,
-    );
+    const distances = calculateShortestDistances(originStationId, (_fromStationId, edge) => edge.distanceTenths);
+    actualShortestDistanceCache.set(originStationId, distances);
+    return distances;
+};
+
+const getShortestFareDistances = (originStationId: StationId): Map<StationId, number> => {
+    const cached = fareShortestDistanceCache.get(originStationId);
+    if (cached != null) return cached;
+
+    const getRideDistance = (fromStationId: StationId, edge: RideEdge): number =>
+        fareCalculationDistanceOverrides.get(getStationPairKey(fromStationId, edge.stationId)) ?? edge.distanceTenths;
+    const distances = calculateShortestDistances(originStationId, getRideDistance);
+
+    for (const [destinationStationId, distance] of distances) {
+        if (destinationStationId === originStationId || distance !== 0) continue;
+
+        // 発着駅間の徒歩接続だけでは乗車にならないため、この接続を除いて再計算する。
+        // 他の発着区間の最短距離には、従来どおり徒歩乗換を含める。
+        const ridingDistances = calculateShortestDistances(originStationId, getRideDistance, destinationStationId);
+        distances.set(destinationStationId, ridingDistances.get(destinationStationId) ?? Number.POSITIVE_INFINITY);
+    }
+
+    fareShortestDistanceCache.set(originStationId, distances);
+    return distances;
+};
 
 const getRegularFare = (distanceTenths: number): Fare => {
     const roundedKilometers = Math.max(1, Math.ceil(distanceTenths / 10));
