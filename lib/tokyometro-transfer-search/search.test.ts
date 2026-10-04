@@ -279,6 +279,18 @@ describe('searchRoutes', () => {
         expect(result.truncated).toBe(true);
     });
 
+    it('時間予算を均等に消費する条件でも桜田門から浅草の14回経路を発見する', () => {
+        // 1000訪問ごとの時計を5ms進め、実行環境の速度によらず後半の予算不足を再現する。
+        let now = 0;
+        vi.mocked(performance.now).mockImplementation(() => {
+            now += 5;
+            return now;
+        });
+        const result = searchRoutes('sakuradamon', 'asakusa');
+        expect(result.routes[0]?.outsideTransferCount).toBe(14);
+        expect(result.outsideTransferUpperBound).toBe(14);
+    }, 30_000);
+
     it('最大改札外乗換回数を1回にしても改札内乗換は1回に制限しない', () => {
         const { routes } = searchRoutes('sakuradamon', 'asakusa', 1);
 

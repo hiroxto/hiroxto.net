@@ -18,14 +18,16 @@
  *    改札外乗換地点の組合せを列挙し、組合せに含む地点をすべて使う経路を深さ優先で探索する。
  *    同一路線で乗り続ける区間は、乗換駅または着駅までをMacroSegmentにまとめて扱う。
  *    駅の再訪、必須地点の通過による乗換機会の喪失、残りの必須駅への到達不能を除外する。
- *    各回数の候補探索は最初の1件で終了し、それまでに見つけた最大回数の候補を保持する。
- * 4. 残りの予算で、発見済みの最大回数について中断位置から探索を続け、上位20件を保持する。
+ *    各回数の候補探索は最初の1件で中断し、それまでに見つけた最大回数の候補を保持する。
+ * 4. 残り予算で、発見済み回数より多い未確定の回数を中断位置から繰り返し探索する。
+ *    その後、発見済みの最大回数について探索を続け、上位20件を保持する。
  *    比較順は改札外乗換の多い順、改札内乗換の少ない順、実乗車距離の短い順、経路キー順。
  *    最大回数の候補だけを返し、20件未満でも少ない回数の経路で補充しない。
  *    20件そろった後は、改札内乗換数と着駅までの最短実距離を使い、順位を改善できない枝を除く。
  * 5. 探索は既定で合計500万訪問・5秒を目安に制限する。訪問数は主探索の再帰呼出しを数える。
- *    各回数の候補探索には残り時間の1/4、残り訪問数の1/4を目安に配分する。
- *    訪問数の配分は最低1万・最大12万5000を目安とし、全体の残り訪問数を超えない。
+ *    各回数の初回探索には時間予算の1/28・訪問予算の1/56を配分し、続行の予算を残す。
+ *    続行時の時間は未確定の回数に均等配分し、未消費分を再配分する。
+ *    1回の配分は最大12万5000訪問とし、全体の残り訪問数を超えない。
  *    時間は各探索の初回と以後1000訪問ごとに確認するため、厳密な実行時間の上限ではない。
  *    前処理も時間予算に含むが、前処理中には期限を確認しない。
  * 6. 未探索部分が結果に影響し得る場合はtruncatedをtrueにする。
@@ -1012,8 +1014,6 @@ export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
 
 /** 期限を再確認するまでの主探索の訪問回数。 */
 const SEARCH_DEADLINE_CHECK_INTERVAL = 1_000;
-/** 候補探索に配分する残り時間・訪問数の除数。順位付け探索は残り全量を使う。 */
-const DISCOVERY_BUDGET_DIVISOR = 4;
 /** 一つの乗換回数について候補発見に使う訪問数の上限。 */
 const DISCOVERY_VISIT_LIMIT = 125_000;
 
@@ -1326,18 +1326,38 @@ export const searchRoutes = (
         };
     };
     const searches = Array.from({ length: maximumOutsideCount }, (_, index) => createTargetSearch(index + 1));
+    // 指定上限を増やしても低い回数の初回予算を減らさない。
+    // 全14回の初回探索に時間の半分・訪問数の1/4までを配り、残りを続行に残す。
+    const initialDurationMs = Math.max(0, searchDeadline - performance.now()) / (MAX_OUTSIDE_TRANSFER_COUNT * 2);
+    const initialVisitLimit = Math.min(
+        DISCOVERY_VISIT_LIMIT,
+        Math.floor(visitLimit / (MAX_OUTSIDE_TRANSFER_COUNT * 4)),
+    );
     for (const search of searches) {
         const targetStart = performance.now();
         search.run(
-            targetStart + Math.max(0, searchDeadline - targetStart) / DISCOVERY_BUDGET_DIVISOR,
-            Math.min(
-                remainingVisitCount,
-                DISCOVERY_VISIT_LIMIT,
-                Math.max(10_000, Math.floor(remainingVisitCount / DISCOVERY_BUDGET_DIVISOR)),
-            ),
+            Math.min(searchDeadline, targetStart + initialDurationMs),
+            Math.min(remainingVisitCount, initialVisitLimit),
             true,
         );
         if (search.results.length > 0) bestRoutes = search.results;
+    }
+    // 候補未発見の回数へ残り時間を均等に配り、中断位置から続行する。
+    // 少ない回数から進め、発見済みの回数以下は以後の候補探索から除く。
+    while (remainingVisitCount > 0 && performance.now() < searchDeadline) {
+        const bestCount = bestRoutes[0]?.outsideTransferCount ?? 0;
+        const pending = searches.filter((search, index) => index + 1 > bestCount && !search.complete);
+        if (pending.length === 0) break;
+        const roundStart = performance.now();
+        // 最大回数の発見を優先する。未確定回数が残れば順位付け前に予算が尽きる場合もある。
+        const durationMs = Math.max(0, searchDeadline - roundStart) / pending.length;
+        const visits = DISCOVERY_VISIT_LIMIT;
+        for (const search of pending) {
+            const start = performance.now();
+            if (remainingVisitCount === 0 || start >= searchDeadline) break;
+            search.run(Math.min(searchDeadline, start + durationMs), Math.min(remainingVisitCount, visits), true);
+            if (search.results.length > 0) bestRoutes = search.results;
+        }
     }
     const bestSearch = searches[(bestRoutes[0]?.outsideTransferCount ?? 0) - 1];
     bestSearch?.run(searchDeadline, remainingVisitCount, false);
