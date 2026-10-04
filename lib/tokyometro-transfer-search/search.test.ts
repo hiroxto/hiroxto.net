@@ -191,6 +191,38 @@ describe('searchRoutes', () => {
         expect(routes.every((route) => route.outsideTransferCount === 3)).toBe(true);
     });
 
+    it('20万訪問で得られる上位20件を改札内乗換数・距離・経路キーの順に保持する', () => {
+        // 変更前の実装で取得した結果。時間制限はbeforeEachの固定時計で除外する。
+        const { routes } = searchRoutes('sakuradamon', 'asakusa', 3, { visitLimit: 200_000 });
+        expect(routes.map((route) => [route.insideTransferCount, route.actualDistanceTenths])).toEqual([
+            [0, 86],
+            [0, 113],
+            [1, 104],
+            [1, 104],
+            [1, 106],
+            [1, 118],
+            [1, 118],
+            [1, 120],
+            [1, 124],
+            [1, 124],
+            [1, 133],
+            [1, 133],
+            [1, 146],
+            [1, 146],
+            [1, 150],
+            [1, 155],
+            [1, 159],
+            [1, 160],
+            [1, 160],
+            [1, 166],
+        ]);
+        // 同じ乗換数・距離の2件は、経路キーで上野乗換が仲御徒町乗換より先になる。
+        expect(routes.slice(2, 4).map((route) => route.transfers.at(-1)?.fromStationId)).toEqual([
+            'ueno',
+            'naka-okachimachi',
+        ]);
+    });
+
     it('桜田門から浅草の上限を4回から10回・14回へ増やしても20万訪問で発見した乗換回数を減らさない', () => {
         // レビューの再現例では上限4回・20万訪問で3回の候補を発見できる。
         let previousCount = 3;

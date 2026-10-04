@@ -40,6 +40,8 @@
  * 運賃の最大値をIC・きっぷ別に採用する。探索時の実乗車距離と運賃計算距離は区別する。
  */
 
+import { createMinHeap } from '@/lib/tokyometro-transfer-search/min-heap';
+
 import {
     CROSS_STATION_TRANSFERS,
     FARE_CALCULATION_DISTANCE_OVERRIDES,
@@ -512,7 +514,8 @@ const actualShortestDistanceCache = new Map<StationId, Map<StationId, number>>()
 const fareShortestDistanceCache = new Map<StationId, Map<StationId, number>>();
 
 /**
- * ダイクストラ法で起点から全駅への最短距離を求める。未確定駅を線形走査するため計算量はO(V² + E)（Vは駅数、Eは接続数）。
+ * ダイクストラ法で起点から全駅への最短距離を求める。最小ヒープを使い、計算量はO(V + E log(E + 1))。
+ * Vは駅数、Eは接続数。距離更新ごとに追加し、古い候補は取り出し時に捨てる。
  * 乗車距離はgetRideDistanceで指定し、異駅名の徒歩乗換は距離0として扱う。
  * excludedTransferDestinationを指定すると、起点からその駅への直接の徒歩乗換を除外する。
  * 路線の接続制約や駅の再訪制限は適用しない。到達不能な駅の距離はInfinityのまま返す。
@@ -524,31 +527,16 @@ const calculateShortestDistances = (
 ): Map<StationId, number> => {
     // 起点から各駅までの最短距離。単位は0.1km。
     const distances = new Map<StationId, number>(stationIds.map((stationId) => [stationId, Number.POSITIVE_INFINITY]));
-    // 最短距離がまだ確定していない駅。
-    const unsettled = new Set(stationIds);
+    const queue = createMinHeap<{ stationId: StationId; distance: number }>(
+        (first, second) => first.distance - second.distance,
+    );
     distances.set(originStationId, 0);
+    queue.push({ stationId: originStationId, distance: 0 });
 
-    while (unsettled.size > 0) {
-        // 未確定駅の中から選ぶ、次に距離を確定する駅。
-        let currentStationId: StationId | null = null;
-        // 未確定駅の中で最小の距離。
-        let currentDistance = Number.POSITIVE_INFINITY;
-
-        for (const stationId of unsettled) {
-            // 比較対象の駅について現在分かっている距離。
-            const distance = distances.get(stationId) ?? Number.POSITIVE_INFINITY;
-
-            if (distance < currentDistance) {
-                currentStationId = stationId;
-                currentDistance = distance;
-            }
-        }
-
-        if (currentStationId == null) {
-            break;
-        }
-
-        unsettled.delete(currentStationId);
+    for (let current = queue.pop(); current != null; current = queue.pop()) {
+        const { stationId: currentStationId, distance: currentDistance } = current;
+        // より短い距離で登録し直した駅の古い候補は展開しない。
+        if (currentDistance !== distances.get(currentStationId)) continue;
 
         for (const edge of graph.get(currentStationId) ?? []) {
             if (
@@ -563,6 +551,7 @@ const calculateShortestDistances = (
 
             if (nextDistance < (distances.get(edge.stationId) ?? Number.POSITIVE_INFINITY)) {
                 distances.set(edge.stationId, nextDistance);
+                queue.push({ stationId: edge.stationId, distance: nextDistance });
             }
         }
     }
@@ -1136,9 +1125,21 @@ export const searchRoutes = (
 
         /** 候補を順位順に挿入して上限超過分を除き、候補探索なら最初の発見を通知する。 */
         const addResult = (result: RouteResult): void => {
-            results.push(result);
             candidateFound = !isRankingSearch;
-            results.sort(compareRoutes);
+            // 上限に達していて最下位を改善しない候補は、配列を変更せずに捨てる。
+            if (results.length === SEARCH_RESULT_LIMIT && compareRoutes(result, results[results.length - 1]) >= 0) {
+                return;
+            }
+
+            let low = 0;
+            let high = results.length;
+            while (low < high) {
+                const middle = Math.floor((low + high) / 2);
+                // 同順位の後ろに挿入し、従来の安定ソートと同じ順序を保つ。
+                if (compareRoutes(result, results[middle]) < 0) high = middle;
+                else low = middle + 1;
+            }
+            results.splice(low, 0, result);
 
             if (results.length > SEARCH_RESULT_LIMIT) {
                 results.pop();
