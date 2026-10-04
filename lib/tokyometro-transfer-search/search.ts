@@ -977,6 +977,11 @@ const getMacroSegments = (
     };
 
     visit(fromStationId, BigInt(0), 0, 0);
+    // 距離・駅IDの順序は訪問履歴や必須乗換地点に依存しない。
+    segments.sort(
+        (first, second) =>
+            first.distanceTenths - second.distanceTenths || first.toStationId.localeCompare(second.toStationId),
+    );
     macroSegmentCache.set(cacheKey, segments);
     return segments;
 };
@@ -1190,110 +1195,107 @@ export const searchRoutes = (
                     ) {
                         return;
                     }
-                    // 再訪する区間を除き、未使用の必須地点を含む区間、距離、駅IDの順に並べた候補。
-                    const segments = getMacroSegments(stationId, lineId, destinationStationId)
-                        .filter((segment) => (visitedStationMask & segment.stationMask) === BigInt(0))
-                        .sort(
-                            (first, second) =>
-                                Number((second.outsideOpportunityMask & remainingRequiredMask) !== 0) -
-                                    Number((first.outsideOpportunityMask & remainingRequiredMask) !== 0) ||
-                                first.distanceTenths - second.distanceTenths ||
-                                first.toStationId.localeCompare(second.toStationId),
-                        );
+                    // 固定順序の候補を、未使用の必須地点を含むもの・含まないものの順に走査する。
+                    const segments = getMacroSegments(stationId, lineId, destinationStationId);
+                    for (let priority = 0; priority < 2; priority += 1) {
+                        for (const segment of segments) {
+                            const touchedRequiredMask = segment.outsideOpportunityMask & remainingRequiredMask;
+                            if (
+                                Number(touchedRequiredMask === 0) !== priority ||
+                                (visitedStationMask & segment.stationMask) !== BigInt(0)
+                            ) {
+                                continue;
+                            }
 
-                    for (const segment of segments) {
-                        // 乗車区間が通る未使用の必須乗換地点。終点で使えない地点の通過を検出する。
-                        const touchedRequiredMask =
-                            segment.outsideOpportunityMask & requiredOutsideMask & ~usedOutsideMask;
+                            // 1区間の終点で使える乗換地点は一つ。複数の必須地点を通ると未使用のまま通過する。
+                            if (countBits(touchedRequiredMask) > 1) {
+                                continue;
+                            }
 
-                        // 1区間の終点で使える乗換地点は一つ。複数の必須地点を通ると未使用のまま通過する。
-                        if (countBits(touchedRequiredMask) > 1) {
-                            continue;
-                        }
+                            // 今回の乗車区間の通過駅を加えた訪問済み駅の集合。
+                            const nextVisitedStationMask = visitedStationMask | segment.stationMask;
+                            // 今回の区間を加えた実乗車距離。単位は0.1km。
+                            const nextDistanceTenths = actualDistanceTenths + segment.distanceTenths;
+                            segmentStack.push(segment);
 
-                        // 今回の乗車区間の通過駅を加えた訪問済み駅の集合。
-                        const nextVisitedStationMask = visitedStationMask | segment.stationMask;
-                        // 今回の区間を加えた実乗車距離。単位は0.1km。
-                        const nextDistanceTenths = actualDistanceTenths + segment.distanceTenths;
-                        segmentStack.push(segment);
+                            if (segment.toStationId === destinationStationId) {
+                                if (touchedRequiredMask === 0 && usedOutsideMask === requiredOutsideMask) {
+                                    // 区間と乗換のスタックを経路順に展開した移動記録。
+                                    const steps: TraversalStep[] = [];
 
-                        if (segment.toStationId === destinationStationId) {
-                            if (touchedRequiredMask === 0 && usedOutsideMask === requiredOutsideMask) {
-                                // 区間と乗換のスタックを経路順に展開した移動記録。
-                                const steps: TraversalStep[] = [];
+                                    for (const [segmentIndex, routeSegment] of segmentStack.entries()) {
+                                        steps.push(...routeSegment.rideSteps);
 
-                                for (const [segmentIndex, routeSegment] of segmentStack.entries()) {
-                                    steps.push(...routeSegment.rideSteps);
+                                        // この乗車区間の直後に行った乗換。最終区間には存在しない。
+                                        const transfer = transferStack[segmentIndex];
 
-                                    // この乗車区間の直後に行った乗換。最終区間には存在しない。
-                                    const transfer = transferStack[segmentIndex];
+                                        if (transfer != null) {
+                                            steps.push(transfer.step);
+                                        }
+                                    }
 
-                                    if (transfer != null) {
-                                        steps.push(transfer.step);
+                                    // 移動記録から生成した表示用候補。改札外乗換がなければnull。
+                                    const result = buildRouteResult(
+                                        originStationId,
+                                        destinationStationId,
+                                        steps,
+                                        shortestDistances,
+                                        nextDistanceTenths,
+                                    );
+
+                                    if (result != null) {
+                                        addResult(result);
+                                        yield 'candidate';
                                     }
                                 }
 
-                                // 移動記録から生成した表示用候補。改札外乗換がなければnull。
-                                const result = buildRouteResult(
-                                    originStationId,
-                                    destinationStationId,
-                                    steps,
-                                    shortestDistances,
+                                segmentStack.pop();
+                                continue;
+                            }
+
+                            for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
+                                // 今回選ぶ乗換が改札外乗換か。
+                                const isOutside = transfer.step.type === 'outside';
+
+                                // 改札外は指定した未使用地点に限り、区間内で触れた必須地点をここで使用する。
+                                // 改札内を選ぶ場合は、区間内で未使用の必須地点を通っていてはいけない。
+                                if (
+                                    (isOutside &&
+                                        ((requiredOutsideMask & transfer.outsideOpportunityBit) === 0 ||
+                                            (usedOutsideMask & transfer.outsideOpportunityBit) !== 0 ||
+                                            touchedRequiredMask !== transfer.outsideOpportunityBit)) ||
+                                    (!isOutside && touchedRequiredMask !== 0)
+                                ) {
+                                    continue;
+                                }
+
+                                // 異駅名間の乗換として駅IDが変わるか。
+                                const changesStation = transfer.step.toStationId !== transfer.step.fromStationId;
+
+                                if (
+                                    changesStation &&
+                                    (nextVisitedStationMask & getStationBit(transfer.step.toStationId)) !== BigInt(0)
+                                ) {
+                                    continue;
+                                }
+
+                                // 乗換先の駅も加えた訪問済み駅の集合。同駅の乗換なら変化しない。
+                                const afterTransferVisitedMask =
+                                    nextVisitedStationMask | getStationBit(transfer.step.toStationId);
+                                transferStack.push(transfer);
+                                yield* visit(
+                                    transfer.step.toStationId,
+                                    transfer.step.toLineId,
+                                    afterTransferVisitedMask,
+                                    usedOutsideMask | transfer.outsideOpportunityBit,
+                                    insideTransferCount + Number(!isOutside),
                                     nextDistanceTenths,
                                 );
-
-                                if (result != null) {
-                                    addResult(result);
-                                    yield 'candidate';
-                                }
+                                transferStack.pop();
                             }
 
                             segmentStack.pop();
-                            continue;
                         }
-
-                        for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
-                            // 今回選ぶ乗換が改札外乗換か。
-                            const isOutside = transfer.step.type === 'outside';
-
-                            // 改札外は指定した未使用地点に限り、区間内で触れた必須地点をここで使用する。
-                            // 改札内を選ぶ場合は、区間内で未使用の必須地点を通っていてはいけない。
-                            if (
-                                (isOutside &&
-                                    ((requiredOutsideMask & transfer.outsideOpportunityBit) === 0 ||
-                                        (usedOutsideMask & transfer.outsideOpportunityBit) !== 0 ||
-                                        touchedRequiredMask !== transfer.outsideOpportunityBit)) ||
-                                (!isOutside && touchedRequiredMask !== 0)
-                            ) {
-                                continue;
-                            }
-
-                            // 異駅名間の乗換として駅IDが変わるか。
-                            const changesStation = transfer.step.toStationId !== transfer.step.fromStationId;
-
-                            if (
-                                changesStation &&
-                                (nextVisitedStationMask & getStationBit(transfer.step.toStationId)) !== BigInt(0)
-                            ) {
-                                continue;
-                            }
-
-                            // 乗換先の駅も加えた訪問済み駅の集合。同駅の乗換なら変化しない。
-                            const afterTransferVisitedMask =
-                                nextVisitedStationMask | getStationBit(transfer.step.toStationId);
-                            transferStack.push(transfer);
-                            yield* visit(
-                                transfer.step.toStationId,
-                                transfer.step.toLineId,
-                                afterTransferVisitedMask,
-                                usedOutsideMask | transfer.outsideOpportunityBit,
-                                insideTransferCount + Number(!isOutside),
-                                nextDistanceTenths,
-                            );
-                            transferStack.pop();
-                        }
-
-                        segmentStack.pop();
                     }
                 };
 
