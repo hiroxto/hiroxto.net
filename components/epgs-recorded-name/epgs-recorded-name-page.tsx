@@ -1,6 +1,19 @@
 'use client';
 
-import { Button, Checkbox, Code, Grid, List, ListItem, Select, Stack, Text, TextInput, Title } from '@mantine/core';
+import {
+    Button,
+    Checkbox,
+    Code,
+    CopyButton,
+    Grid,
+    List,
+    ListItem,
+    Select,
+    Stack,
+    Text,
+    TextInput,
+    Title,
+} from '@mantine/core';
 import { useEffect, useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { buildRecordedPath, getDefaultSeason, type SeasonValue, seasonsList } from '@/lib/epgs-recorded-name/path';
@@ -29,17 +42,6 @@ export function EpgsRecordedNamePage() {
             }),
         [year, season, programName, isRepeat, isUnclassifiable],
     );
-
-    const copyOutput = () => {
-        navigator.clipboard
-            .writeText(output)
-            .then(() => {
-                alert('Copied!');
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-    };
 
     return (
         <SiteSubpageFrame
@@ -109,9 +111,13 @@ export function EpgsRecordedNamePage() {
 
                 <section>
                     <Title order={2}>出力</Title>
-                    <Button mt="sm" mb="sm" variant="filled" color="gray" onClick={copyOutput}>
-                        コピー
-                    </Button>
+                    <CopyButton value={output} timeout={2000}>
+                        {({ copied, copy }) => (
+                            <Button mt="sm" mb="sm" variant="filled" color={copied ? 'teal' : 'gray'} onClick={copy}>
+                                {copied ? 'コピーしました' : 'コピー'}
+                            </Button>
+                        )}
+                    </CopyButton>
                     <pre className="rounded-md bg-gray-100 p-5">{output}</pre>
                 </section>
 

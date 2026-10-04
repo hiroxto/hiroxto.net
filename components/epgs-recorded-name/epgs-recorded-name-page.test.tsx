@@ -11,7 +11,6 @@ describe('EpgsRecordedNamePage', () => {
     beforeEach(() => {
         vi.useFakeTimers({ toFake: ['Date'] });
         vi.setSystemTime(new Date('2026-07-18T12:00:00+09:00'));
-        vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     });
 
     afterEach(() => {
@@ -59,7 +58,7 @@ describe('EpgsRecordedNamePage', () => {
         expect(screen.getByLabelText('再放送')).toBeDisabled();
     });
 
-    it('コピーボタンを押すと生成したパスをクリップボードに書き込む', async () => {
+    it('コピーボタンを押すと生成したパスをクリップボードに書き込み、ボタンの表示が変わる', async () => {
         const user = userEvent.setup();
         const writeText = vi.spyOn(navigator.clipboard, 'writeText');
         renderWithMantine(<EpgsRecordedNamePage />);
@@ -68,6 +67,6 @@ describe('EpgsRecordedNamePage', () => {
         await user.click(screen.getByRole('button', { name: 'コピー' }));
 
         expect(writeText).toHaveBeenCalledWith('2026/03_summer/my-anime');
-        expect(window.alert).toHaveBeenCalledWith('Copied!');
+        expect(screen.getByRole('button', { name: 'コピーしました' })).toBeInTheDocument();
     });
 });
