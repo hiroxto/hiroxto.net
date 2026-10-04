@@ -41,10 +41,6 @@ const tools = [
         title: '東京メトロ 改札外乗換検索',
     },
     {
-        href: '/tools/japan-airport-search',
-        title: '日本の飛行場・空港検索',
-    },
-    {
         href: '/tools/swarm-checkin-regulation-checker',
         title: 'Swarm コイン規制チェッカー',
     },
