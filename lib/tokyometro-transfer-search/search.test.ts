@@ -139,6 +139,14 @@ describe('searchRoutes', () => {
         vi.restoreAllMocks();
     });
 
+    it('東京から浅草の上限1回検索で改札内乗換を無効にすると経路なしと確定する', () => {
+        expect(searchRoutes('tokyo', 'asakusa', 1, { includeInsideTransfers: false })).toEqual({
+            routes: [],
+            truncated: false,
+            outsideTransferUpperBound: 0,
+        });
+    });
+
     it('東京から浅草の上限1回検索には大手町で改札内乗換する6.4kmの候補を含む', () => {
         // 公式営業キロ: 東京―大手町0.6 + 大手町―三越前0.7 + 三越前―浅草5.1。
         const result = searchRoutes('tokyo', 'asakusa', 1);

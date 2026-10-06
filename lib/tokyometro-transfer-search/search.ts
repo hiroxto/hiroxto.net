@@ -5,6 +5,8 @@
  * 乗車区間と乗換を交互に接続し、最初と最後は必ず乗車する。乗換だけの連続移動は扱わない。
  * 同駅での乗換は駅の再訪に数えず、異駅名の乗換では両方の駅を訪問済みにする。
  * 同じ路線の再利用は認める。指定する回数上限は改札外乗換だけに適用する。
+ * 改札内乗換は既定で候補に含む。includeInsideTransfersがfalseなら、探索時に改札内乗換を除外する。
+ * この条件で経路が存在しなければ空の候補を返す。探索打ち切りの扱いは有効時と同じ。
  * 距離はすべて0.1km単位の整数で扱い、徒歩乗換の距離は加算しない。
  *
  * 1. 路線データから駅間のグラフと路線別のグラフを作る。
@@ -1022,8 +1024,10 @@ const SEARCH_DEADLINE_CHECK_INTERVAL = 1_000;
 /** 一つの乗換回数について候補発見に使う訪問数の上限。 */
 const DISCOVERY_VISIT_LIMIT = 125_000;
 
-/** 検索全体の探索予算。省略した項目は既定値を使う。 */
-export type RouteSearchBudget = {
+/** 改札内乗換の利用条件と検索全体の探索予算。省略した項目は既定値を使う。 */
+export type RouteSearchOptions = {
+    /** 改札内乗換を候補に含めるか。既定はtrue。運賃計算には影響しない。 */
+    includeInsideTransfers?: boolean;
     /** 検索全体で許可する訪問数。 */
     visitLimit?: number;
     /** 前処理を含む検索時間の目安。再帰入口で定期的に確認する。 */
@@ -1037,7 +1041,7 @@ export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
 /**
  * 発着駅と改札外乗換回数の上限から、発見できた最大回数の経路を最大20件返す。
  * maximumOutsideTransferCountがnullなら、利用可能な改札外乗換地点数を上限にする。
- * budgetは主探索の訪問数と前処理を含む時間の予算。回数上限・予算が不正ならエラーにする。
+ * optionsで改札内乗換の利用可否と探索予算を指定する。回数上限・予算が不正ならエラーにする。
  * 発着駅が同じ場合は探索せず、経路なしの確定結果を返す。
  * 探索打ち切り時の候補・最大回数・順位の確定状況はRouteSearchResultを参照する。
  */
@@ -1045,16 +1049,17 @@ export const searchRoutes = (
     originStationId: StationId,
     destinationStationId: StationId,
     maximumOutsideTransferCount: number | null = null,
-    budget: RouteSearchBudget = {},
+    options: RouteSearchOptions = {},
 ): RouteSearchResult => {
     if (maximumOutsideTransferCount != null && !isValidMaximumOutsideTransferCount(maximumOutsideTransferCount)) {
         throw new Error(`最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`);
     }
 
     // 検索全体で許可する主探索の訪問数。
-    const visitLimit = budget.visitLimit ?? SEARCH_VISIT_LIMIT;
+    const visitLimit = options.visitLimit ?? SEARCH_VISIT_LIMIT;
     // 前処理を含む検索時間の目安。単位はミリ秒。
-    const durationLimitMs = budget.durationLimitMs ?? SEARCH_DURATION_LIMIT_MS;
+    const durationLimitMs = options.durationLimitMs ?? SEARCH_DURATION_LIMIT_MS;
+    const includeInsideTransfers = options.includeInsideTransfers ?? true;
     if (
         !Number.isSafeInteger(visitLimit) ||
         visitLimit < 0 ||
@@ -1256,6 +1261,10 @@ export const searchRoutes = (
                             for (const transfer of getMacroTransfers(segment.toStationId, lineId)) {
                                 // 今回選ぶ乗換が改札外乗換か。
                                 const isOutside = transfer.step.type === 'outside';
+
+                                if (!includeInsideTransfers && !isOutside) {
+                                    continue;
+                                }
 
                                 // 改札外は指定した未使用地点に限り、区間内で触れた必須地点をここで使用する。
                                 // 改札内を選ぶ場合は、区間内で未使用の必須地点を通っていてはいけない。

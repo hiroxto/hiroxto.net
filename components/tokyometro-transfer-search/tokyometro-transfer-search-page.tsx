@@ -11,6 +11,7 @@ import {
     Select,
     SimpleGrid,
     Stack,
+    Switch,
     Text,
     Title,
 } from '@mantine/core';
@@ -37,6 +38,7 @@ interface TokyoMetroTransferSearchPageProps {
     initialFrom: StationId | null;
     initialTo: StationId | null;
     initialMaximumOutsideTransferCount: number | null;
+    initialIncludeInsideTransfers: boolean;
     queryError: string | null;
 }
 
@@ -196,6 +198,7 @@ export function TokyoMetroTransferSearchPage({
     initialFrom,
     initialTo,
     initialMaximumOutsideTransferCount,
+    initialIncludeInsideTransfers,
     queryError,
 }: TokyoMetroTransferSearchPageProps) {
     const router = useRouter();
@@ -205,6 +208,7 @@ export function TokyoMetroTransferSearchPage({
         initialMaximumOutsideTransferCount,
     );
     const [formError, setFormError] = useState<string | null>(null);
+    const [includeInsideTransfers, setIncludeInsideTransfers] = useState(initialIncludeInsideTransfers);
     const [searchError, setSearchError] = useState<string | null>(null);
     const [routes, setRoutes] = useState<RouteResult[] | null>(null);
     const [isSearchTruncated, setIsSearchTruncated] = useState(false);
@@ -217,8 +221,9 @@ export function TokyoMetroTransferSearchPage({
         setFromStationId(initialFrom);
         setToStationId(initialTo);
         setMaximumOutsideTransferCount(initialMaximumOutsideTransferCount);
+        setIncludeInsideTransfers(initialIncludeInsideTransfers);
         setFormError(null);
-    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount]);
+    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount, initialIncludeInsideTransfers]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: 同一条件の送信でもWorkerを再起動する。
     useEffect(() => {
@@ -237,6 +242,7 @@ export function TokyoMetroTransferSearchPage({
             originStationId: initialFrom,
             destinationStationId: initialTo,
             maximumOutsideTransferCount: initialMaximumOutsideTransferCount,
+            includeInsideTransfers: initialIncludeInsideTransfers,
         };
 
         setRoutes(null);
@@ -266,7 +272,7 @@ export function TokyoMetroTransferSearchPage({
         return () => {
             worker.terminate();
         };
-    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount, searchAttempt]);
+    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount, initialIncludeInsideTransfers, searchAttempt]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -285,7 +291,8 @@ export function TokyoMetroTransferSearchPage({
         if (
             fromStationId === initialFrom &&
             toStationId === initialTo &&
-            maximumOutsideTransferCount === initialMaximumOutsideTransferCount
+            maximumOutsideTransferCount === initialMaximumOutsideTransferCount &&
+            includeInsideTransfers === initialIncludeInsideTransfers
         ) {
             setSearchAttempt((attempt) => attempt + 1);
             return;
@@ -295,6 +302,10 @@ export function TokyoMetroTransferSearchPage({
 
         if (maximumOutsideTransferCount != null) {
             query.set('maxOutsideTransfers', String(maximumOutsideTransferCount));
+        }
+
+        if (!includeInsideTransfers) {
+            query.set('includeInsideTransfers', 'false');
         }
 
         startTransition(() => {
@@ -360,8 +371,13 @@ export function TokyoMetroTransferSearchPage({
                                 />
                             </SimpleGrid>
                             <Text size="xs" c="dimmed">
-                                最大回数は改札外乗換にのみ適用し、改札内乗換は制限しません。
+                                最大回数は改札外乗換にのみ適用します。改札内乗換を含める場合、その回数は制限しません。
                             </Text>
+                            <Switch
+                                label="改札内乗換を含める"
+                                checked={includeInsideTransfers}
+                                onChange={(event) => setIncludeInsideTransfers(event.currentTarget.checked)}
+                            />
                             <Group justify="space-between" align="end" gap="md">
                                 <Text size="xs" c="dimmed">
                                     営業キロ・運賃は2026/09/29時点の情報

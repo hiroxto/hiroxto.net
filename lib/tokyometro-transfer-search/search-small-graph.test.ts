@@ -65,6 +65,21 @@ describe('小規模グラフの全経路との比較', () => {
         ]);
     });
 
+    it('改札内乗換を無効にすると改札外乗換だけの2経路を返す', () => {
+        const result = searchRoutes('tokyo', 'asakusa', 1, { includeInsideTransfers: false });
+        expect(result.truncated).toBe(false);
+        expect(
+            result.routes.map((route) => ({
+                inside: route.insideTransferCount,
+                distance: route.actualDistanceTenths,
+                stops: route.legs.map((leg) => leg.toStationId),
+            })),
+        ).toEqual([
+            { inside: 0, distance: 32, stops: ['mitsukoshimae', 'asakusa'] },
+            { inside: 0, distance: 33, stops: ['otemachi', 'asakusa'] },
+        ]);
+    });
+
     it('候補の回数が上限に達した後の打ち切りでは最大回数が確定する', () => {
         const result = searchRoutes('tokyo', 'asakusa', 1, { visitLimit: 5 });
         expect(result.truncated).toBe(true);

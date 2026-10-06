@@ -8,6 +8,7 @@ export interface TokyoMetroTransferSearchQuery {
     fromStationId: StationId | null;
     toStationId: StationId | null;
     maximumOutsideTransferCount: number | null;
+    includeInsideTransfers: boolean;
     error: string | null;
 }
 
@@ -32,14 +33,16 @@ const tokyoMetroTransferSearchParamsSchema = z
         from: searchParamSchema,
         to: searchParamSchema,
         maxOutsideTransfers: searchParamSchema,
+        includeInsideTransfers: searchParamSchema,
     })
-    .transform(({ from, to, maxOutsideTransfers }) => {
+    .transform(({ from, to, maxOutsideTransfers, includeInsideTransfers }) => {
         const fromValue = typeof from === 'string' ? from : null;
         const toValue = typeof to === 'string' ? to : null;
         const maximumOutsideTransferCountValue = typeof maxOutsideTransfers === 'string' ? maxOutsideTransfers : null;
         const hasCompleteStationPair = fromValue != null && toValue != null;
 
         return {
+            includeInsideTransfers: typeof includeInsideTransfers === 'string' ? includeInsideTransfers : 'true',
             maximumOutsideTransferCount:
                 maximumOutsideTransferCountValue == null ? null : Number(maximumOutsideTransferCountValue),
             fromStationId: hasCompleteStationPair ? fromValue : null,
@@ -50,6 +53,9 @@ const tokyoMetroTransferSearchParamsSchema = z
         z
             .object({
                 maximumOutsideTransferCount: maximumOutsideTransferCountSchema.nullable(),
+                includeInsideTransfers: z
+                    .enum(['true', 'false'], { error: '改札内乗換の指定はtrueまたはfalseにしてください' })
+                    .transform((value) => value === 'true'),
                 fromStationId: stationIdSchema.nullable(),
                 toStationId: stationIdSchema.nullable(),
             })
@@ -63,9 +69,15 @@ const emptyQuery: TokyoMetroTransferSearchQuery = {
     fromStationId: null,
     toStationId: null,
     maximumOutsideTransferCount: null,
+    includeInsideTransfers: true,
     error: null,
 };
 
+/**
+ * 検索ボタン押下時にURLへ保存した条件を復元する。
+ * includeInsideTransfersはtrue/falseで指定し、未指定・複数指定では既定のONとして扱う。
+ * OFFでは改札内乗換を探索対象から除外し、ONのURLではこのパラメータを省略する。
+ */
 export const parseTokyoMetroTransferSearchParams = (
     params: TokyoMetroTransferSearchParams,
 ): TokyoMetroTransferSearchQuery => {
