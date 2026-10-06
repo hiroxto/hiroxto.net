@@ -28,7 +28,7 @@ export default async function TokyoMetroTransferSearchToolPage({
     searchParams,
 }: TokyoMetroTransferSearchToolPageProps) {
     const params = await searchParams;
-    const { fromStationId, toStationId, maximumOutsideTransferCount, error } =
+    const { fromStationId, toStationId, maximumOutsideTransferCount, includeInsideTransfers, error } =
         parseTokyoMetroTransferSearchParams(params);
 
     return (
@@ -36,6 +36,7 @@ export default async function TokyoMetroTransferSearchToolPage({
             initialFrom={fromStationId}
             initialTo={toStationId}
             initialMaximumOutsideTransferCount={maximumOutsideTransferCount}
+            initialIncludeInsideTransfers={includeInsideTransfers}
             queryError={error}
         />
     );
