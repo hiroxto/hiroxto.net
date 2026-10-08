@@ -57,6 +57,8 @@ export function EpgsRecordedNamePage() {
                         <Grid>
                             <Grid.Col span={{ base: 12, xl: 2 }}>
                                 <TextInput
+                                    labelProps={{ fw: 500 }}
+                                    radius="sm"
                                     label="放送開始年"
                                     placeholder="西暦4桁"
                                     type="number"
@@ -67,6 +69,10 @@ export function EpgsRecordedNamePage() {
 
                             <Grid.Col span={{ base: 12, xl: 2 }}>
                                 <Select
+                                    comboboxProps={{ radius: 'sm' }}
+                                    styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                                    labelProps={{ fw: 500 }}
+                                    radius="sm"
                                     label="シーズン"
                                     data={seasonsList.map((option) => ({
                                         value: option.value,
@@ -79,6 +85,8 @@ export function EpgsRecordedNamePage() {
 
                             <Grid.Col span={{ base: 12, xl: 6 }}>
                                 <TextInput
+                                    labelProps={{ fw: 500 }}
+                                    radius="sm"
                                     label="番組名"
                                     placeholder="番組名"
                                     disabled={isUnclassifiable}
@@ -113,7 +121,14 @@ export function EpgsRecordedNamePage() {
                     <Title order={2}>出力</Title>
                     <CopyButton value={output} timeout={2000}>
                         {({ copied, copy }) => (
-                            <Button mt="sm" mb="sm" variant="filled" color={copied ? 'teal' : 'gray'} onClick={copy}>
+                            <Button
+                                radius="sm"
+                                mt="sm"
+                                mb="sm"
+                                variant="filled"
+                                color={copied ? 'teal' : 'gray'}
+                                onClick={copy}
+                            >
                                 {copied ? 'コピーしました' : 'コピー'}
                             </Button>
                         )}

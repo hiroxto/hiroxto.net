@@ -130,6 +130,8 @@ export function TimesCarEstimateComparisonPage() {
 
                         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                             <NumberInput
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="カーシェア利用料金(円)"
                                 placeholder="例: 5500"
                                 value={carShareUsageFee}
@@ -140,6 +142,8 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="numeric"
                             />
                             <NumberInput
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="レンタカー利用料金(円)"
                                 placeholder="例: 6072"
                                 value={rentalCarUsageFee}
@@ -150,6 +154,8 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="numeric"
                             />
                             <NumberInput
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="利用距離(km)"
                                 placeholder="例: 100"
                                 value={distanceKm}
@@ -161,6 +167,8 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="decimal"
                             />
                             <NumberInput
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="ガソリン単価(円/L)"
                                 placeholder="例: 175"
                                 value={gasolinePricePerLiter}
@@ -172,6 +180,8 @@ export function TimesCarEstimateComparisonPage() {
                                 inputMode="decimal"
                             />
                             <NumberInput
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="燃費(km/L)"
                                 placeholder="例: 15"
                                 value={fuelEfficiencyKmPerLiter}
@@ -185,6 +195,7 @@ export function TimesCarEstimateComparisonPage() {
                         </SimpleGrid>
 
                         <Radio.Group
+                            labelProps={{ fw: 500 }}
                             label="カーシェア距離料金"
                             value={carShareDistanceChargeMode}
                             onChange={(value) => setCarShareDistanceChargeMode(value as CarShareDistanceChargeMode)}

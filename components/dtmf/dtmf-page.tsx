@@ -188,7 +188,7 @@ export function DtmfPage() {
             title="DTMF"
             description="WebAudio APIでDTMFの合成信号音を再生"
         >
-            <Paper component="section" withBorder p="md" maw={600}>
+            <Paper radius="sm" component="section" withBorder p="md" maw={600}>
                 <Stack gap="md">
                     <Table withTableBorder withColumnBorders layout="fixed" horizontalSpacing={4} verticalSpacing="xs">
                         <Table.Thead>
@@ -217,10 +217,12 @@ export function DtmfPage() {
                                         return (
                                             <Table.Td key={key.label}>
                                                 <Button
+                                                    radius="sm"
                                                     type="button"
                                                     fullWidth
                                                     px="xs"
                                                     variant={isActive ? 'filled' : 'light'}
+                                                    color={isActive ? 'blue' : '#228be6'}
                                                     aria-label={`${key.label}、${key.lowFrequency} Hzと${key.highFrequency} Hz`}
                                                     style={{ touchAction: 'none' }}
                                                     onContextMenu={(event) => event.preventDefault()}

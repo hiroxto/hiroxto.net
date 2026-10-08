@@ -1,16 +1,15 @@
 'use client';
 
 import '@mantine/core/styles.css';
-import { Stack, Text, Title } from '@mantine/core';
+import { MantineProvider, Stack, Text, Title } from '@mantine/core';
 import { InternalLink } from '@/components/common/internal-link';
-import { SiteMantineProvider } from '@/components/common/site-mantine-provider';
 import { SitePageFrame } from '@/components/common/site-page-frame';
 
 export default function GlobalErrorPage() {
     return (
         <html lang="ja-JP">
             <body>
-                <SiteMantineProvider>
+                <MantineProvider>
                     <SitePageFrame>
                         <Stack gap="md">
                             <Title order={1}>Something went wrong!</Title>
@@ -19,7 +18,7 @@ export default function GlobalErrorPage() {
                             </Text>
                         </Stack>
                     </SitePageFrame>
-                </SiteMantineProvider>
+                </MantineProvider>
             </body>
         </html>
     );

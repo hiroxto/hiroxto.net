@@ -217,7 +217,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                     <Card withBorder radius="md" padding="lg">
                         <Stack gap="xs">
                             <Badge
-                                color={limitCheckResult.isLimited ? 'red' : 'teal'}
+                                color={limitCheckResult.isLimited ? '#fa5252' : '#12b886'}
                                 variant="light"
                                 size="lg"
                                 w="fit-content"
@@ -242,20 +242,25 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                 </Text>
                             </Stack>
                             <Group>
-                                <Button onClick={handlePullCheckins} disabled={token === '' || isLoading}>
+                                <Button radius="sm" onClick={handlePullCheckins} disabled={token === '' || isLoading}>
                                     履歴取得
                                 </Button>
                                 <Button
+                                    radius="sm"
                                     onClick={autoFetchEnabled ? handleDisableAutoFetch : handleEnableAutoFetch}
                                     disabled={token === '' || isLoading}
-                                    color={autoFetchEnabled ? 'red' : 'blue'}
+                                    color={autoFetchEnabled ? '#fa5252' : 'blue'}
                                     variant={autoFetchEnabled ? 'light' : 'filled'}
                                 >
                                     {autoFetchEnabled ? '自動取得無効化' : '自動取得有効化'}
                                 </Button>
                                 {isLoading ? <Loader size="sm" /> : null}
                             </Group>
-                            {errorMessage != null ? <Alert color="red">{errorMessage}</Alert> : null}
+                            {errorMessage != null ? (
+                                <Alert radius="sm" color="#fa5252">
+                                    {errorMessage}
+                                </Alert>
+                            ) : null}
                         </Stack>
                     </Card>
                 </div>
@@ -368,12 +373,18 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                         <Stack gap="md">
                             <Title order={2}>設定</Title>
                             <TextInput
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="APIトークン"
                                 placeholder="Token"
                                 value={token}
                                 onChange={(event) => setToken(event.currentTarget.value)}
                             />
                             <Select
+                                comboboxProps={{ radius: 'sm' }}
+                                styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="自動取得間隔"
                                 data={AUTO_FETCH_INTERVAL_OPTIONS.map((option) => ({
                                     value: option.value,

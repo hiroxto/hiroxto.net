@@ -44,7 +44,7 @@ function GridActionButton({ definition }: { definition: ControlButtonDefinition 
                     {label}
                 </SoundButton>
             ) : (
-                <Button {...buttonProps} className={buttonClassName} component={Link} href={href} fullWidth>
+                <Button radius="sm" {...buttonProps} className={buttonClassName} component={Link} href={href} fullWidth>
                     {label}
                 </Button>
             )}
@@ -62,7 +62,14 @@ function CalendarModal({
     onChange: (newValue: string | Date | null) => void;
 }) {
     return (
-        <Modal opened={modalState.opened} onClose={modalState.onClose} title="カレンダー入力" size="auto">
+        <Modal
+            radius="sm"
+            closeButtonProps={{ radius: 'sm' }}
+            opened={modalState.opened}
+            onClose={modalState.onClose}
+            title="カレンダー入力"
+            size="auto"
+        >
             <DatePicker
                 value={calendarValue}
                 onChange={onChange}
@@ -71,7 +78,13 @@ function CalendarModal({
                 level="month"
                 minDate={new Date()}
                 size="xl"
-                styles={{ calendarHeaderLevel: { fontWeight: 500 } }}
+                styles={{
+                    calendarHeaderLevel: { fontWeight: 500, borderRadius: 'var(--mantine-radius-sm)' },
+                    calendarHeaderControl: { borderRadius: 'var(--mantine-radius-sm)' },
+                    day: { borderRadius: 'var(--mantine-radius-sm)' },
+                    monthsListControl: { borderRadius: 'var(--mantine-radius-sm)' },
+                    yearsListControl: { borderRadius: 'var(--mantine-radius-sm)' },
+                }}
             />
         </Modal>
     );
@@ -93,12 +106,22 @@ function SaveRouteModal({
     onUpdate: () => void;
 }) {
     return (
-        <Modal opened={modalState.opened} onClose={modalState.onClose} title="保存・更新">
+        <Modal
+            radius="sm"
+            closeButtonProps={{ radius: 'sm' }}
+            opened={modalState.opened}
+            onClose={modalState.onClose}
+            title="保存・更新"
+        >
             <SoundButton variant="filled" color="blue" className={styles.button} onClick={onCreate} soundType="click">
                 新規保存
             </SoundButton>
 
             <Select
+                comboboxProps={{ radius: 'sm' }}
+                styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                labelProps={{ fw: 500 }}
+                radius="sm"
                 label="更新先を選択"
                 placeholder="更新先を選択"
                 data={saveLabels}

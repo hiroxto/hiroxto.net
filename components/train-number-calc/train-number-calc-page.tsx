@@ -44,6 +44,8 @@ export function TrainNumberCalcPage() {
                         control={control}
                         render={({ field }) => (
                             <TextInput
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 {...field}
                                 label="列車番号"
                                 placeholder="列車番号を入力"

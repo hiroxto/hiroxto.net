@@ -1,9 +1,9 @@
+import { MantineProvider } from '@mantine/core';
 import { type RenderOptions, render } from '@testing-library/react';
 import type { ReactElement, ReactNode } from 'react';
-import { SiteMantineProvider } from '@/components/common/site-mantine-provider';
 
 function TestProvider({ children }: { children: ReactNode }) {
-    return <SiteMantineProvider>{children}</SiteMantineProvider>;
+    return <MantineProvider>{children}</MantineProvider>;
 }
 
 export function renderWithMantine(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {

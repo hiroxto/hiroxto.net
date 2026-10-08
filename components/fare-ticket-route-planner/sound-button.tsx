@@ -16,5 +16,5 @@ export function SoundButton({ soundType, onClick, ...props }: SoundButtonProps) 
         onClick();
     };
 
-    return <Button {...props} onClick={handleClick} />;
+    return <Button radius="sm" {...props} onClick={handleClick} />;
 }

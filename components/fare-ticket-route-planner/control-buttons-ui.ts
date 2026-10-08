@@ -77,7 +77,7 @@ export const createSecondaryButtonDefinitions = ({
         key: 'delete-empty-routes',
         label: '空経路\nクリア',
         variant: 'light',
-        color: 'red',
+        color: '#fa5252',
         onClick: deleteEmptyRoutes,
     },
     {
