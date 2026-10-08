@@ -47,6 +47,6 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
 
         fireEvent.click(screen.getByRole('tab', { name: '設定' }));
 
-        expect(screen.getByRole('textbox', { name: '自動取得間隔' })).toHaveValue('30秒');
+        expect(screen.getByRole('combobox', { name: '自動取得間隔' })).toHaveValue('30秒');
     });
 });

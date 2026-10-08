@@ -234,7 +234,7 @@ export function ControlButtons() {
 
     return (
         <>
-            <Grid columns={12} gutter="xs">
+            <Grid columns={12} gap="xs">
                 {baseGrayButtons.map((definition) => (
                     <GridActionButton key={definition.key} definition={definition} />
                 ))}
