@@ -71,6 +71,7 @@ function CalendarModal({
                 level="month"
                 minDate={new Date()}
                 size="xl"
+                styles={{ calendarHeaderLevel: { fontWeight: 500 } }}
             />
         </Modal>
     );

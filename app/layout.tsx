@@ -1,8 +1,8 @@
 import '@mantine/core/styles.css';
 import './globals.css';
-import { MantineProvider } from '@mantine/core';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { SiteMantineProvider } from '@/components/common/site-mantine-provider';
 import { siteOrigin } from '@/lib/metadata/site-origin';
 
 interface RootLayoutProps {
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 <link rel="author" type="text/plain" href="/humans.txt" />
             </head>
             <body>
-                <MantineProvider>{children}</MantineProvider>
+                <SiteMantineProvider>{children}</SiteMantineProvider>
             </body>
         </html>
     );

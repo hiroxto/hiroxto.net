@@ -1,9 +1,9 @@
-import { MantineProvider } from '@mantine/core';
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SiteMantineProvider } from '@/components/common/site-mantine-provider';
 import { renderWithMantine } from '@/test/test-utils';
 import { EpgsRecordedNamePage } from './epgs-recorded-name-page';
 
@@ -22,9 +22,9 @@ describe('EpgsRecordedNamePage', () => {
         vi.useFakeTimers({ toFake: ['Date'] });
         vi.setSystemTime(new Date(2026, 8, 26, 12));
         const page = (
-            <MantineProvider>
+            <SiteMantineProvider>
                 <EpgsRecordedNamePage />
-            </MantineProvider>
+            </SiteMantineProvider>
         );
         const container = document.createElement('div');
         container.innerHTML = renderToString(page);
