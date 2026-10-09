@@ -129,7 +129,6 @@ export const createSecondaryButtonDefinitions = ({
 ];
 
 export const createSaveRoutePayload = (state: RouteState): RouteState => ({
-    type: state.type,
     month: state.month,
     day: state.day,
     dateOption: state.dateOption,
@@ -140,7 +139,6 @@ export const createSaveRoutePayload = (state: RouteState): RouteState => ({
 });
 
 export const createUpdateRoutePayload = (state: RouteState): Partial<RouteState> => ({
-    type: state.type,
     month: state.month,
     day: state.day,
     dateOption: state.dateOption,

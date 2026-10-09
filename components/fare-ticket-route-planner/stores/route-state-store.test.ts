@@ -4,7 +4,6 @@ import { useRouteStateStore } from './route-state-store';
 describe('useRouteStateStore', () => {
     beforeEach(() => {
         useRouteStateStore.setState({
-            type: '片道乗車券',
             month: '',
             day: '',
             dateOption: 'use',
