@@ -41,6 +41,10 @@ export function RouteRow({
             <div className="col-span-12 xl:col-span-5">
                 {useComplete ? (
                     <Autocomplete
+                        comboboxProps={{ radius: 'sm' }}
+                        styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                        labelProps={{ fw: 500 }}
+                        radius="sm"
                         label="路線"
                         placeholder="路線"
                         className="xl:w-3/4"
@@ -50,8 +54,9 @@ export function RouteRow({
                         onKeyDown={(event) => onHandleKeyDown(index, event)}
                     />
                 ) : (
-                    <Input.Wrapper label="路線" className="xl:w-3/4">
+                    <Input.Wrapper labelProps={{ fw: 500 }} label="路線" className="xl:w-3/4">
                         <Input
+                            radius="sm"
                             placeholder="路線"
                             value={route.line}
                             onChange={(event) => onUpdateLine(index, event.target.value)}
@@ -63,6 +68,10 @@ export function RouteRow({
             <div className="col-span-11 xl:col-span-5">
                 {useComplete ? (
                     <Autocomplete
+                        comboboxProps={{ radius: 'sm' }}
+                        styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                        labelProps={{ fw: 500 }}
+                        radius="sm"
                         label="接続駅"
                         placeholder="接続駅"
                         className="xl:w-3/4"
@@ -78,8 +87,9 @@ export function RouteRow({
                         onKeyDown={(event) => onHandleKeyDown(index, event)}
                     />
                 ) : (
-                    <Input.Wrapper label="接続駅" className="xl:w-3/4" error={stationError}>
+                    <Input.Wrapper labelProps={{ fw: 500 }} label="接続駅" className="xl:w-3/4" error={stationError}>
                         <Input
+                            radius="sm"
                             placeholder="接続駅"
                             value={route.station}
                             error={stationError != null}
@@ -90,7 +100,7 @@ export function RouteRow({
                 )}
             </div>
             <div className="col-span-1 xl:col-span-1">
-                <CloseButton onClick={() => onDeleteRoute(index)} tabIndex={-1} />
+                <CloseButton radius="sm" onClick={() => onDeleteRoute(index)} tabIndex={-1} />
             </div>
         </div>
     );

@@ -18,6 +18,7 @@ export function Note() {
         <>
             <SectionTitle>備考</SectionTitle>
             <Textarea
+                radius="sm"
                 placeholder="備考"
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}

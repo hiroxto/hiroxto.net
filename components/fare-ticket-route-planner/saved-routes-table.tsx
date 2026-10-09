@@ -97,6 +97,7 @@ export function SavedRoutesTable({
                                     呼び出し
                                 </SoundButton>
                                 <Button
+                                    radius="sm"
                                     variant="filled"
                                     color="red"
                                     className={styles.button}

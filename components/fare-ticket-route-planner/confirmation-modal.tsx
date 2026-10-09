@@ -27,10 +27,10 @@ export function ConfirmationModal({
     confirmButtonColor = 'red',
 }: ConfirmationModalProps) {
     return (
-        <Modal opened={opened} onClose={onClose} title={title}>
+        <Modal radius="sm" closeButtonProps={{ radius: 'sm' }} opened={opened} onClose={onClose} title={title}>
             <p>{message}</p>
             <div className="mt-4 flex justify-end gap-2">
-                <SoundButton variant="light" onClick={onClose} soundType="click">
+                <SoundButton variant="light" color="#228be6" onClick={onClose} soundType="click">
                     {cancelButtonText}
                 </SoundButton>
                 <SoundButton variant="filled" color={confirmButtonColor} onClick={onConfirm} soundType="click">

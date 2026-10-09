@@ -84,6 +84,7 @@ export function SavedRoutesPage() {
         >
             <Group gap="xs" mb="md">
                 <Button
+                    radius="sm"
                     variant="filled"
                     color="blue"
                     className={styles.button}
@@ -93,6 +94,7 @@ export function SavedRoutesPage() {
                     入力画面
                 </Button>
                 <Button
+                    radius="sm"
                     variant="filled"
                     color="red"
                     className={styles.button}
@@ -119,7 +121,7 @@ export function SavedRoutesPage() {
                 onDeleteRoute={(route) => openIndividualDeleteModal(() => deleteRoute(route.id))}
             />
 
-            <Modal opened={opened} onClose={close} title="経路参照">
+            <Modal radius="sm" closeButtonProps={{ radius: 'sm' }} opened={opened} onClose={close} title="経路参照">
                 <pre className={styles.output}>{output}</pre>
             </Modal>
 

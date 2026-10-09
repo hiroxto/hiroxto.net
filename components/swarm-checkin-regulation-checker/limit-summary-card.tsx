@@ -14,7 +14,7 @@ export const LimitSummaryCard = ({ resultKey, result }: Props) => {
     return (
         <Card withBorder radius="md" padding="lg">
             <Group align="flex-start" wrap="nowrap">
-                <ThemeIcon size={42} radius="md" color={result.isLimited ? 'red' : 'teal'} variant="light">
+                <ThemeIcon size={42} radius="md" color={result.isLimited ? '#fa5252' : '#12b886'} variant="light">
                     <Text fw={700}>{result.isLimited ? '!' : 'OK'}</Text>
                 </ThemeIcon>
 

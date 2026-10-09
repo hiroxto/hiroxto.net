@@ -49,10 +49,10 @@ export function ClSoundPage() {
             <Stack gap="xl">
                 <section>
                     <Group>
-                        <Button color="green" onClick={() => clSoundActions.playSuccessTone()}>
+                        <Button radius="sm" color="green" onClick={() => clSoundActions.playSuccessTone()}>
                             Play Success Tone
                         </Button>
-                        <Button color="red" onClick={() => clSoundActions.playAlertTone()}>
+                        <Button radius="sm" color="red" onClick={() => clSoundActions.playAlertTone()}>
                             Play Alert Tone
                         </Button>
                     </Group>

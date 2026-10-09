@@ -37,6 +37,8 @@ export function QrCodeGenPage() {
                     <Stack gap="xl">
                         <Stack gap="md">
                             <Textarea
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
                                 label="埋め込む値"
                                 placeholder="値を入力"
                                 value={value}
@@ -89,8 +91,38 @@ export function QrCodeGenPage() {
                                 </Radio.Group>
                             </div>
 
-                            <ColorInput label="背景色" format="hex" value={backGround} onChange={setBackGround} />
-                            <ColorInput label="QRコードの色" format="hex" value={foreGround} onChange={setForeGround} />
+                            <ColorInput
+                                popoverProps={{ radius: 'sm', transitionProps: { transition: 'fade', duration: 0 } }}
+                                eyeDropperButtonProps={{ radius: 'sm' }}
+                                styles={{
+                                    eyeDropperButton: {
+                                        color: 'var(--mantine-color-gray-6)',
+                                        '--ai-hover': 'rgba(134, 142, 150, 0.12)',
+                                    },
+                                }}
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
+                                label="背景色"
+                                format="hex"
+                                value={backGround}
+                                onChange={setBackGround}
+                            />
+                            <ColorInput
+                                popoverProps={{ radius: 'sm', transitionProps: { transition: 'fade', duration: 0 } }}
+                                eyeDropperButtonProps={{ radius: 'sm' }}
+                                styles={{
+                                    eyeDropperButton: {
+                                        color: 'var(--mantine-color-gray-6)',
+                                        '--ai-hover': 'rgba(134, 142, 150, 0.12)',
+                                    },
+                                }}
+                                labelProps={{ fw: 500 }}
+                                radius="sm"
+                                label="QRコードの色"
+                                format="hex"
+                                value={foreGround}
+                                onChange={setForeGround}
+                            />
                         </Stack>
 
                         <Stack align="center" justify="center">

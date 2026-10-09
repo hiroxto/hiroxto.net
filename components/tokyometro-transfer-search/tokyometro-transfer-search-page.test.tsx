@@ -150,9 +150,9 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
 
-        expect(screen.getByRole('textbox', { name: '乗車駅' })).toBeInTheDocument();
-        expect(screen.getByRole('textbox', { name: '降車駅' })).toBeInTheDocument();
-        expect(screen.getByRole('textbox', { name: '最大改札外乗換回数' })).toHaveValue('指定しない');
+        expect(screen.getByRole('combobox', { name: '乗車駅' })).toBeInTheDocument();
+        expect(screen.getByRole('combobox', { name: '降車駅' })).toBeInTheDocument();
+        expect(screen.getByRole('combobox', { name: '最大改札外乗換回数' })).toHaveValue('指定しない');
         expect(screen.queryByRole('heading', { name: '検索結果' })).not.toBeInTheDocument();
     });
 
@@ -173,7 +173,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 queryError={null}
             />,
         );
-        const input = screen.getByRole('textbox', { name: label });
+        const input = screen.getByRole('combobox', { name: label });
         await user.click(input);
         await user.type(input, query);
         await user.click(getActiveOption(input, optionName));
@@ -191,7 +191,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 queryError={null}
             />,
         );
-        const input = screen.getByRole('textbox', { name: '乗車駅' });
+        const input = screen.getByRole('combobox', { name: '乗車駅' });
         await user.click(input);
         await user.type(input, 'ゆうらくちょうせん');
         expect(screen.getByText('該当する駅がありません')).toBeInTheDocument();
@@ -209,17 +209,17 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
 
-        const fromInput = screen.getByRole('textbox', { name: '乗車駅' });
+        const fromInput = screen.getByRole('combobox', { name: '乗車駅' });
         await user.click(fromInput);
         await user.type(fromInput, '稲荷町');
         await user.click(getActiveOption(fromInput, /^稲荷町｜/));
 
-        const toInput = screen.getByRole('textbox', { name: '降車駅' });
+        const toInput = screen.getByRole('combobox', { name: '降車駅' });
         await user.click(toInput);
         await user.type(toInput, '入谷');
         await user.click(getActiveOption(toInput, /^入谷｜/));
 
-        const maximumOutsideTransferCountInput = screen.getByRole('textbox', { name: '最大改札外乗換回数' });
+        const maximumOutsideTransferCountInput = screen.getByRole('combobox', { name: '最大改札外乗換回数' });
         await user.click(maximumOutsideTransferCountInput);
         await user.click(getActiveOption(maximumOutsideTransferCountInput, /^1回$/));
         await user.click(screen.getByRole('button', { name: '検索' }));
@@ -271,8 +271,8 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
         await screen.findByRole('heading', { name: '検索結果' });
-        const fromInput = screen.getByRole('textbox', { name: '乗車駅' });
-        const toInput = screen.getByRole('textbox', { name: '降車駅' });
+        const fromInput = screen.getByRole('combobox', { name: '乗車駅' });
+        const toInput = screen.getByRole('combobox', { name: '降車駅' });
         await user.click(fromInput);
         await user.clear(fromInput);
         await user.type(fromInput, '銀座');
@@ -282,7 +282,7 @@ describe('TokyoMetroTransferSearchPage', () => {
 
         expect((fromInput as HTMLInputElement).value).toMatch(/^入谷｜/);
         expect((toInput as HTMLInputElement).value).toMatch(/^銀座｜/);
-        expect(screen.getByRole('textbox', { name: '最大改札外乗換回数' })).toHaveValue('1回');
+        expect(screen.getByRole('combobox', { name: '最大改札外乗換回数' })).toHaveValue('1回');
         expect(screen.getByRole('heading', { name: '検索結果' })).toBeInTheDocument();
         expect(pushMock).not.toHaveBeenCalled();
         expect(workerRequestMock).toHaveBeenCalledTimes(1);
@@ -306,7 +306,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
 
         for (const label of ['乗車駅', '降車駅']) {
-            const input = screen.getByRole('textbox', { name: label });
+            const input = screen.getByRole('combobox', { name: label });
             await user.click(input);
             await user.type(input, '銀座');
             await user.click(getActiveOption(input, /^銀座｜/));

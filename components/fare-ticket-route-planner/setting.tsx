@@ -44,6 +44,10 @@ export function Setting() {
             <div className="grid grid-cols-12">
                 <div className="col-span-12 xl:col-span-3">
                     <Select
+                        comboboxProps={{ radius: 'sm' }}
+                        styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                        labelProps={{ fw: 500 }}
+                        radius="sm"
                         label="券種"
                         placeholder="券種"
                         className="xl:w-3/4"
@@ -61,8 +65,9 @@ export function Setting() {
                 <div className="col-span-12 xl:col-span-3">
                     <div className="grid grid-cols-2 xl:w-3/4">
                         <div className="col-span-1">
-                            <Input.Wrapper label="利用開始月">
+                            <Input.Wrapper labelProps={{ fw: 500 }} label="利用開始月">
                                 <Input
+                                    radius="sm"
                                     placeholder="月"
                                     value={month}
                                     onChange={(event) => setMonth(event.target.value)}
@@ -71,8 +76,9 @@ export function Setting() {
                             </Input.Wrapper>
                         </div>
                         <div className="col-span-1">
-                            <Input.Wrapper label="利用開始日">
+                            <Input.Wrapper labelProps={{ fw: 500 }} label="利用開始日">
                                 <Input
+                                    radius="sm"
                                     placeholder="日"
                                     value={day}
                                     onChange={(event) => setDay(event.target.value)}
@@ -83,8 +89,9 @@ export function Setting() {
                     </div>
                 </div>
                 <div className="col-span-12 xl:col-span-3">
-                    <Input.Wrapper label="発駅" className="xl:w-3/4">
+                    <Input.Wrapper labelProps={{ fw: 500 }} label="発駅" className="xl:w-3/4">
                         <Input
+                            radius="sm"
                             placeholder="発駅"
                             value={departure}
                             onChange={(event) => setDeparture(event.target.value)}
@@ -92,8 +99,9 @@ export function Setting() {
                     </Input.Wrapper>
                 </div>
                 <div className="col-span-12 xl:col-span-3">
-                    <Input.Wrapper label="着駅" className="xl:w-3/4">
+                    <Input.Wrapper labelProps={{ fw: 500 }} label="着駅" className="xl:w-3/4">
                         <Input
+                            radius="sm"
                             placeholder="着駅"
                             value={destination}
                             onChange={(event) => setDestination(event.target.value)}

@@ -331,6 +331,10 @@ export function TokyoMetroTransferSearchPage({
                             </div>
                             <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
                                 <Select
+                                    comboboxProps={{ radius: 'sm' }}
+                                    styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                                    labelProps={{ fw: 500 }}
+                                    radius="sm"
                                     label="乗車駅"
                                     placeholder="駅名または路線名で検索"
                                     data={stationOptions}
@@ -339,9 +343,14 @@ export function TokyoMetroTransferSearchPage({
                                     onChange={setFromStationId}
                                     searchable
                                     clearable
+                                    clearButtonProps={{ style: { borderRadius: 'var(--mantine-radius-sm)' } }}
                                     nothingFoundMessage="該当する駅がありません"
                                 />
                                 <Select
+                                    comboboxProps={{ radius: 'sm' }}
+                                    styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                                    labelProps={{ fw: 500 }}
+                                    radius="sm"
                                     label="降車駅"
                                     placeholder="駅名または路線名で検索"
                                     data={stationOptions}
@@ -350,9 +359,14 @@ export function TokyoMetroTransferSearchPage({
                                     onChange={setToStationId}
                                     searchable
                                     clearable
+                                    clearButtonProps={{ style: { borderRadius: 'var(--mantine-radius-sm)' } }}
                                     nothingFoundMessage="該当する駅がありません"
                                 />
                                 <Select
+                                    comboboxProps={{ radius: 'sm' }}
+                                    styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                                    labelProps={{ fw: 500 }}
+                                    radius="sm"
                                     label="最大改札外乗換回数"
                                     data={maximumOutsideTransferCountOptions}
                                     value={
@@ -384,6 +398,7 @@ export function TokyoMetroTransferSearchPage({
                                 </Text>
                                 <Group gap="sm">
                                     <Button
+                                        radius="sm"
                                         type="button"
                                         variant="default"
                                         onClick={() => {
@@ -393,7 +408,13 @@ export function TokyoMetroTransferSearchPage({
                                     >
                                         発着逆転
                                     </Button>
-                                    <Button type="submit" color="dark" loading={isPending || isSearching} px="xl">
+                                    <Button
+                                        radius="sm"
+                                        type="submit"
+                                        color="dark"
+                                        loading={isPending || isSearching}
+                                        px="xl"
+                                    >
                                         検索
                                     </Button>
                                 </Group>
@@ -403,7 +424,7 @@ export function TokyoMetroTransferSearchPage({
                 </Paper>
 
                 {formError != null || queryError != null || searchError != null ? (
-                    <Alert color="red" variant="light" title="入力を確認してください">
+                    <Alert radius="sm" color="#fa5252" variant="light" title="入力を確認してください">
                         {formError ?? queryError ?? searchError}
                     </Alert>
                 ) : null}
@@ -417,7 +438,7 @@ export function TokyoMetroTransferSearchPage({
                 ) : null}
 
                 {isSearchTruncated ? (
-                    <Alert color="yellow" variant="light" title="探索上限に達しました">
+                    <Alert radius="sm" color="#fab005" variant="light" title="探索上限に達しました">
                         <Text size="sm">表示中の候補は探索済み範囲の結果です。</Text>
                         <Text size="sm">
                             {routes?.[0] == null
