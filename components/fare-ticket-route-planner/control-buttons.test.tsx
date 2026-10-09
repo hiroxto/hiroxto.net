@@ -50,7 +50,6 @@ describe('ControlButtons', () => {
         window.localStorage.clear();
 
         useRouteStateStore.setState({
-            type: '片道乗車券',
             month: '',
             day: '',
             dateOption: 'use',
@@ -157,10 +156,9 @@ describe('ControlButtons', () => {
         );
     });
 
-    test('設定クリアの確認後に種別と駅設定を初期化する', async () => {
+    test('設定クリアの確認後に日付指定と駅設定を初期化する', async () => {
         const user = userEvent.setup();
         useRouteStateStore.setState({
-            type: '片道乗車券',
             dateOption: 'skip',
             departure: '東京',
             destination: '新大阪',
@@ -174,7 +172,6 @@ describe('ControlButtons', () => {
         await user.click(screen.getByRole('button', { name: 'クリア' }));
 
         expect(useRouteStateStore.getState()).toMatchObject({
-            type: '片道乗車券',
             dateOption: 'use',
             departure: '',
             destination: '',
@@ -184,7 +181,6 @@ describe('ControlButtons', () => {
     test('保存・更新モーダルから新規保存できる', async () => {
         const user = userEvent.setup();
         useRouteStateStore.setState({
-            type: '片道乗車券',
             month: '1',
             day: '2',
             dateOption: 'skip',
@@ -204,7 +200,6 @@ describe('ControlButtons', () => {
 
         expect(useSavedRouteStore.getState().routes).toHaveLength(1);
         expect(useSavedRouteStore.getState().routes[0]?.route).toEqual({
-            type: '片道乗車券',
             month: '1',
             day: '2',
             dateOption: 'skip',

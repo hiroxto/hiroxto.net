@@ -7,7 +7,6 @@ import { useRouteStateStore } from './stores/route-state-store';
 describe('Output', () => {
     beforeEach(() => {
         useRouteStateStore.setState({
-            type: '片道乗車券',
             month: '3',
             day: '14',
             dateOption: 'use',
@@ -26,8 +25,9 @@ describe('Output', () => {
         renderWithMantine(<Output />);
 
         const output = screen.getByText(
-            (content) => content.includes('片道乗車券') && content.includes('区間: 東京→博多'),
+            (content) => content.startsWith('普通乗車券') && content.includes('区間: 東京→博多'),
         );
+        expect(output.textContent).toMatch(/^普通乗車券\n\n/);
         expect(output).toHaveTextContent('利用開始日: 3月14日');
         expect(output).toHaveTextContent('東海道線');
         expect(output).toHaveTextContent('名古屋');

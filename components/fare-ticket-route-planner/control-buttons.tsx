@@ -144,7 +144,6 @@ function SaveRouteModal({
 
 export function ControlButtons() {
     const {
-        resetType,
         setMonth,
         setDay,
         setDateWithIndex,
@@ -157,7 +156,6 @@ export function ControlButtons() {
         resetNotes,
     } = useRouteStateStore(
         useShallow((state) => ({
-            resetType: state.resetType,
             setMonth: state.setMonth,
             setDay: state.setDay,
             setDateWithIndex: state.setDateWithIndex,
@@ -207,7 +205,6 @@ export function ControlButtons() {
 
     const handleClearSetting = () => {
         clearSettingModal.openModal(() => {
-            resetType();
             enableDateOption();
             resetStations();
         });

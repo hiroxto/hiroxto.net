@@ -10,7 +10,6 @@ import type { SavedRouteState } from '@/lib/fare-ticket-route-planner/types';
 describe('control buttons ui', () => {
     test('新規保存用のデータに現在の経路設定を含める', () => {
         const payload = createSaveRoutePayload({
-            type: '片道乗車券',
             month: '1',
             day: '2',
             dateOption: 'skip',
@@ -24,7 +23,6 @@ describe('control buttons ui', () => {
         });
 
         expect(payload).toEqual({
-            type: '片道乗車券',
             month: '1',
             day: '2',
             dateOption: 'skip',
@@ -40,7 +38,6 @@ describe('control buttons ui', () => {
 
     test('更新用のデータに現在の経路設定を含める', () => {
         const payload = createUpdateRoutePayload({
-            type: '片道乗車券',
             month: '1',
             day: '2',
             dateOption: 'skip',
@@ -54,7 +51,6 @@ describe('control buttons ui', () => {
         });
 
         expect(payload).toEqual({
-            type: '片道乗車券',
             month: '1',
             day: '2',
             dateOption: 'skip',
@@ -74,7 +70,6 @@ describe('control buttons ui', () => {
                 id: 'route-id',
                 createdAtTs: 1,
                 route: {
-                    type: '片道乗車券',
                     month: '1',
                     day: '2',
                     dateOption: 'use',

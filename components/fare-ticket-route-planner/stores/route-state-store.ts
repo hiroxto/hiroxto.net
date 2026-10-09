@@ -3,11 +3,9 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { fareTicketRoutePlannerStorage } from '@/components/fare-ticket-route-planner/stores/persist-storage';
-import type { Route, RouteState, TicketType } from '@/lib/fare-ticket-route-planner/types';
+import type { Route, RouteState } from '@/lib/fare-ticket-route-planner/types';
 
 interface RouteStateActions {
-    setType: (type: TicketType) => void;
-    resetType: () => void;
     setDeparture: (departure: string) => void;
     setDestination: (destination: string) => void;
     setMonth: (month: string) => void;
@@ -34,7 +32,6 @@ export const useRouteStateStore = create<RouteState & RouteStateActions>()(
     devtools(
         persist(
             (set) => ({
-                type: '片道乗車券',
                 month: '',
                 day: '',
                 dateOption: 'use',
@@ -43,12 +40,6 @@ export const useRouteStateStore = create<RouteState & RouteStateActions>()(
                 routes: [createRoute()],
                 notes: '',
 
-                setType(type) {
-                    set({ type });
-                },
-                resetType() {
-                    set({ type: '片道乗車券' });
-                },
                 setDeparture(departure) {
                     set({ departure });
                 },

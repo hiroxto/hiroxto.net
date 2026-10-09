@@ -8,9 +8,8 @@ import { useRouteStateStore } from '@/components/fare-ticket-route-planner/store
 import { format } from '@/lib/fare-ticket-route-planner/formatter';
 
 export function Output() {
-    const { type, month, day, dateOption, departure, destination, routes, notes } = useRouteStateStore(
+    const { month, day, dateOption, departure, destination, routes, notes } = useRouteStateStore(
         useShallow((state) => ({
-            type: state.type,
             month: state.month,
             day: state.day,
             dateOption: state.dateOption,
@@ -24,7 +23,7 @@ export function Output() {
     const valuedRoutes = useMemo(() => routes.filter((route) => route.line.trim() !== ''), [routes]);
     const output = useMemo(() => {
         const header = [
-            type,
+            '普通乗車券',
             dateOption === 'use' ? `利用開始日: ${month}月${day}日` : null,
             `区間: ${departure}→${destination}`,
         ]
@@ -35,7 +34,7 @@ export function Output() {
         const footer = notes === '' ? '' : `備考: ${notes.trim()}`;
 
         return `${header}\n\n${routesOutput}\n\n${footer}`.trim();
-    }, [type, month, day, dateOption, departure, destination, valuedRoutes, notes]);
+    }, [month, day, dateOption, departure, destination, valuedRoutes, notes]);
 
     return (
         <>

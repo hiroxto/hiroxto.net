@@ -3,7 +3,6 @@ import type { RouteState } from '@/lib/fare-ticket-route-planner/types';
 import { useSavedRouteStore } from './saved-route-store';
 
 const routeState: RouteState = {
-    type: '片道乗車券',
     month: '3',
     day: '10',
     dateOption: 'use',
@@ -27,7 +26,6 @@ describe('useSavedRouteStore', () => {
         const savedRoutes = useSavedRouteStore.getState().routes;
         expect(savedRoutes).toHaveLength(1);
         expect(savedRoutes[0]?.route).toEqual({
-            type: '片道乗車券',
             month: '3',
             day: '10',
             dateOption: 'use',
