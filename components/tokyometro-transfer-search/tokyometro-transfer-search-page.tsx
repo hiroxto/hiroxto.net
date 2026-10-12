@@ -8,6 +8,7 @@ import {
     Checkbox,
     Divider,
     Group,
+    NumberInput,
     type OptionsFilter,
     Paper,
     Select,
@@ -15,7 +16,6 @@ import {
     Stack,
     Switch,
     Text,
-    TextInput,
     Title,
 } from '@mantine/core';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRight';
@@ -485,15 +485,17 @@ export function TokyoMetroTransferSearchPage({
                                 <Accordion.Item value="details">
                                     <Accordion.Control>詳細指定</Accordion.Control>
                                     <Accordion.Panel>
-                                        <TextInput
+                                        <NumberInput
                                             label="取得件数"
                                             description="未設定の場合は20件取得します。"
                                             placeholder="20"
-                                            inputMode="numeric"
+                                            min={1}
+                                            clampBehavior="none"
+                                            trimLeadingZeroesOnBlur={false}
                                             radius="sm"
                                             mb="md"
                                             value={resultLimitInput}
-                                            onChange={(event) => setResultLimitInput(event.currentTarget.value)}
+                                            onValueChange={({ value }) => setResultLimitInput(value)}
                                             error={resultLimitError}
                                         />
                                         <Checkbox.Group

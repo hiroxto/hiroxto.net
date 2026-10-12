@@ -99,6 +99,30 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('TokyoMetroTransferSearchPage', () => {
+    it('取得件数は文字入力を受け付けず、矢印キーで1件ずつ増減する', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="ginza"
+                initialTo="asakusa"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const input = await screen.findByRole('textbox', { name: '取得件数' });
+        await user.click(input);
+        await user.type(input, 'abc');
+        expect(input).toHaveValue('20');
+        await user.keyboard('{ArrowUp}');
+        expect(input).toHaveValue('21');
+        await user.keyboard('{ArrowDown}');
+        expect(input).toHaveValue('20');
+    });
+
     it.each([
         ['5', '5'],
         ['', null],
@@ -126,31 +150,28 @@ describe('TokyoMetroTransferSearchPage', () => {
         expect(url.searchParams.get('resultLimit')).toBe(expected);
     });
 
-    it.each(['0', '-1', '1.5', '1.0000000000000001', 'abc'])(
-        '取得件数「%s」ではエラーを表示し検索しない',
-        async (value) => {
-            const user = userEvent.setup();
-            renderWithMantine(
-                <TokyoMetroTransferSearchPage
-                    initialFrom="ginza"
-                    initialTo="asakusa"
-                    initialMaximumOutsideTransferCount={1}
-                    initialIncludeInsideTransfers={true}
-                    initialOutsideTransferIds={allOutsideTransferIds}
-                    queryError={null}
-                />,
-            );
-            await screen.findByRole('heading', { name: '検索結果' });
-            await user.click(screen.getByRole('button', { name: '詳細指定' }));
-            const input = await screen.findByRole('textbox', { name: '取得件数' });
-            await user.clear(input);
-            await user.type(input, value);
-            await user.click(screen.getByRole('button', { name: '検索' }));
-            expect(screen.getByText('取得件数は1以上の整数で指定してください')).toBeInTheDocument();
-            expect(pushMock).not.toHaveBeenCalled();
-            expect(workerRequestMock).toHaveBeenCalledTimes(1);
-        },
-    );
+    it.each(['0', '-1', '1.5', '1.0000000000000001'])('取得件数「%s」ではエラーを表示し検索しない', async (value) => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="ginza"
+                initialTo="asakusa"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const input = await screen.findByRole('textbox', { name: '取得件数' });
+        await user.clear(input);
+        await user.type(input, value);
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(screen.getByText('取得件数は1以上の整数で指定してください')).toBeInTheDocument();
+        expect(pushMock).not.toHaveBeenCalled();
+        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+    });
 
     it('詳細指定は初期状態で閉じ、開くと全駅が選択されている', async () => {
         const user = userEvent.setup();
