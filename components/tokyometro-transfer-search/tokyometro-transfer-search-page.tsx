@@ -1,9 +1,11 @@
 'use client';
 
 import {
+    Accordion,
     Alert,
     Badge,
     Button,
+    Checkbox,
     Divider,
     Group,
     type OptionsFilter,
@@ -26,6 +28,11 @@ import {
     type StationId,
 } from '@/lib/tokyometro-transfer-search/data';
 import {
+    allOutsideTransferIds,
+    emptyOutsideTransfersMessage,
+    outsideTransferOptions,
+} from '@/lib/tokyometro-transfer-search/outside-transfers';
+import {
     formatDistance,
     MAX_OUTSIDE_TRANSFER_COUNT,
     type RouteResult,
@@ -39,6 +46,7 @@ interface TokyoMetroTransferSearchPageProps {
     initialTo: StationId | null;
     initialMaximumOutsideTransferCount: number | null;
     initialIncludeInsideTransfers: boolean;
+    initialOutsideTransferIds: StationId[];
     queryError: string | null;
 }
 
@@ -199,6 +207,7 @@ export function TokyoMetroTransferSearchPage({
     initialTo,
     initialMaximumOutsideTransferCount,
     initialIncludeInsideTransfers,
+    initialOutsideTransferIds,
     queryError,
 }: TokyoMetroTransferSearchPageProps) {
     const router = useRouter();
@@ -207,6 +216,7 @@ export function TokyoMetroTransferSearchPage({
     const [maximumOutsideTransferCount, setMaximumOutsideTransferCount] = useState<number | null>(
         initialMaximumOutsideTransferCount,
     );
+    const [outsideTransferIds, setOutsideTransferIds] = useState(initialOutsideTransferIds);
     const [formError, setFormError] = useState<string | null>(null);
     const [includeInsideTransfers, setIncludeInsideTransfers] = useState(initialIncludeInsideTransfers);
     const [searchError, setSearchError] = useState<string | null>(null);
@@ -222,8 +232,15 @@ export function TokyoMetroTransferSearchPage({
         setToStationId(initialTo);
         setMaximumOutsideTransferCount(initialMaximumOutsideTransferCount);
         setIncludeInsideTransfers(initialIncludeInsideTransfers);
+        setOutsideTransferIds(initialOutsideTransferIds);
         setFormError(null);
-    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount, initialIncludeInsideTransfers]);
+    }, [
+        initialFrom,
+        initialTo,
+        initialMaximumOutsideTransferCount,
+        initialIncludeInsideTransfers,
+        initialOutsideTransferIds,
+    ]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: 同一条件の送信でもWorkerを再起動する。
     useEffect(() => {
@@ -243,6 +260,7 @@ export function TokyoMetroTransferSearchPage({
             destinationStationId: initialTo,
             maximumOutsideTransferCount: initialMaximumOutsideTransferCount,
             includeInsideTransfers: initialIncludeInsideTransfers,
+            outsideTransferIds: initialOutsideTransferIds,
         };
 
         setRoutes(null);
@@ -272,7 +290,14 @@ export function TokyoMetroTransferSearchPage({
         return () => {
             worker.terminate();
         };
-    }, [initialFrom, initialTo, initialMaximumOutsideTransferCount, initialIncludeInsideTransfers, searchAttempt]);
+    }, [
+        initialFrom,
+        initialTo,
+        initialMaximumOutsideTransferCount,
+        initialIncludeInsideTransfers,
+        initialOutsideTransferIds,
+        searchAttempt,
+    ]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -287,12 +312,19 @@ export function TokyoMetroTransferSearchPage({
             return;
         }
 
+        if (outsideTransferIds.length === 0) {
+            setFormError(emptyOutsideTransfersMessage);
+            return;
+        }
+
         setFormError(null);
         if (
             fromStationId === initialFrom &&
             toStationId === initialTo &&
             maximumOutsideTransferCount === initialMaximumOutsideTransferCount &&
-            includeInsideTransfers === initialIncludeInsideTransfers
+            includeInsideTransfers === initialIncludeInsideTransfers &&
+            outsideTransferIds.length === initialOutsideTransferIds.length &&
+            outsideTransferIds.every((id) => initialOutsideTransferIds.includes(id))
         ) {
             setSearchAttempt((attempt) => attempt + 1);
             return;
@@ -306,6 +338,13 @@ export function TokyoMetroTransferSearchPage({
 
         if (!includeInsideTransfers) {
             query.set('includeInsideTransfers', 'false');
+        }
+
+        if (outsideTransferIds.length !== allOutsideTransferIds.length) {
+            query.set(
+                'outsideTransfers',
+                allOutsideTransferIds.filter((id) => outsideTransferIds.includes(id)).join(','),
+            );
         }
 
         startTransition(() => {
@@ -392,6 +431,33 @@ export function TokyoMetroTransferSearchPage({
                                 checked={includeInsideTransfers}
                                 onChange={(event) => setIncludeInsideTransfers(event.currentTarget.checked)}
                             />
+                            <Accordion variant="contained" radius="sm">
+                                <Accordion.Item value="details">
+                                    <Accordion.Control>詳細指定</Accordion.Control>
+                                    <Accordion.Panel>
+                                        <Checkbox.Group
+                                            label="利用する改札外乗換駅"
+                                            description="利用する駅を1つ以上選択してください。選択を外しても通過や改札内乗換は制限しません。"
+                                            value={outsideTransferIds}
+                                            onChange={(values) =>
+                                                setOutsideTransferIds(
+                                                    allOutsideTransferIds.filter((id) => values.includes(id)),
+                                                )
+                                            }
+                                        >
+                                            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm" mt="sm">
+                                                {outsideTransferOptions.map((option) => (
+                                                    <Checkbox
+                                                        key={option.value}
+                                                        value={option.value}
+                                                        label={option.label}
+                                                    />
+                                                ))}
+                                            </SimpleGrid>
+                                        </Checkbox.Group>
+                                    </Accordion.Panel>
+                                </Accordion.Item>
+                            </Accordion>
                             <Group justify="space-between" align="end" gap="md">
                                 <Text size="xs" c="dimmed">
                                     営業キロ・運賃は2026/09/29時点の情報

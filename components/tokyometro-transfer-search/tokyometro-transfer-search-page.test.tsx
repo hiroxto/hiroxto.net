@@ -1,6 +1,7 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { allOutsideTransferIds } from '@/lib/tokyometro-transfer-search/outside-transfers';
 import type { RouteResult } from '@/lib/tokyometro-transfer-search/search';
 import type { RouteSearchRequest, RouteSearchResponse } from '@/lib/tokyometro-transfer-search/search-worker-protocol';
 import { renderWithMantine } from '@/test/test-utils';
@@ -98,6 +99,88 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('TokyoMetroTransferSearchPage', () => {
+    it('詳細指定は初期状態で閉じ、開くと全駅が選択されている', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom={null}
+                initialTo={null}
+                initialMaximumOutsideTransferCount={null}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                queryError={null}
+            />,
+        );
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        expect(await screen.findAllByRole('checkbox')).toHaveLength(14);
+        for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).toBeChecked();
+    });
+
+    it('URLの選択状態を復元し、編集した条件は検索時にURLへ反映する', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={['ueno']}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        expect(await screen.findByRole('checkbox', { name: '上野' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: '日比谷・有楽町' })).not.toBeChecked();
+        await user.click(screen.getByRole('checkbox', { name: '日比谷・有楽町' }));
+        expect(pushMock).not.toHaveBeenCalled();
+        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(pushMock).toHaveBeenCalledWith(
+            '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1&outsideTransfers=ueno%2Chibiya',
+        );
+    });
+
+    it('同じ駅の選択条件で再検索するとWorkerへその条件を送る', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={['ueno']}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(pushMock).not.toHaveBeenCalled();
+        expect(workerRequestMock).toHaveBeenCalledTimes(2);
+        expect(workerRequestMock).toHaveBeenLastCalledWith(expect.objectContaining({ outsideTransferIds: ['ueno'] }));
+    });
+
+    it('全駅の選択を外して検索するとエラーを表示して遷移しない', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                queryError={null}
+            />,
+        );
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        for (const checkbox of await screen.findAllByRole('checkbox')) await user.click(checkbox);
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(screen.getByText('利用する改札外乗換駅を1つ以上選択してください')).toBeInTheDocument();
+        expect(pushMock).not.toHaveBeenCalled();
+    });
+
     beforeEach(() => {
         workerRoute = inarichoToIriyaRoute;
         pushMock.mockClear();
@@ -130,13 +213,15 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
 
-        const stationName = await screen.findByText(station, { exact: true });
+        const results = within(await screen.findByRole('region', { name: '検索結果' }));
+        const stationName = results.getByText(station, { exact: true });
         expect(stationName.parentElement).toHaveTextContent(`${station}${label}`);
-        expect(screen.getAllByText(station, { exact: true })).toHaveLength(1);
+        expect(results.getAllByText(station, { exact: true })).toHaveLength(1);
     });
 
     it('初期表示では検索フォームを表示し、結果は表示しない', () => {
@@ -146,6 +231,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -170,6 +256,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -188,6 +275,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -205,6 +293,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -239,6 +328,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                     initialTo="iriya"
                     initialMaximumOutsideTransferCount={1}
                     initialIncludeInsideTransfers={initialValue}
+                    initialOutsideTransferIds={allOutsideTransferIds}
                     queryError={null}
                 />,
             );
@@ -267,6 +357,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -301,6 +392,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -329,6 +421,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -339,6 +432,7 @@ describe('TokyoMetroTransferSearchPage', () => {
             destinationStationId: 'iriya',
             maximumOutsideTransferCount: 1,
             includeInsideTransfers: true,
+            outsideTransferIds: allOutsideTransferIds,
         });
         expect(screen.getAllByText(/改札外乗換 \d+回/).length).toBeGreaterThan(0);
         expect(screen.getAllByText('IC').length).toBeGreaterThan(0);
@@ -373,6 +467,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                     initialTo="iriya"
                     initialMaximumOutsideTransferCount={1}
                     initialIncludeInsideTransfers={true}
+                    initialOutsideTransferIds={allOutsideTransferIds}
                     queryError={null}
                 />,
             );
@@ -392,6 +487,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="kita-ayase"
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -406,6 +502,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="nishi-funabashi"
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -421,6 +518,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="nishi-funabashi"
                 initialMaximumOutsideTransferCount={10}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -436,6 +534,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="nishi-funabashi"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -453,6 +552,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="kita-ayase"
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
         );
@@ -468,6 +568,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
                 queryError="指定された駅が見つかりません"
             />,
         );

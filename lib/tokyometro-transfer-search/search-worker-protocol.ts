@@ -6,6 +6,7 @@ export type RouteSearchRequest = {
     destinationStationId: StationId;
     maximumOutsideTransferCount: number | null;
     includeInsideTransfers: boolean;
+    outsideTransferIds: StationId[];
 };
 
 export type RouteSearchResponse =
