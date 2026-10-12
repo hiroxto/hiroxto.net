@@ -1,5 +1,8 @@
 {
-    "extends": ["github>hiroxto/renovate-config"],
+    "extends": [
+        "github>hiroxto/renovate-config",
+        "github>hiroxto/renovate-config:reviewer"
+    ],
     "packageRules": [
         {
             "matchDatasources": ["npm"],
