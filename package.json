@@ -39,6 +39,7 @@
         "@mantine/dates": "^9.7.0",
         "@mantine/hooks": "^9.7.0",
         "@opennextjs/cloudflare": "^1.17.1",
+        "@phosphor-icons/react": "^2.1.10",
         "date-fns": "^4.1.0",
         "date-fns-tz": "^3.2.0",
         "marked": "^18.0.0",

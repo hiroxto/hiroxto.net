@@ -1,3 +1,28 @@
+.searchFields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--mantine-spacing-md);
+    align-items: end;
+}
+
+.reverseButton {
+    justify-self: center;
+}
+
+.reverseIcon {
+    transform: rotate(90deg);
+}
+
+@media (min-width: 62em) {
+    .searchFields {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .reverseIcon {
+        transform: none;
+    }
+}
+
 .searchPanel {
     position: relative;
     overflow: hidden;

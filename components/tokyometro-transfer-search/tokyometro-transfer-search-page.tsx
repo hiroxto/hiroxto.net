@@ -17,6 +17,7 @@ import {
     Text,
     Title,
 } from '@mantine/core';
+import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRight';
 import { useRouter } from 'next/navigation';
 import { type CSSProperties, type FormEvent, useEffect, useState, useTransition } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
@@ -370,7 +371,7 @@ export function TokyoMetroTransferSearchPage({
                                     乗車区間を指定
                                 </Title>
                             </div>
-                            <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+                            <div className={styles.searchFields}>
                                 <Select
                                     comboboxProps={{ radius: 'sm' }}
                                     styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
@@ -387,6 +388,27 @@ export function TokyoMetroTransferSearchPage({
                                     clearButtonProps={{ style: { borderRadius: 'var(--mantine-radius-sm)' } }}
                                     nothingFoundMessage="該当する駅がありません"
                                 />
+                                <Button
+                                    className={styles.reverseButton}
+                                    aria-label="発着逆転"
+                                    radius="sm"
+                                    type="button"
+                                    variant="default"
+                                    leftSection={
+                                        <ArrowsLeftRightIcon
+                                            className={styles.reverseIcon}
+                                            size={18}
+                                            aria-hidden="true"
+                                            focusable="false"
+                                        />
+                                    }
+                                    onClick={() => {
+                                        setFromStationId(toStationId);
+                                        setToStationId(fromStationId);
+                                    }}
+                                >
+                                    発着逆転
+                                </Button>
                                 <Select
                                     comboboxProps={{ radius: 'sm' }}
                                     styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
@@ -424,7 +446,7 @@ export function TokyoMetroTransferSearchPage({
                                     }}
                                     allowDeselect={false}
                                 />
-                            </SimpleGrid>
+                            </div>
                             <Text size="xs" c="dimmed">
                                 最大回数は改札外乗換にのみ適用します。改札内乗換を含める場合、その回数は制限しません。
                             </Text>
@@ -479,28 +501,15 @@ export function TokyoMetroTransferSearchPage({
                                 <Text size="xs" c="dimmed">
                                     営業キロ・運賃は2026/09/29時点の情報
                                 </Text>
-                                <Group gap="sm">
-                                    <Button
-                                        radius="sm"
-                                        type="button"
-                                        variant="default"
-                                        onClick={() => {
-                                            setFromStationId(toStationId);
-                                            setToStationId(fromStationId);
-                                        }}
-                                    >
-                                        発着逆転
-                                    </Button>
-                                    <Button
-                                        radius="sm"
-                                        type="submit"
-                                        color="dark"
-                                        loading={isPending || isSearching}
-                                        px="xl"
-                                    >
-                                        検索
-                                    </Button>
-                                </Group>
+                                <Button
+                                    radius="sm"
+                                    type="submit"
+                                    color="dark"
+                                    loading={isPending || isSearching}
+                                    px="xl"
+                                >
+                                    検索
+                                </Button>
                             </Group>
                         </Stack>
                     </form>
