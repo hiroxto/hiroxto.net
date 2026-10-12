@@ -80,6 +80,39 @@ describe('小規模グラフの全経路との比較', () => {
         ]);
     });
 
+    it('三越前だけを選択しても大手町での改札内乗換を許可する', () => {
+        const result = searchRoutes('tokyo', 'asakusa', null, { outsideTransferIds: ['mitsukoshimae'] });
+        expect(result.truncated).toBe(false);
+        expect(
+            result.routes.map((route) => ({
+                inside: route.insideTransferCount,
+                distance: route.actualDistanceTenths,
+                stops: route.legs.map((leg) => leg.toStationId),
+            })),
+        ).toEqual([
+            { inside: 0, distance: 32, stops: ['mitsukoshimae', 'asakusa'] },
+            { inside: 1, distance: 28, stops: ['otemachi', 'mitsukoshimae', 'asakusa'] },
+            { inside: 1, distance: 49, stops: ['mitsukoshimae', 'otemachi', 'asakusa'] },
+        ]);
+    });
+
+    it('大手町だけを選択しても未選択の三越前を列車で通過できる', () => {
+        // MのA→B(0.6km)、ZのB→C→D(2.7km)。Cで乗り換えず通過する。
+        const result = searchRoutes('tokyo', 'asakusa', null, {
+            outsideTransferIds: ['otemachi'],
+            includeInsideTransfers: false,
+        });
+        expect(result.truncated).toBe(false);
+        expect(result.routes).toHaveLength(1);
+        expect(result.routes[0]).toMatchObject({
+            actualDistanceTenths: 33,
+            legs: [
+                { lineId: 'marunouchi', fromStationId: 'tokyo', toStationId: 'otemachi' },
+                { lineId: 'hanzomon', fromStationId: 'otemachi', toStationId: 'asakusa' },
+            ],
+        });
+    });
+
     it('候補の回数が上限に達した後の打ち切りでは最大回数が確定する', () => {
         const result = searchRoutes('tokyo', 'asakusa', 1, { visitLimit: 5 });
         expect(result.truncated).toBe(true);

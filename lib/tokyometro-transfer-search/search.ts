@@ -45,7 +45,6 @@
  */
 
 import { createMinHeap } from '@/lib/tokyometro-transfer-search/min-heap';
-
 import {
     CROSS_STATION_TRANSFERS,
     FARE_CALCULATION_DISTANCE_OVERRIDES,
@@ -58,6 +57,7 @@ import {
     type StationId,
     type TransferType,
 } from './data';
+import { allOutsideTransferIds, emptyOutsideTransfersMessage, isOutsideTransferId } from './outside-transfers';
 
 /** 全路線のグラフに登録する、隣接駅への乗車接続。 */
 type RideEdge = {
@@ -1026,6 +1026,8 @@ const DISCOVERY_VISIT_LIMIT = 125_000;
 
 /** 改札内乗換の利用条件と検索全体の探索予算。省略した項目は既定値を使う。 */
 export type RouteSearchOptions = {
+    /** 利用する改札外乗換のID。未指定は全て利用する。運賃計算には影響しない。 */
+    outsideTransferIds?: readonly StationId[];
     /** 改札内乗換を候補に含めるか。既定はtrue。運賃計算には影響しない。 */
     includeInsideTransfers?: boolean;
     /** 検索全体で許可する訪問数。 */
@@ -1054,6 +1056,20 @@ export const searchRoutes = (
     if (maximumOutsideTransferCount != null && !isValidMaximumOutsideTransferCount(maximumOutsideTransferCount)) {
         throw new Error(`最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`);
     }
+
+    const outsideTransferIds = options.outsideTransferIds ?? allOutsideTransferIds;
+    if (outsideTransferIds.length === 0) {
+        throw new Error(emptyOutsideTransfersMessage);
+    }
+    if (!outsideTransferIds.every(isOutsideTransferId)) {
+        throw new Error('指定された改札外乗換駅が見つかりません');
+    }
+    const selectedOutsideTransferIds = new Set(outsideTransferIds);
+    const selectedOutsideMask = outsideOpportunities.reduce(
+        (mask, opportunity, index) =>
+            selectedOutsideTransferIds.has(opportunity.stationIds[0]) ? mask | (1 << index) : mask,
+        0,
+    );
 
     // 検索全体で許可する主探索の訪問数。
     const visitLimit = options.visitLimit ?? SEARCH_VISIT_LIMIT;
@@ -1085,6 +1101,7 @@ export const searchRoutes = (
     // 発着駅の除外と到達条件を満たす改札外乗換地点の集合。
     const availableOutsideMask =
         allOutsideOpportunityMask &
+        selectedOutsideMask &
         getOutsideOpportunityMaskBetweenEndpoints(originStationId, destinationStationId) &
         ~unavailableOutsideMask;
     // 利用可能な改札外乗換地点の数。
