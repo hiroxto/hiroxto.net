@@ -299,6 +299,8 @@ export function TokyoMetroTransferSearchPage({
         searchAttempt,
     ]);
 
+    const areAllOutsideTransfersSelected = outsideTransferIds.length === allOutsideTransferIds.length;
+
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -445,6 +447,21 @@ export function TokyoMetroTransferSearchPage({
                                                 )
                                             }
                                         >
+                                            <Group justify="flex-end" mt="sm">
+                                                <Button
+                                                    type="button"
+                                                    variant="default"
+                                                    size="xs"
+                                                    radius="sm"
+                                                    onClick={() =>
+                                                        setOutsideTransferIds(
+                                                            areAllOutsideTransfersSelected ? [] : allOutsideTransferIds,
+                                                        )
+                                                    }
+                                                >
+                                                    {areAllOutsideTransfersSelected ? '全解除' : '全選択'}
+                                                </Button>
+                                            </Group>
                                             <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm" mt="sm">
                                                 {outsideTransferOptions.map((option) => (
                                                     <Checkbox

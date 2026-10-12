@@ -117,6 +117,37 @@ describe('TokyoMetroTransferSearchPage', () => {
         for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).toBeChecked();
     });
 
+    it('一括操作ボタンは全解除と全選択を切り替え、検索までは条件を適用しない', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        await user.click(await screen.findByRole('button', { name: '全解除' }));
+        for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).not.toBeChecked();
+        expect(screen.queryByRole('button', { name: '全解除' })).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(screen.getByText('利用する改札外乗換駅を1つ以上選択してください')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: '全選択' }));
+        for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).toBeChecked();
+        expect(screen.getByRole('button', { name: '全解除' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: '全選択' })).not.toBeInTheDocument();
+        expect(pushMock).not.toHaveBeenCalled();
+        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+        await user.click(screen.getByRole('checkbox', { name: '上野' }));
+        await user.click(screen.getByRole('button', { name: '全選択' }));
+        expect(screen.getByRole('checkbox', { name: '上野' })).toBeChecked();
+        expect(screen.getByRole('button', { name: '全解除' })).toBeInTheDocument();
+    });
+
     it('URLの選択状態を復元し、編集した条件は検索時にURLへ反映する', async () => {
         const user = userEvent.setup();
         renderWithMantine(
