@@ -9,12 +9,15 @@ on:
 
 jobs:
   auto-assign:
+    if: github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-slim
     permissions:
       pull-requests: write
     steps:
       - name: Assign PR author
-        run: gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-assignee "$PR_AUTHOR"
+        run: |
+          gh api --method POST "repos/$GH_REPO/issues/$PR_NUMBER/assignees" \
+            -f "assignees[]=$PR_AUTHOR"
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
