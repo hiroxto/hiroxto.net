@@ -89,6 +89,7 @@ const emptyQuery: TokyoMetroTransferSearchQuery = {
 /**
  * 検索ボタン押下時にURLへ保存した条件を復元する。
  * outsideTransfersは乗換IDのカンマ区切り。未指定は全て利用し、空・不正なID・複数指定はエラーとする。
+ * 同じIDの重複は除去する。全地点選択時のURLではoutsideTransfersを省略する。
  * includeInsideTransfersはtrue/falseで指定し、未指定・複数指定では既定のONとして扱う。
  * OFFでは改札内乗換を探索対象から除外し、ONのURLではこのパラメータを省略する。
  */
