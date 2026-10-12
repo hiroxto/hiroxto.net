@@ -28,10 +28,10 @@
  *    駅の再訪、必須地点の通過による乗換機会の喪失、残りの必須駅への到達不能を除外する。
  *    各回数の候補探索は最初の1件で中断し、それまでに見つけた最大回数の候補を保持する。
  * 4. 残り予算で、発見済み回数より多い未確定の回数を中断位置から繰り返し探索する。
- *    その後、発見済みの最大回数について探索を続け、上位20件を保持する。
+ *    その後、発見済みの最大回数について探索を続け、指定件数（既定20件）まで上位候補を保持する。
  *    比較順は改札外乗換の多い順、改札内乗換の少ない順、実乗車距離の短い順、経路キー順。
- *    最大回数の候補だけを返し、20件未満でも少ない回数の経路で補充しない。
- *    20件そろった後は、改札内乗換数と着駅までの最短実距離を使い、順位を改善できない枝を除く。
+ *    最大回数の候補だけを返し、指定件数未満でも少ない回数の経路で補充しない。
+ *    指定件数そろった後は、改札内乗換数と着駅までの最短実距離を使い、順位を改善できない枝を除く。
  * 5. 探索は既定で合計500万訪問・5秒を目安に制限する。訪問数は主探索の再帰呼出しを数える。
  *    各回数の初回探索には前処理後の残り時間の1/28・訪問予算の1/56を配分し、続行の予算を残す。
  *    続行時の時間は未確定の回数に均等配分し、未消費分を再配分する。
@@ -194,7 +194,7 @@ export type RouteResult = {
 
 /** 検索候補と、探索の完了状況および最大回数の上限。 */
 export type RouteSearchResult = {
-    /** 発見済みの最大改札外乗換回数を持つ候補。順位順で最大20件。 */
+    /** 発見済みの最大改札外乗換回数を持つ候補。順位順で指定件数まで。 */
     routes: RouteResult[];
     /** 未探索部分により最大回数または上位候補の順位が未確定ならtrue。 */
     truncated: boolean;
@@ -1018,7 +1018,7 @@ const countBits = (value: number): number => {
     return count;
 };
 
-/** 返却候補数の上限。順位付け探索中もこの件数まで保持する。 */
+/** 返却候補数の既定の上限。順位付け探索中もこの件数まで保持する。 */
 export const SEARCH_RESULT_LIMIT = 20;
 /** 検索全体で許可する主探索の再帰呼出し回数の既定値。 */
 export const SEARCH_VISIT_LIMIT = 5_000_000;
@@ -1034,6 +1034,8 @@ const DISCOVERY_VISIT_LIMIT = 125_000;
 
 /** 改札外・改札内乗換の利用条件と検索全体の探索予算。省略した項目は既定値を使う。 */
 export type RouteSearchOptions = {
+    /** 返却候補数の上限。1以上の整数。未指定は20件。 */
+    resultLimit?: number;
     /** 利用可能な改札外乗換のID。未指定は全地点、空配列・不正なIDはエラー。全選択地点の使用は必須ではない。 */
     outsideTransferIds?: readonly StationId[];
     /** 改札内乗換を候補に含めるか。既定はtrue。運賃計算には影響しない。 */
@@ -1044,15 +1046,20 @@ export type RouteSearchOptions = {
     durationLimitMs?: number;
 };
 
+export const invalidResultLimitMessage = '取得件数は1以上の整数で指定してください';
+
+/** 取得件数が1以上の安全な整数かを判定する。 */
+export const isValidResultLimit = (value: number): boolean => Number.isSafeInteger(value) && value >= 1;
+
 /** 指定回数が1以上かつ公開上限以下の整数かを判定する。 */
 export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
     Number.isInteger(value) && value >= 1 && value <= MAX_OUTSIDE_TRANSFER_COUNT;
 
 /**
- * 発着駅と改札外乗換回数の上限から、発見できた最大回数の経路を最大20件返す。
+ * 発着駅と改札外乗換回数の上限から、発見できた最大回数の経路を指定件数（既定20件）まで返す。
  * maximumOutsideTransferCountがnullなら、利用可能な改札外乗換地点数を上限にする。
- * optionsで改札外乗換地点の選択、改札内乗換の利用可否、探索予算を指定する。
- * 回数上限・予算・改札外乗換IDが不正、またはIDが空配列ならエラーにする。
+ * optionsで改札外乗換地点の選択、改札内乗換の利用可否、取得件数、探索予算を指定する。
+ * 回数上限・取得件数・予算・改札外乗換IDが不正、またはIDが空配列ならエラーにする。
  * 上記の入力検証後、発着駅が同じ場合は探索せず、経路なしの確定結果を返す。
  * 探索打ち切り時の候補・最大回数・順位の確定状況はRouteSearchResultを参照する。
  */
@@ -1064,6 +1071,11 @@ export const searchRoutes = (
 ): RouteSearchResult => {
     if (maximumOutsideTransferCount != null && !isValidMaximumOutsideTransferCount(maximumOutsideTransferCount)) {
         throw new Error(`最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`);
+    }
+
+    const resultLimit = options.resultLimit ?? SEARCH_RESULT_LIMIT;
+    if (!isValidResultLimit(resultLimit)) {
+        throw new Error(invalidResultLimitMessage);
     }
 
     const outsideTransferIds = options.outsideTransferIds ?? allOutsideTransferIds;
@@ -1132,7 +1144,7 @@ export const searchRoutes = (
         /** 候補を順位順に挿入して上限超過分を除く。 */
         const addResult = (result: RouteResult): void => {
             // 上限に達していて最下位を改善しない候補は、配列を変更せずに捨てる。
-            if (results.length === SEARCH_RESULT_LIMIT && compareRoutes(result, results[results.length - 1]) >= 0) {
+            if (results.length === resultLimit && compareRoutes(result, results[results.length - 1]) >= 0) {
                 return;
             }
 
@@ -1146,7 +1158,7 @@ export const searchRoutes = (
             }
             results.splice(low, 0, result);
 
-            if (results.length > SEARCH_RESULT_LIMIT) {
+            if (results.length > resultLimit) {
                 results.pop();
             }
         };
@@ -1197,8 +1209,8 @@ export const searchRoutes = (
                     remainingTargetVisitCount -= 1;
                     remainingVisitCount -= 1;
                     remainingDeadlineCheckCount -= 1;
-                    // 20件そろった場合の最下位候補。これを改善できない枝を除く基準。
-                    const worstResult = results.length === SEARCH_RESULT_LIMIT ? results.at(-1) : null;
+                    // 指定件数そろった場合の最下位候補。これを改善できない枝を除く基準。
+                    const worstResult = results.length === resultLimit ? results.at(-1) : null;
 
                     if (worstResult != null) {
                         // 現在駅から着駅までの実乗車距離の下限。訪問制約を緩めた最短距離を使う。

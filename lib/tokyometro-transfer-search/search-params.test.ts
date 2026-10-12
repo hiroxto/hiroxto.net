@@ -3,6 +3,28 @@ import { allOutsideTransferIds } from './outside-transfers';
 import { parseTokyoMetroTransferSearchParams } from './search-params';
 
 describe('parseTokyoMetroTransferSearchParams', () => {
+    it.each([
+        [undefined, 20],
+        ['', 20],
+        ['5', 5],
+        ['30', 30],
+    ] as const)('取得件数の指定%sを%s件に復元する', (resultLimit, expected) => {
+        expect(parseTokyoMetroTransferSearchParams({ resultLimit })).toMatchObject({
+            resultLimit: expected,
+            error: null,
+        });
+    });
+
+    it.each(['0', '-1', '1.5', '1.0000000000000001', 'abc', 'Infinity', ['5', '10']])(
+        '取得件数%sが不正なら検索を開始しない',
+        (resultLimit) => {
+            expect(parseTokyoMetroTransferSearchParams({ from: 'ginza', to: 'asakusa', resultLimit })).toMatchObject({
+                fromStationId: null,
+                error: '取得件数は1以上の整数で指定してください',
+            });
+        },
+    );
+
     it('選択した改札外乗換駅をURLから復元する', () => {
         expect(parseTokyoMetroTransferSearchParams({ outsideTransfers: 'ueno,hibiya' })).toMatchObject({
             outsideTransferIds: ['ueno', 'hibiya'],
@@ -65,6 +87,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
             fromStationId: 'inaricho',
             toStationId: 'iriya',
             maximumOutsideTransferCount: 1,
+            resultLimit: 20,
             includeInsideTransfers: true,
             outsideTransferIds: allOutsideTransferIds,
             error: null,
@@ -76,6 +99,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
             fromStationId: null,
             toStationId: null,
             maximumOutsideTransferCount: null,
+            resultLimit: 20,
             includeInsideTransfers: true,
             outsideTransferIds: allOutsideTransferIds,
             error: null,
@@ -93,6 +117,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
             fromStationId: null,
             toStationId: null,
             maximumOutsideTransferCount: null,
+            resultLimit: 20,
             includeInsideTransfers: true,
             outsideTransferIds: allOutsideTransferIds,
             error: '指定された駅が見つかりません',
@@ -111,6 +136,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
                 fromStationId: null,
                 toStationId: null,
                 maximumOutsideTransferCount: null,
+                resultLimit: 20,
                 includeInsideTransfers: true,
                 outsideTransferIds: allOutsideTransferIds,
                 error: '指定された駅が見つかりません',
@@ -128,6 +154,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
             fromStationId: null,
             toStationId: null,
             maximumOutsideTransferCount: null,
+            resultLimit: 20,
             includeInsideTransfers: true,
             outsideTransferIds: allOutsideTransferIds,
             error: '乗車駅と降車駅には異なる駅を指定してください',
@@ -145,6 +172,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
             fromStationId: null,
             toStationId: null,
             maximumOutsideTransferCount: null,
+            resultLimit: 20,
             includeInsideTransfers: true,
             outsideTransferIds: allOutsideTransferIds,
             error: '最大改札外乗換回数は1〜14回で指定してください',
@@ -162,6 +190,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
             fromStationId: null,
             toStationId: null,
             maximumOutsideTransferCount: null,
+            resultLimit: 20,
             includeInsideTransfers: true,
             outsideTransferIds: allOutsideTransferIds,
             error: '最大改札外乗換回数は1〜14回で指定してください',
@@ -179,6 +208,7 @@ describe('parseTokyoMetroTransferSearchParams', () => {
             fromStationId: null,
             toStationId: null,
             maximumOutsideTransferCount: null,
+            resultLimit: 20,
             includeInsideTransfers: true,
             outsideTransferIds: allOutsideTransferIds,
             error: null,

@@ -9,6 +9,7 @@ const workerScope = globalThis as unknown as {
 workerScope.onmessage = ({ data }: MessageEvent<RouteSearchRequest>) => {
     try {
         const result = searchRoutes(data.originStationId, data.destinationStationId, data.maximumOutsideTransferCount, {
+            resultLimit: data.resultLimit,
             includeInsideTransfers: data.includeInsideTransfers,
             outsideTransferIds: data.outsideTransferIds,
         });

@@ -15,6 +15,7 @@ import {
     Stack,
     Switch,
     Text,
+    TextInput,
     Title,
 } from '@mantine/core';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRight';
@@ -35,10 +36,14 @@ import {
 } from '@/lib/tokyometro-transfer-search/outside-transfers';
 import {
     formatDistance,
+    invalidResultLimitMessage,
+    isValidResultLimit,
     MAX_OUTSIDE_TRANSFER_COUNT,
     type RouteResult,
+    SEARCH_RESULT_LIMIT,
     stations,
 } from '@/lib/tokyometro-transfer-search/search';
+import { parseResultLimitInput } from '@/lib/tokyometro-transfer-search/search-params';
 import type { RouteSearchRequest, RouteSearchResponse } from '@/lib/tokyometro-transfer-search/search-worker-protocol';
 import styles from './tokyometro-transfer-search-page.module.css';
 
@@ -46,6 +51,7 @@ interface TokyoMetroTransferSearchPageProps {
     initialFrom: StationId | null;
     initialTo: StationId | null;
     initialMaximumOutsideTransferCount: number | null;
+    initialResultLimit?: number;
     initialIncludeInsideTransfers: boolean;
     initialOutsideTransferIds: StationId[];
     queryError: string | null;
@@ -209,6 +215,7 @@ export function TokyoMetroTransferSearchPage({
     initialMaximumOutsideTransferCount,
     initialIncludeInsideTransfers,
     initialOutsideTransferIds,
+    initialResultLimit = SEARCH_RESULT_LIMIT,
     queryError,
 }: TokyoMetroTransferSearchPageProps) {
     const router = useRouter();
@@ -218,6 +225,8 @@ export function TokyoMetroTransferSearchPage({
         initialMaximumOutsideTransferCount,
     );
     const [outsideTransferIds, setOutsideTransferIds] = useState(initialOutsideTransferIds);
+    const [resultLimitInput, setResultLimitInput] = useState(String(initialResultLimit));
+    const [resultLimitError, setResultLimitError] = useState<string | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
     const [includeInsideTransfers, setIncludeInsideTransfers] = useState(initialIncludeInsideTransfers);
     const [searchError, setSearchError] = useState<string | null>(null);
@@ -229,6 +238,8 @@ export function TokyoMetroTransferSearchPage({
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
+        setResultLimitInput(String(initialResultLimit));
+        setResultLimitError(null);
         setFromStationId(initialFrom);
         setToStationId(initialTo);
         setMaximumOutsideTransferCount(initialMaximumOutsideTransferCount);
@@ -236,6 +247,7 @@ export function TokyoMetroTransferSearchPage({
         setOutsideTransferIds(initialOutsideTransferIds);
         setFormError(null);
     }, [
+        initialResultLimit,
         initialFrom,
         initialTo,
         initialMaximumOutsideTransferCount,
@@ -257,6 +269,7 @@ export function TokyoMetroTransferSearchPage({
             type: 'module',
         });
         const request: RouteSearchRequest = {
+            resultLimit: initialResultLimit,
             originStationId: initialFrom,
             destinationStationId: initialTo,
             maximumOutsideTransferCount: initialMaximumOutsideTransferCount,
@@ -292,6 +305,7 @@ export function TokyoMetroTransferSearchPage({
             worker.terminate();
         };
     }, [
+        initialResultLimit,
         initialFrom,
         initialTo,
         initialMaximumOutsideTransferCount,
@@ -304,6 +318,13 @@ export function TokyoMetroTransferSearchPage({
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        const resultLimit = parseResultLimitInput(resultLimitInput);
+        if (!isValidResultLimit(resultLimit)) {
+            setResultLimitError(invalidResultLimitMessage);
+            return;
+        }
+        setResultLimitError(null);
 
         if (fromStationId == null || toStationId == null) {
             setFormError('乗車駅と降車駅を指定してください');
@@ -322,6 +343,7 @@ export function TokyoMetroTransferSearchPage({
 
         setFormError(null);
         if (
+            resultLimit === initialResultLimit &&
             fromStationId === initialFrom &&
             toStationId === initialTo &&
             maximumOutsideTransferCount === initialMaximumOutsideTransferCount &&
@@ -334,6 +356,10 @@ export function TokyoMetroTransferSearchPage({
         }
 
         const query = new URLSearchParams({ from: fromStationId, to: toStationId });
+
+        if (resultLimit !== SEARCH_RESULT_LIMIT) {
+            query.set('resultLimit', String(resultLimit));
+        }
 
         if (maximumOutsideTransferCount != null) {
             query.set('maxOutsideTransfers', String(maximumOutsideTransferCount));
@@ -459,6 +485,17 @@ export function TokyoMetroTransferSearchPage({
                                 <Accordion.Item value="details">
                                     <Accordion.Control>詳細指定</Accordion.Control>
                                     <Accordion.Panel>
+                                        <TextInput
+                                            label="取得件数"
+                                            description="未設定の場合は20件取得します。"
+                                            placeholder="20"
+                                            inputMode="numeric"
+                                            radius="sm"
+                                            mb="md"
+                                            value={resultLimitInput}
+                                            onChange={(event) => setResultLimitInput(event.currentTarget.value)}
+                                            error={resultLimitError}
+                                        />
                                         <Checkbox.Group
                                             label="利用する改札外乗換駅"
                                             description="利用する駅を1つ以上選択してください。選択を外しても通過や改札内乗換は制限しません。"

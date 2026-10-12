@@ -5,6 +5,7 @@ export type RouteSearchRequest = {
     originStationId: StationId;
     destinationStationId: StationId;
     maximumOutsideTransferCount: number | null;
+    resultLimit: number;
     includeInsideTransfers: boolean;
     outsideTransferIds: StationId[];
 };

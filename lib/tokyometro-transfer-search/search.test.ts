@@ -192,6 +192,18 @@ describe('searchRoutes', () => {
         expect(new Set(firstRouteLineIds).size).toBeLessThan(firstRouteLineIds.length);
     }, 30_000);
 
+    it.each([1, 5, 30])('取得件数を%s件にすると指定件数の経路を返す', (resultLimit) => {
+        const { routes } = searchRoutes('sakuradamon', 'asakusa', 3, { resultLimit });
+        expect(routes).toHaveLength(resultLimit);
+        expect(routes.every((route) => route.outsideTransferCount === 3)).toBe(true);
+    });
+
+    it.each([0, -1, 1.5, NaN, Infinity])('取得件数%sは検索前にエラーにする', (resultLimit) => {
+        expect(() => searchRoutes('ginza', 'ginza', null, { resultLimit })).toThrow(
+            '取得件数は1以上の整数で指定してください',
+        );
+    });
+
     it('最大改札外乗換回数を3回にすると改札外乗換3回の上位20経路を返す', () => {
         const { routes } = searchRoutes('sakuradamon', 'asakusa', 3);
 
