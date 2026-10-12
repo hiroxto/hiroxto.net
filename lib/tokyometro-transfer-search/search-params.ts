@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { StationId } from './data';
+import { allOutsideTransferIds, emptyOutsideTransfersMessage, isOutsideTransferId } from './outside-transfers';
 import { isStationId, isValidMaximumOutsideTransferCount, MAX_OUTSIDE_TRANSFER_COUNT } from './search';
 
 export type TokyoMetroTransferSearchParams = Record<string, string | string[] | undefined>;
@@ -9,6 +10,7 @@ export interface TokyoMetroTransferSearchQuery {
     toStationId: StationId | null;
     maximumOutsideTransferCount: number | null;
     includeInsideTransfers: boolean;
+    outsideTransferIds: StationId[];
     error: string | null;
 }
 
@@ -34,14 +36,21 @@ const tokyoMetroTransferSearchParamsSchema = z
         to: searchParamSchema,
         maxOutsideTransfers: searchParamSchema,
         includeInsideTransfers: searchParamSchema,
+        outsideTransfers: z.string({ error: '改札外乗換駅の指定は1つの文字列にしてください' }).optional(),
     })
-    .transform(({ from, to, maxOutsideTransfers, includeInsideTransfers }) => {
+    .transform(({ from, to, maxOutsideTransfers, includeInsideTransfers, outsideTransfers }) => {
         const fromValue = typeof from === 'string' ? from : null;
         const toValue = typeof to === 'string' ? to : null;
         const maximumOutsideTransferCountValue = typeof maxOutsideTransfers === 'string' ? maxOutsideTransfers : null;
         const hasCompleteStationPair = fromValue != null && toValue != null;
 
         return {
+            outsideTransferIds:
+                outsideTransfers === undefined
+                    ? allOutsideTransferIds
+                    : outsideTransfers === ''
+                      ? []
+                      : [...new Set(outsideTransfers.split(','))],
             includeInsideTransfers: typeof includeInsideTransfers === 'string' ? includeInsideTransfers : 'true',
             maximumOutsideTransferCount:
                 maximumOutsideTransferCountValue == null ? null : Number(maximumOutsideTransferCountValue),
@@ -52,6 +61,9 @@ const tokyoMetroTransferSearchParamsSchema = z
     .pipe(
         z
             .object({
+                outsideTransferIds: z
+                    .array(z.custom<StationId>(isOutsideTransferId, '指定された改札外乗換駅が見つかりません'))
+                    .min(1, emptyOutsideTransfersMessage),
                 maximumOutsideTransferCount: maximumOutsideTransferCountSchema.nullable(),
                 includeInsideTransfers: z
                     .enum(['true', 'false'], { error: '改札内乗換の指定はtrueまたはfalseにしてください' })
@@ -70,11 +82,13 @@ const emptyQuery: TokyoMetroTransferSearchQuery = {
     toStationId: null,
     maximumOutsideTransferCount: null,
     includeInsideTransfers: true,
+    outsideTransferIds: allOutsideTransferIds,
     error: null,
 };
 
 /**
  * 検索ボタン押下時にURLへ保存した条件を復元する。
+ * outsideTransfersは乗換IDのカンマ区切り。未指定は全て利用し、空・不正なID・複数指定はエラーとする。
  * includeInsideTransfersはtrue/falseで指定し、未指定・複数指定では既定のONとして扱う。
  * OFFでは改札内乗換を探索対象から除外し、ONのURLではこのパラメータを省略する。
  */
