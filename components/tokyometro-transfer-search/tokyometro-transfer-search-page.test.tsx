@@ -132,8 +132,8 @@ describe('TokyoMetroTransferSearchPage', () => {
         await screen.findByRole('heading', { name: '検索結果' });
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         expect(await screen.findByRole('checkbox', { name: '上野' })).toBeChecked();
-        expect(screen.getByRole('checkbox', { name: '日比谷・有楽町' })).not.toBeChecked();
-        await user.click(screen.getByRole('checkbox', { name: '日比谷・有楽町' }));
+        expect(screen.getByRole('checkbox', { name: '日比谷 / 有楽町' })).not.toBeChecked();
+        await user.click(screen.getByRole('checkbox', { name: '日比谷 / 有楽町' }));
         expect(pushMock).not.toHaveBeenCalled();
         expect(workerRequestMock).toHaveBeenCalledTimes(1);
         await user.click(screen.getByRole('button', { name: '詳細指定' }));

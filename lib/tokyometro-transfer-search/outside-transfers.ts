@@ -8,7 +8,7 @@ export const outsideTransferOptions = [
     })),
     ...CROSS_STATION_TRANSFERS.filter((connection) => connection.type === 'outside').map((connection) => ({
         value: connection.fromStationId,
-        label: `${STATION_NAMES[connection.fromStationId]}・${STATION_NAMES[connection.toStationId]}`,
+        label: `${STATION_NAMES[connection.fromStationId]} / ${STATION_NAMES[connection.toStationId]}`,
     })),
 ];
 
