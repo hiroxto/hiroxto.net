@@ -8,6 +8,7 @@ import {
     Checkbox,
     Divider,
     Group,
+    NumberInput,
     type OptionsFilter,
     Paper,
     Select,
@@ -37,6 +38,7 @@ import {
     formatDistance,
     MAX_OUTSIDE_TRANSFER_COUNT,
     type RouteResult,
+    SEARCH_DURATION_LIMIT_MS,
     stations,
 } from '@/lib/tokyometro-transfer-search/search';
 import type { RouteSearchRequest, RouteSearchResponse } from '@/lib/tokyometro-transfer-search/search-worker-protocol';
@@ -48,6 +50,7 @@ interface TokyoMetroTransferSearchPageProps {
     initialMaximumOutsideTransferCount: number | null;
     initialIncludeInsideTransfers: boolean;
     initialOutsideTransferIds: StationId[];
+    initialDurationLimitMs: number;
     queryError: string | null;
 }
 
@@ -209,9 +212,11 @@ export function TokyoMetroTransferSearchPage({
     initialMaximumOutsideTransferCount,
     initialIncludeInsideTransfers,
     initialOutsideTransferIds,
+    initialDurationLimitMs,
     queryError,
 }: TokyoMetroTransferSearchPageProps) {
     const router = useRouter();
+    const [durationLimitMs, setDurationLimitMs] = useState<number | string>(initialDurationLimitMs);
     const [fromStationId, setFromStationId] = useState<string | null>(initialFrom);
     const [toStationId, setToStationId] = useState<string | null>(initialTo);
     const [maximumOutsideTransferCount, setMaximumOutsideTransferCount] = useState<number | null>(
@@ -229,6 +234,7 @@ export function TokyoMetroTransferSearchPage({
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
+        setDurationLimitMs(initialDurationLimitMs);
         setFromStationId(initialFrom);
         setToStationId(initialTo);
         setMaximumOutsideTransferCount(initialMaximumOutsideTransferCount);
@@ -241,6 +247,7 @@ export function TokyoMetroTransferSearchPage({
         initialMaximumOutsideTransferCount,
         initialIncludeInsideTransfers,
         initialOutsideTransferIds,
+        initialDurationLimitMs,
     ]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: 同一条件の送信でもWorkerを再起動する。
@@ -262,6 +269,7 @@ export function TokyoMetroTransferSearchPage({
             maximumOutsideTransferCount: initialMaximumOutsideTransferCount,
             includeInsideTransfers: initialIncludeInsideTransfers,
             outsideTransferIds: initialOutsideTransferIds,
+            durationLimitMs: initialDurationLimitMs,
         };
 
         setRoutes(null);
@@ -297,6 +305,7 @@ export function TokyoMetroTransferSearchPage({
         initialMaximumOutsideTransferCount,
         initialIncludeInsideTransfers,
         initialOutsideTransferIds,
+        initialDurationLimitMs,
         searchAttempt,
     ]);
 
@@ -304,6 +313,12 @@ export function TokyoMetroTransferSearchPage({
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        const submittedDurationLimitMs = Number(durationLimitMs);
+        if (!Number.isSafeInteger(submittedDurationLimitMs) || submittedDurationLimitMs <= 0) {
+            setFormError('探索時間は正の整数で指定してください');
+            return;
+        }
 
         if (fromStationId == null || toStationId == null) {
             setFormError('乗車駅と降車駅を指定してください');
@@ -322,6 +337,7 @@ export function TokyoMetroTransferSearchPage({
 
         setFormError(null);
         if (
+            submittedDurationLimitMs === initialDurationLimitMs &&
             fromStationId === initialFrom &&
             toStationId === initialTo &&
             maximumOutsideTransferCount === initialMaximumOutsideTransferCount &&
@@ -337,6 +353,10 @@ export function TokyoMetroTransferSearchPage({
 
         if (maximumOutsideTransferCount != null) {
             query.set('maxOutsideTransfers', String(maximumOutsideTransferCount));
+        }
+
+        if (submittedDurationLimitMs !== SEARCH_DURATION_LIMIT_MS) {
+            query.set('durationLimitMs', String(submittedDurationLimitMs));
         }
 
         if (!includeInsideTransfers) {
@@ -459,6 +479,15 @@ export function TokyoMetroTransferSearchPage({
                                 <Accordion.Item value="details">
                                     <Accordion.Control>詳細指定</Accordion.Control>
                                     <Accordion.Panel>
+                                        <NumberInput
+                                            label="探索時間（ミリ秒）"
+                                            description="正の整数で指定してください。訪問数の上限に達すると、指定時間より早く探索を終了する場合があります。"
+                                            value={durationLimitMs}
+                                            onChange={setDurationLimitMs}
+                                            clampBehavior="none"
+                                            radius="sm"
+                                            mb="lg"
+                                        />
                                         <Checkbox.Group
                                             label="利用する改札外乗換駅"
                                             description="利用する駅を1つ以上選択してください。選択を外しても通過や改札内乗換は制限しません。"

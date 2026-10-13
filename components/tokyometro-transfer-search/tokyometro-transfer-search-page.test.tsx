@@ -99,6 +99,81 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('TokyoMetroTransferSearchPage', () => {
+    it.each(['', '0', '-1', '1.5'])('探索時間が「%s」の場合は入力エラーを表示して検索しない', async (value) => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                initialDurationLimitMs={5000}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const input = await screen.findByLabelText('探索時間（ミリ秒）');
+        await user.clear(input);
+        if (value) await user.type(input, value);
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(screen.getByText('探索時間は正の整数で指定してください')).toBeInTheDocument();
+        expect(pushMock).not.toHaveBeenCalled();
+        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('先頭ゼロ付きの正の整数をEnterで送信しても再検索できる', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                initialDurationLimitMs={5000}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const input = await screen.findByLabelText('探索時間（ミリ秒）');
+        await user.clear(input);
+        await user.type(input, '05000{Enter}');
+        expect(screen.queryByText('探索時間は正の整数で指定してください')).not.toBeInTheDocument();
+        expect(workerRequestMock).toHaveBeenCalledTimes(2);
+        expect(workerRequestMock).toHaveBeenLastCalledWith(expect.objectContaining({ durationLimitMs: 5000 }));
+    });
+
+    it('探索時間を変更すると検索時にURLへ反映し、URLの値で検索する', async () => {
+        const user = userEvent.setup();
+        const props = {
+            initialFrom: 'inaricho' as const,
+            initialTo: 'iriya' as const,
+            initialMaximumOutsideTransferCount: 1,
+            initialIncludeInsideTransfers: true,
+            initialOutsideTransferIds: allOutsideTransferIds,
+            initialDurationLimitMs: 5000,
+            queryError: null,
+        };
+        const { rerender } = renderWithMantine(<TokyoMetroTransferSearchPage {...props} />);
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const input = await screen.findByLabelText('探索時間（ミリ秒）');
+        await user.clear(input);
+        await user.type(input, '12000');
+        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(pushMock).toHaveBeenCalledWith(
+            '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1&durationLimitMs=12000',
+        );
+        rerender(<TokyoMetroTransferSearchPage {...props} initialDurationLimitMs={12000} />);
+        await screen.findByRole('heading', { name: '検索結果' });
+        expect(input).toHaveValue('12000');
+        expect(workerRequestMock).toHaveBeenLastCalledWith(expect.objectContaining({ durationLimitMs: 12000 }));
+    });
+
     it('詳細指定は初期状態で閉じ、開くと全駅が選択されている', async () => {
         const user = userEvent.setup();
         renderWithMantine(
@@ -107,6 +182,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -125,6 +201,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -156,6 +233,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={['ueno']}
                 queryError={null}
             />,
@@ -182,6 +260,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={['ueno']}
                 queryError={null}
             />,
@@ -201,6 +280,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -244,6 +324,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -262,6 +343,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -287,6 +369,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -306,6 +389,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -324,6 +408,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -359,6 +444,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                     initialTo="iriya"
                     initialMaximumOutsideTransferCount={1}
                     initialIncludeInsideTransfers={initialValue}
+                    initialDurationLimitMs={5000}
                     initialOutsideTransferIds={allOutsideTransferIds}
                     queryError={null}
                 />,
@@ -388,6 +474,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -423,6 +510,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -452,6 +540,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="iriya"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -459,6 +548,7 @@ describe('TokyoMetroTransferSearchPage', () => {
 
         expect(await screen.findByRole('heading', { name: '検索結果' })).toBeInTheDocument();
         expect(workerRequestMock).toHaveBeenCalledWith({
+            durationLimitMs: 5000,
             originStationId: 'inaricho',
             destinationStationId: 'iriya',
             maximumOutsideTransferCount: 1,
@@ -498,6 +588,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                     initialTo="iriya"
                     initialMaximumOutsideTransferCount={1}
                     initialIncludeInsideTransfers={true}
+                    initialDurationLimitMs={5000}
                     initialOutsideTransferIds={allOutsideTransferIds}
                     queryError={null}
                 />,
@@ -518,6 +609,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="kita-ayase"
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -533,6 +625,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="nishi-funabashi"
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -549,6 +642,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="nishi-funabashi"
                 initialMaximumOutsideTransferCount={10}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -565,6 +659,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="nishi-funabashi"
                 initialMaximumOutsideTransferCount={1}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -583,6 +678,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo="kita-ayase"
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError={null}
             />,
@@ -599,6 +695,7 @@ describe('TokyoMetroTransferSearchPage', () => {
                 initialTo={null}
                 initialMaximumOutsideTransferCount={null}
                 initialIncludeInsideTransfers={true}
+                initialDurationLimitMs={5000}
                 initialOutsideTransferIds={allOutsideTransferIds}
                 queryError="指定された駅が見つかりません"
             />,
