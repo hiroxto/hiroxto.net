@@ -1,5 +1,7 @@
 'use client';
 
+import 'dayjs/locale/ja';
+
 import { DatesProvider } from '@mantine/dates';
 import type { ReactNode } from 'react';
 
