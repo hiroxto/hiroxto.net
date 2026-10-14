@@ -1,10 +1,10 @@
-name: Test
+name: CI
 
 on:
     pull_request:
 
 jobs:
-    test:
+    install:
         runs-on: ubuntu-latest
 
         steps:
@@ -13,10 +13,12 @@ jobs:
             -   name: Setup mise
                 uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
 
-            -   name: Cache node_modules
+            -   name: Cache npm
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
-                    path: ~/.npm
+                    path: |
+                        ~/.npm
+                        node_modules
                     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
                     restore-keys: |
                         ${{ runner.os }}-node-
@@ -27,20 +29,134 @@ jobs:
             -   name: Install dependencies
                 run: npm ci
 
-            -   name: Check generated train-number content
-                run: npm run check:train-number-content
+    test:
+        needs: install
+        runs-on: ubuntu-latest
 
-            -   name: Lint
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Setup mise
+                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+
+            -   name: Restore dependencies
+                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ~/.npm
+                        node_modules
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    fail-on-cache-miss: true
+
+            -   name: Run Test
+                run: npm run test
+
+    lint:
+        needs: install
+        runs-on: ubuntu-latest
+
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Setup mise
+                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+
+            -   name: Restore dependencies
+                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ~/.npm
+                        node_modules
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    fail-on-cache-miss: true
+
+            -   name: Run lint
                 run: npm run lint
 
-            -   name: Format
+    format:
+        needs: install
+        runs-on: ubuntu-latest
+
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Setup mise
+                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+
+            -   name: Restore dependencies
+                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ~/.npm
+                        node_modules
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    fail-on-cache-miss: true
+
+            -   name: Run format
                 run: npm run format
+
+    type-check:
+        needs: install
+        runs-on: ubuntu-latest
+
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Setup mise
+                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+
+            -   name: Restore dependencies
+                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ~/.npm
+                        node_modules
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    fail-on-cache-miss: true
 
             -   name: Type Check
                 run: npm run check
 
-            -   name: Test
-                run: npm run test
+    build:
+        needs: install
+        runs-on: ubuntu-latest
 
-            -   name: Build
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Setup mise
+                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+
+            -   name: Restore dependencies
+                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ~/.npm
+                        node_modules
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    fail-on-cache-miss: true
+
+            -   name: Run build
                 run: npm run build:cf
+
+    check-generated-content:
+        needs: install
+        runs-on: ubuntu-latest
+
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Setup mise
+                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+
+            -   name: Restore dependencies
+                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ~/.npm
+                        node_modules
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    fail-on-cache-miss: true
+
+            -   name: Check generated content
+                run: npm run check:train-number-content
