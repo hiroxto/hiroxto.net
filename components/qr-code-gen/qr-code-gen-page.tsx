@@ -2,10 +2,10 @@
 
 import { ColorInput, Radio, Slider, Stack, Text, Textarea } from '@mantine/core';
 import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
-import { useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
+import { getQrCodeValidationError, type QrCodeErrorCorrectionLevel } from '@/lib/qr-code-gen/validation';
 
-type QrCodeErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 type QrCodeRenderAs = 'svg' | 'canvas';
 
 export function QrCodeGenPage() {
@@ -16,6 +16,7 @@ export function QrCodeGenPage() {
     const [renderAs, setRenderAs] = useState<QrCodeRenderAs>('canvas');
     const [backGround, setBackGround] = useState('#ffffff');
     const [foreGround, setForeGround] = useState('#000000');
+    const validationError = useMemo(() => getQrCodeValidationError(value, level), [value, level]);
 
     const qrProps = {
         value,
@@ -25,6 +26,15 @@ export function QrCodeGenPage() {
         bgColor: backGround,
         fgColor: foreGround,
     } as const;
+
+    let qrPreview: ReactNode = null;
+    if (validationError == null) {
+        if (renderAs === 'svg') {
+            qrPreview = <QRCodeSVG {...qrProps} />;
+        } else {
+            qrPreview = <QRCodeCanvas {...qrProps} />;
+        }
+    }
 
     return (
         <SiteSubpageFrame
@@ -43,6 +53,7 @@ export function QrCodeGenPage() {
                                 placeholder="値を入力"
                                 value={value}
                                 resize="vertical"
+                                error={validationError}
                                 onChange={(event) => setValue(event.currentTarget.value)}
                             />
 
@@ -125,9 +136,11 @@ export function QrCodeGenPage() {
                             />
                         </Stack>
 
-                        <Stack align="center" justify="center">
-                            {renderAs === 'svg' ? <QRCodeSVG {...qrProps} /> : <QRCodeCanvas {...qrProps} />}
-                        </Stack>
+                        {qrPreview != null && (
+                            <Stack align="center" justify="center">
+                                {qrPreview}
+                            </Stack>
+                        )}
                     </Stack>
                 </section>
             </Stack>
