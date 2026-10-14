@@ -37,6 +37,12 @@ const getPassengerType = (splitNumber: number[]): TrainNumberType | null => {
     return null;
 };
 
+/**
+ * 通常貨物は、百の位0なら高速貨A/B、千の位0〜1・百の位1〜9なら高速貨C。
+ * 専貨A/Bは千の位0〜1・3〜5、百の位1〜9とする。
+ * 千の位6〜7の季節列車、8〜9の臨時列車は同じ百の位・下2桁の条件を使う。
+ * 季節列車は通常種別、臨時列車は「臨」を付けた種別を返す。
+ */
 const getFreightType = (splitNumber: number[]): TrainNumberType | null => {
     if (!isFreightNumber(splitNumber)) {
         return null;
@@ -44,12 +50,20 @@ const getFreightType = (splitNumber: number[]): TrainNumberType | null => {
 
     const isSpecial = isFreightSpecialNumber(splitNumber);
 
-    if (splitNumber[1] === 0) {
-        return splitNumber[2] <= 6 ? (isSpecial ? '臨高速貨A' : '高速貨A') : isSpecial ? '臨高速貨B' : '高速貨B';
+    if (splitNumber[1] === 0 && splitNumber[2] <= 6) {
+        return isSpecial ? '臨高速貨A' : '高速貨A';
     }
 
-    if ((splitNumber[0] <= 1 || isSpecial) && splitNumber[2] === 5) {
+    if (splitNumber[1] === 0) {
+        return isSpecial ? '臨高速貨B' : '高速貨B';
+    }
+
+    if ((splitNumber[0] <= 1 || splitNumber[0] >= 6) && splitNumber[2] === 5) {
         return isSpecial ? '臨高速貨C' : '高速貨C';
+    }
+
+    if (splitNumber[0] === 2) {
+        return null;
     }
 
     if (splitNumber[2] >= 6 && splitNumber[2] <= 8) {
