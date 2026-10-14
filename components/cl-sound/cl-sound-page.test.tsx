@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithMantine } from '@/test/test-utils';
 import { ClSoundPage } from './cl-sound-page';
 
-class FakeOscillator {
+class FakeOscillator extends EventTarget {
     type: OscillatorType | null = null;
     frequency = { value: 0 };
     connectedDestination: unknown = null;
@@ -13,6 +13,10 @@ class FakeOscillator {
 
     connect(destination: unknown) {
         this.connectedDestination = destination;
+    }
+
+    disconnect() {
+        this.connectedDestination = null;
     }
 
     start(when?: number) {
@@ -34,6 +38,8 @@ class FakeAudioContext {
     constructor() {
         FakeAudioContext.latest = this;
     }
+
+    close = vi.fn().mockResolvedValue(undefined);
 
     createOscillator() {
         const oscillator = new FakeOscillator();
@@ -86,5 +92,39 @@ describe('ClSoundPage', () => {
                 stoppedAt: 10.6,
             },
         ]);
+    });
+    it('成功音の終了後に、その再生のAudioContextを閉じる', async () => {
+        const user = userEvent.setup();
+        vi.stubGlobal('AudioContext', FakeAudioContext);
+        renderWithMantine(<ClSoundPage />);
+
+        await user.click(screen.getByRole('button', { name: 'Play Success Tone' }));
+        const context = FakeAudioContext.latest;
+        expect(context?.close).not.toHaveBeenCalled();
+        context?.oscillators[0].dispatchEvent(new Event('ended'));
+        expect(context?.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('警告音は両方の音が終了するまで閉じず、再生ごとのAudioContextを閉じる', async () => {
+        const user = userEvent.setup();
+        vi.stubGlobal('AudioContext', FakeAudioContext);
+        renderWithMantine(<ClSoundPage />);
+
+        const button = screen.getByRole('button', { name: 'Play Alert Tone' });
+        await user.click(button);
+        const firstContext = FakeAudioContext.latest;
+        await user.click(button);
+        const secondContext = FakeAudioContext.latest;
+        expect(secondContext).not.toBe(firstContext);
+
+        firstContext?.oscillators[0].dispatchEvent(new Event('ended'));
+        expect(firstContext?.close).not.toHaveBeenCalled();
+        firstContext?.oscillators[1].dispatchEvent(new Event('ended'));
+        expect(firstContext?.close).toHaveBeenCalledTimes(1);
+        expect(secondContext?.close).not.toHaveBeenCalled();
+
+        secondContext?.oscillators[0].dispatchEvent(new Event('ended'));
+        secondContext?.oscillators[1].dispatchEvent(new Event('ended'));
+        expect(secondContext?.close).toHaveBeenCalledTimes(1);
     });
 });
