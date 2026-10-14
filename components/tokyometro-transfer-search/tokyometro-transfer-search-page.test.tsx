@@ -114,7 +114,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
         await screen.findByRole('heading', { name: '検索結果' });
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
-        const input = await screen.findByLabelText('探索時間（ミリ秒）');
+        const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
         if (value) await user.type(input, value);
         await user.click(screen.getByRole('button', { name: '検索' }));
@@ -138,7 +138,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
         await screen.findByRole('heading', { name: '検索結果' });
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
-        const input = await screen.findByLabelText('探索時間（ミリ秒）');
+        const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
         await user.type(input, '05000{Enter}');
         expect(screen.queryByText('探索時間は正の整数で指定してください')).not.toBeInTheDocument();
@@ -160,7 +160,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         const { rerender } = renderWithMantine(<TokyoMetroTransferSearchPage {...props} />);
         await screen.findByRole('heading', { name: '検索結果' });
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
-        const input = await screen.findByLabelText('探索時間（ミリ秒）');
+        const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
         await user.type(input, '12000');
         expect(workerRequestMock).toHaveBeenCalledTimes(1);
