@@ -34,6 +34,7 @@ export default async function TokyoMetroTransferSearchToolPage({
         maximumOutsideTransferCount,
         includeInsideTransfers,
         outsideTransferIds,
+        durationLimitMs,
         error,
     } = parseTokyoMetroTransferSearchParams(params);
 
@@ -44,6 +45,7 @@ export default async function TokyoMetroTransferSearchToolPage({
             initialMaximumOutsideTransferCount={maximumOutsideTransferCount}
             initialIncludeInsideTransfers={includeInsideTransfers}
             initialOutsideTransferIds={outsideTransferIds}
+            initialDurationLimitMs={durationLimitMs}
             queryError={error}
         />
     );
