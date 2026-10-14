@@ -50,15 +50,15 @@ const tokyoMetroTransferSearchParamsSchema = z
         const toValue = typeof to === 'string' ? to : null;
         const maximumOutsideTransferCountValue = typeof maxOutsideTransfers === 'string' ? maxOutsideTransfers : null;
         const hasCompleteStationPair = fromValue != null && toValue != null;
+        let outsideTransferIds: string[] = allOutsideTransferIds;
+
+        if (outsideTransfers !== undefined) {
+            outsideTransferIds = outsideTransfers === '' ? [] : [...new Set(outsideTransfers.split(','))];
+        }
 
         return {
             durationLimitMs: durationLimitMs === undefined ? SEARCH_DURATION_LIMIT_MS : Number(durationLimitMs),
-            outsideTransferIds:
-                outsideTransfers === undefined
-                    ? allOutsideTransferIds
-                    : outsideTransfers === ''
-                      ? []
-                      : [...new Set(outsideTransfers.split(','))],
+            outsideTransferIds,
             includeInsideTransfers: typeof includeInsideTransfers === 'string' ? includeInsideTransfers : 'true',
             maximumOutsideTransferCount:
                 maximumOutsideTransferCountValue == null ? null : Number(maximumOutsideTransferCountValue),

@@ -88,6 +88,13 @@ export const SwarmCheckinRegulationCheckerPage = () => {
         return () => window.clearTimeout(timeoutId);
     }, [currentNow, isHydrated, nextRefreshAt]);
     const limitCheckResult = useMemo(() => checkAllLimits(checkins, currentNow), [checkins, currentNow]);
+    let unLimitingAtLabel = '読み込み中';
+
+    if (isHydrated) {
+        unLimitingAtLabel =
+            limitCheckResult.unLimitingAts == null ? 'N/A' : date2String(limitCheckResult.unLimitingAts);
+    }
+
     const historyTargets = useMemo(
         () => (isHydrated ? createHistoryTargets(checkins, currentNow) : []),
         [checkins, currentNow, isHydrated],
@@ -226,12 +233,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                             </Badge>
                             <Stack gap={2}>
                                 <Text c={limitCheckResult.isLimited ? 'red' : undefined} lh={1.2}>
-                                    規制解除日時:{' '}
-                                    {!isHydrated
-                                        ? '読み込み中'
-                                        : limitCheckResult.unLimitingAts == null
-                                          ? 'N/A'
-                                          : date2String(limitCheckResult.unLimitingAts)}
+                                    規制解除日時: {unLimitingAtLabel}
                                 </Text>
                                 <Text lh={1.2}>
                                     現在日時: {currentTime == null ? '読み込み中' : date2String(resolvedCurrentTime)}
