@@ -39,7 +39,7 @@ export function SavedRoutesPage() {
     }, [selectedRoute]);
     const allRouteIds = useMemo(() => routes.map((route) => route.id), [routes]);
     const isAllSelected = useMemo(
-        () => selectedRouteIds.length === allRouteIds.length,
+        () => allRouteIds.length > 0 && allRouteIds.every((id) => selectedRouteIds.includes(id)),
         [selectedRouteIds, allRouteIds],
     );
     const handleSelectAll = (checked: boolean) => {
@@ -118,7 +118,12 @@ export function SavedRoutesPage() {
                 onToggleSelection={handleToggleSelection}
                 onViewRoute={handleViewRoute}
                 onCallRoute={(route) => callState(route.route)}
-                onDeleteRoute={(route) => openIndividualDeleteModal(() => deleteRoute(route.id))}
+                onDeleteRoute={(route) =>
+                    openIndividualDeleteModal(() => {
+                        deleteRoute(route.id);
+                        setSelectedRouteIds((currentIds) => currentIds.filter((id) => id !== route.id));
+                    })
+                }
             />
 
             <Modal radius="sm" closeButtonProps={{ radius: 'sm' }} opened={opened} onClose={close} title="経路参照">
