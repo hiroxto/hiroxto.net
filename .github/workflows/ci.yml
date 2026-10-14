@@ -19,7 +19,7 @@ jobs:
                     path: |
                         ~/.npm
                         node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml') }}
                     restore-keys: |
                         ${{ runner.os }}-node-
 
@@ -45,7 +45,7 @@ jobs:
                     path: |
                         ~/.npm
                         node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml') }}
                     fail-on-cache-miss: true
 
             -   name: Run Test
@@ -67,7 +67,7 @@ jobs:
                     path: |
                         ~/.npm
                         node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml') }}
                     fail-on-cache-miss: true
 
             -   name: Run lint
@@ -89,7 +89,7 @@ jobs:
                     path: |
                         ~/.npm
                         node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml') }}
                     fail-on-cache-miss: true
 
             -   name: Run format
@@ -111,7 +111,7 @@ jobs:
                     path: |
                         ~/.npm
                         node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml') }}
                     fail-on-cache-miss: true
 
             -   name: Type Check
@@ -133,7 +133,7 @@ jobs:
                     path: |
                         ~/.npm
                         node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml') }}
                     fail-on-cache-miss: true
 
             -   name: Run build
@@ -155,7 +155,7 @@ jobs:
                     path: |
                         ~/.npm
                         node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml') }}
                     fail-on-cache-miss: true
 
             -   name: Check generated content
