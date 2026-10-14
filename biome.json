@@ -22,7 +22,8 @@
                 "noDoubleEquals": "error"
             },
             "style": {
-                "useSingleVarDeclarator": "error"
+                "useSingleVarDeclarator": "error",
+                "noNestedTernary": "error"
             },
             "correctness": {
                 "noUnusedVariables": "error"

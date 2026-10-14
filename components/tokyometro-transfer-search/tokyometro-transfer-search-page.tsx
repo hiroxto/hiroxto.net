@@ -375,6 +375,16 @@ export function TokyoMetroTransferSearchPage({
         });
     };
 
+    let truncatedSearchMessage = `最大回数は未確定です（上限${outsideTransferUpperBound}回）。`;
+
+    if (routes?.[0] != null) {
+        if (routes[0].outsideTransferCount === outsideTransferUpperBound) {
+            truncatedSearchMessage = `最大改札外乗換回数は${outsideTransferUpperBound}回で確定しています。候補の順位は未確定です。`;
+        } else {
+            truncatedSearchMessage = `見つかった最大は${routes[0].outsideTransferCount}回です。最大回数は未確定です（上限${outsideTransferUpperBound}回）。`;
+        }
+    }
+
     return (
         <SiteSubpageFrame
             items={[{ label: 'ツール一覧', href: '/tools' }, { label: '東京メトロ 改札外乗換検索' }]}
@@ -561,13 +571,7 @@ export function TokyoMetroTransferSearchPage({
                 {isSearchTruncated ? (
                     <Alert radius="sm" color="#fab005" variant="light" title="探索上限に達しました">
                         <Text size="sm">表示中の候補は探索済み範囲の結果です。</Text>
-                        <Text size="sm">
-                            {routes?.[0] == null
-                                ? `最大回数は未確定です（上限${outsideTransferUpperBound}回）。`
-                                : routes[0].outsideTransferCount === outsideTransferUpperBound
-                                  ? `最大改札外乗換回数は${outsideTransferUpperBound}回で確定しています。候補の順位は未確定です。`
-                                  : `見つかった最大は${routes[0].outsideTransferCount}回です。最大回数は未確定です（上限${outsideTransferUpperBound}回）。`}
-                        </Text>
+                        <Text size="sm">{truncatedSearchMessage}</Text>
                     </Alert>
                 ) : null}
 
