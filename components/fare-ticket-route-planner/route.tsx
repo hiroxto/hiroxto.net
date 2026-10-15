@@ -7,6 +7,7 @@ import { SectionTitle } from '@/components/fare-ticket-route-planner/section-tit
 import { useInputSettingStore } from '@/components/fare-ticket-route-planner/stores/input-setting-store';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 import { lineToStations, stationToLines } from '@/lib/fare-ticket-route-planner/route-complete';
+import { getRouteStationError } from '@/lib/fare-ticket-route-planner/validation';
 
 export function RouteEditor() {
     const { routes, addRoute, updateLine, updateStation, deleteRoute, departure, destination } = useRouteStateStore(
@@ -50,34 +51,17 @@ export function RouteEditor() {
         return stations.filter((station) => station !== excludeStation);
     };
 
-    const getStationError = (index: number, station: string) => {
-        const trimmedStation = station.trim();
-        if (trimmedStation === '') {
-            return null;
-        }
-
-        if (trimmedStation === departure && trimmedStation === destination) {
-            return '発着駅と重複';
-        }
-
-        if (trimmedStation === departure) {
-            return '発駅と重複';
-        }
-
-        if (trimmedStation === destination) {
-            return '着駅と重複';
-        }
-
-        return routes.some((route, routeIndex) => routeIndex !== index && route.station.trim() === trimmedStation)
-            ? '経路内重複'
-            : null;
-    };
-
     return (
         <>
             <SectionTitle>経路</SectionTitle>
             {routes.map((route, index) => {
-                const stationError = getStationError(index, route.station);
+                const stationError = getRouteStationError({
+                    index,
+                    station: route.station,
+                    departure,
+                    destination,
+                    routes,
+                });
 
                 return (
                     <RouteRow
