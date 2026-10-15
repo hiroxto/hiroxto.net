@@ -18,7 +18,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "if mise exec -- npm run lint:fix >&2 && mise exec -- npm run format:fix >&2 && mise exec -- npm run check >&2 && mise exec -- npm run test >&2; then printf '%s\\n' '{\"systemMessage\":\"検査成功: npm run lint:fix / npm run format:fix / npm run check / npm run test\"}'; else printf '%s\\n' '{\"decision\":\"block\",\"reason\":\"検査失敗: npm run lint:fix / npm run format:fix / npm run check / npm run test。標準エラー出力を確認して修正し、再実行してください。\"}'; fi",
+                        "command": "codex_stop_hook_active=$(mise exec -- node -e 'process.stdout.write(String(JSON.parse(require(\"node:fs\").readFileSync(0, \"utf8\")).stop_hook_active === true))') || exit 1; if mise exec -- npm run lint:fix >&2 && mise exec -- npm run format:fix >&2 && mise exec -- npm run check >&2 && mise exec -- npm run test >&2; then printf '%s\\n' '{\"systemMessage\":\"検査成功: npm run lint:fix / npm run format:fix / npm run check / npm run test\"}'; elif [ \"$codex_stop_hook_active\" = true ]; then printf '%s\\n' '{\"systemMessage\":\"再試行後も検査に失敗しました。標準エラー出力を確認し、解決できない原因と検査結果をユーザーへ報告してください。自動継続は要求しません。\"}'; else printf '%s\\n' '{\"decision\":\"block\",\"reason\":\"検査失敗: npm run lint:fix / npm run format:fix / npm run check / npm run test。標準エラー出力を確認して修正し、再実行してください。\"}'; fi",
                         "timeout": 60,
                         "statusMessage": "Lint・整形・型検査・テストを順に実行"
                     }
