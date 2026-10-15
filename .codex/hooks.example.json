@@ -7,7 +7,7 @@
                     {
                         "type": "command",
                         "command": "sh .codex/hooks/run-checks.sh post-tool-use",
-                        "timeout": 60,
+                        "timeout": 120,
                         "statusMessage": "Lint・整形・型検査を順に実行"
                     }
                 ]
@@ -19,7 +19,7 @@
                     {
                         "type": "command",
                         "command": "sh .codex/hooks/run-checks.sh stop",
-                        "timeout": 60,
+                        "timeout": 120,
                         "statusMessage": "Lint・整形・型検査・テストを順に実行"
                     }
                 ]
