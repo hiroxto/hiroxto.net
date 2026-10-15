@@ -6,15 +6,9 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "mise exec -- npm run check >&2 && printf '%s\\n' '{\"systemMessage\":\"型検査成功: npm run check\"}'",
+                        "command": "if mise exec -- npm run lint:fix >&2 && mise exec -- npm run format:fix >&2 && mise exec -- npm run check >&2; then printf '%s\\n' '{\"systemMessage\":\"検査成功: npm run lint:fix / npm run format:fix / npm run check\"}'; else printf '%s\\n' '{\"decision\":\"block\",\"reason\":\"検査失敗: npm run lint:fix / npm run format:fix / npm run check。標準エラー出力を確認して修正し、再実行してください。\"}'; fi",
                         "timeout": 60,
-                        "statusMessage": "型検査を実行"
-                    },
-                    {
-                        "type": "command",
-                        "command": "mise exec -- npm run lint:fix >&2 && mise exec -- npm run format:fix >&2 && printf '%s\\n' '{\"systemMessage\":\"Lint・整形成功: npm run lint:fix / npm run format:fix\"}'",
-                        "timeout": 60,
-                        "statusMessage": "Lint・整形を実行"
+                        "statusMessage": "Lint・整形・型検査を順に実行"
                     }
                 ]
             }
@@ -24,21 +18,9 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "mise exec -- npm run check >&2 && printf '%s\\n' '{\"systemMessage\":\"型検査成功: npm run check\"}'",
+                        "command": "if mise exec -- npm run lint:fix >&2 && mise exec -- npm run format:fix >&2 && mise exec -- npm run check >&2 && mise exec -- npm run test >&2; then printf '%s\\n' '{\"systemMessage\":\"検査成功: npm run lint:fix / npm run format:fix / npm run check / npm run test\"}'; else printf '%s\\n' '{\"decision\":\"block\",\"reason\":\"検査失敗: npm run lint:fix / npm run format:fix / npm run check / npm run test。標準エラー出力を確認して修正し、再実行してください。\"}'; fi",
                         "timeout": 60,
-                        "statusMessage": "型検査を実行"
-                    },
-                    {
-                        "type": "command",
-                        "command": "mise exec -- npm run lint:fix >&2 && mise exec -- npm run format:fix >&2 && printf '%s\\n' '{\"systemMessage\":\"Lint・整形成功: npm run lint:fix / npm run format:fix\"}'",
-                        "timeout": 60,
-                        "statusMessage": "Lint・整形を実行"
-                    },
-                    {
-                        "type": "command",
-                        "command": "mise exec -- npm run test >&2 && printf '%s\\n' '{\"systemMessage\":\"テスト成功: npm run test\"}'",
-                        "timeout": 60,
-                        "statusMessage": "テストを実行"
+                        "statusMessage": "Lint・整形・型検査・テストを順に実行"
                     }
                 ]
             }
