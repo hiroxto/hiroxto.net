@@ -2,7 +2,7 @@
 set -eu
 
 # PostToolUse は標準入力を読み切ってから Lint・整形・型検査、Stop は加えてテストを順に実行する。
-# 失敗した段階で後続を中止し、stdout に Codex 用の JSON、stderr に検査結果を出力する。
+# 失敗した段階で後続を中止し、stdout の JSON に失敗したコマンドと診断内容、stderr に検査結果を出力する。
 # Stop の初回失敗では継続を要求し、stop_hook_active が true の再試行後は通知だけを返す。
 event=${1-}
 set -- lint:fix format:fix check
@@ -26,13 +26,23 @@ esac
 
 cd "$(dirname "$0")/../.."
 
+output_file=$(mktemp)
+trap 'rm -f "$output_file"' 0
+
 for command in "$@"; do
-    if ! mise exec -- npm run "$command" >&2; then
-        if [ "$stop_hook_active" = true ]; then
-            printf '%s\n' '{"systemMessage":"再試行後も検査に失敗しました。標準エラー出力を確認し、解決できない原因と検査結果をユーザーへ報告してください。自動継続は要求しません。"}'
-        else
-            printf '{"decision":"block","reason":"検査失敗: %s。標準エラー出力を確認して修正し、再実行してください。"}\n' "$checks"
-        fi
+    if mise exec -- npm run "$command" > "$output_file" 2>&1; then
+        cat "$output_file" >&2
+    else
+        cat "$output_file" >&2
+        mise exec -- node - "$command" "$output_file" "$stop_hook_active" <<'JS'
+const [command, outputFile, stopHookActive] = process.argv.slice(2);
+const diagnostics = require('node:fs').readFileSync(outputFile, 'utf8').trim();
+const failure = `検査失敗: npm run ${command}\n${diagnostics}`;
+const output = stopHookActive === 'true'
+    ? { systemMessage: `再試行後も${failure}\n自動継続は要求しません。` }
+    : { decision: 'block', reason: `${failure}\n修正し、再実行してください。` };
+process.stdout.write(`${JSON.stringify(output)}\n`);
+JS
         exit 0
     fi
 done
