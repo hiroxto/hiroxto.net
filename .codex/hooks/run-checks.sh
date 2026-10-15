@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-# PostToolUse は Lint・整形・型検査、Stop は加えてテストを順に実行する。
+# PostToolUse は標準入力を読み切ってから Lint・整形・型検査、Stop は加えてテストを順に実行する。
 # 失敗した段階で後続を中止し、stdout に Codex 用の JSON、stderr に検査結果を出力する。
 # Stop の初回失敗では継続を要求し、stop_hook_active が true の再試行後は通知だけを返す。
 event=${1-}
@@ -10,7 +10,9 @@ checks='npm run lint:fix / npm run format:fix / npm run check'
 stop_hook_active=false
 
 case "$event" in
-    post-tool-use) ;;
+    post-tool-use)
+        cat > /dev/null
+        ;;
     stop)
         set -- "$@" test
         checks="$checks / npm run test"
