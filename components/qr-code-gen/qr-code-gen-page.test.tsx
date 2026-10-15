@@ -30,4 +30,37 @@ describe('QrCodeGenPage', () => {
         expect(screen.getByTestId('qr-svg')).toBeInTheDocument();
         expect(screen.queryByTestId('qr-canvas')).not.toBeInTheDocument();
     });
+
+    it('容量を超えた入力をエラー表示し、入力を修正するとプレビューが戻る', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(<QrCodeGenPage />);
+
+        const input = screen.getByLabelText('埋め込む値');
+        await user.click(input);
+        await user.paste('a'.repeat(1274));
+
+        expect(input).toHaveAttribute('aria-invalid', 'true');
+        expect(screen.getByText(/QRコードの容量を超えています/)).toBeInTheDocument();
+        expect(screen.queryByTestId('qr-canvas')).not.toBeInTheDocument();
+
+        await user.clear(input);
+        await user.paste('a'.repeat(1273));
+
+        expect(input).not.toHaveAttribute('aria-invalid', 'true');
+        expect(screen.getByTestId('qr-canvas')).toBeInTheDocument();
+    });
+
+    it('容量を超えていても誤り訂正レベルを下げると選択した描画方式で表示する', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(<QrCodeGenPage />);
+
+        await user.click(screen.getByLabelText('SVG'));
+        await user.click(screen.getByLabelText('埋め込む値'));
+        await user.paste('a'.repeat(1274));
+        expect(screen.queryByTestId('qr-svg')).not.toBeInTheDocument();
+
+        await user.click(screen.getByLabelText('Level L (7%)'));
+        expect(screen.getByTestId('qr-svg')).toBeInTheDocument();
+        expect(screen.queryByText(/QRコードの容量を超えています/)).not.toBeInTheDocument();
+    });
 });

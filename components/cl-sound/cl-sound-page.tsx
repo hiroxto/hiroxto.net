@@ -19,12 +19,26 @@ const alertTonePlan: TonePlanItem[] = [
 const playTonePlan = (plan: TonePlanItem[]) => {
     const context = new AudioContext();
     const startedAt = context.currentTime;
+    let remainingToneCount = plan.length;
 
     for (const item of plan) {
         const oscillator = context.createOscillator();
         oscillator.type = 'sine';
         oscillator.frequency.value = item.frequency;
         oscillator.connect(context.destination);
+        oscillator.addEventListener(
+            'ended',
+            () => {
+                oscillator.disconnect();
+                remainingToneCount -= 1;
+                if (remainingToneCount === 0) {
+                    void context.close().catch((error: unknown) => {
+                        console.error('Failed to close audio context:', error);
+                    });
+                }
+            },
+            { once: true },
+        );
         oscillator.start(startedAt + item.startOffsetSeconds);
         oscillator.stop(startedAt + item.startOffsetSeconds + item.durationSeconds);
     }

@@ -119,7 +119,7 @@ export function TrainNumberCalcPage() {
                             <strong>高速貨C</strong>。
                         </ListItem>
                         <ListItem>
-                            千位が<Code>1,3,4,5</Code>、百位が<Code>1～9</Code>の場合、<strong>専貨</strong>
+                            千位が<Code>0,1,3,4,5</Code>、百位が<Code>1～9</Code>の場合、<strong>専貨</strong>
                             。下2桁で
                             <strong>専貨A</strong>と<strong>専貨B</strong>に分かれる。
                             <List mt={6} listStyleType="disc" withPadding>
@@ -130,6 +130,9 @@ export function TrainNumberCalcPage() {
                                     下2桁が<Code>90～99</Code>の場合、<strong>専貨B</strong>。
                                 </ListItem>
                             </List>
+                        </ListItem>
+                        <ListItem>
+                            千位が<Code>6〜7</Code>の場合は季節列車。百位と下2桁の条件は上記の種別に準拠する。
                         </ListItem>
                         <ListItem>
                             千位が<Code>8</Code>以上の場合は種別の頭に<Code>臨</Code>が付く。(e.g.{' '}

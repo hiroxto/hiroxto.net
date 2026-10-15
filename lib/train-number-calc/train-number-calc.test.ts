@@ -28,6 +28,34 @@ describe('calcTrainNumberType', () => {
         expect(calcTrainNumberType('6222')).toBe('臨客');
     });
 
+    it('通常の専貨は千の位が0・1・3〜5の番号だけを判定する', () => {
+        expect(calcTrainNumberType('160')).toBe('専貨A');
+        expect(calcTrainNumberType('190')).toBe('専貨B');
+        expect(calcTrainNumberType('1160')).toBe('専貨A');
+        expect(calcTrainNumberType('3160')).toBe('専貨A');
+        expect(calcTrainNumberType('4160')).toBe('専貨A');
+        expect(calcTrainNumberType('5190')).toBe('専貨B');
+        expect(calcTrainNumberType('2160')).toBeNull();
+        expect(calcTrainNumberType('2190')).toBeNull();
+        expect(calcTrainNumberType('2150')).toBeNull();
+    });
+
+    it('千の位が6〜7の季節貨物列車を下位桁の条件で判定する', () => {
+        expect(calcTrainNumberType('6050')).toBe('高速貨A');
+        expect(calcTrainNumberType('7070')).toBe('高速貨B');
+        expect(calcTrainNumberType('6150')).toBe('高速貨C');
+        expect(calcTrainNumberType('7159')).toBe('高速貨C');
+        expect(calcTrainNumberType('6160')).toBe('専貨A');
+        expect(calcTrainNumberType('7190')).toBe('専貨B');
+    });
+
+    it('千の位が8〜9の臨時貨物列車を下位桁の条件で判定する', () => {
+        expect(calcTrainNumberType('8150')).toBe('臨高速貨C');
+        expect(calcTrainNumberType('9159')).toBe('臨高速貨C');
+        expect(calcTrainNumberType('8160')).toBe('臨専貨A');
+        expect(calcTrainNumberType('9190')).toBe('臨専貨B');
+    });
+
     it('空文字・先頭ゼロ・数字以外・範囲外の入力には null を返す', () => {
         expect(calcTrainNumberType('')).toBeNull();
         expect(calcTrainNumberType('0')).toBeNull();
