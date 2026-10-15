@@ -66,7 +66,15 @@ import {
     type StationId,
     type TransferType,
 } from './data';
-import { allOutsideTransferIds, emptyOutsideTransfersMessage, isOutsideTransferId } from './outside-transfers';
+import { allOutsideTransferIds, outsideTransferIdsSchema } from './outside-transfers';
+import {
+    MAX_OUTSIDE_TRANSFER_COUNT,
+    maximumOutsideTransferCountSchema,
+    searchBudgetSchema,
+    stationIdSchema,
+} from './validation';
+
+export { MAX_OUTSIDE_TRANSFER_COUNT } from './validation';
 
 /** 全路線のグラフに登録する、隣接駅への乗車接続。 */
 type RideEdge = {
@@ -507,7 +515,7 @@ export const stations: StationOption[] = stationIds.map((id) => ({
 }));
 
 /** 文字列が登録済みの駅IDかを判定し、型を絞り込む。 */
-export const isStationId = (value: string): value is StationId => Object.hasOwn(STATION_NAMES, value);
+export const isStationId = (value: string): value is StationId => stationIdSchema.safeParse(value).success;
 
 /** 駅IDを辞書順に並べ、往復で共通の駅間キーを作る。 */
 const getStationPairKey = (firstStationId: StationId, secondStationId: StationId): string =>
@@ -1025,8 +1033,6 @@ export const SEARCH_RESULT_LIMIT = 20;
 export const SEARCH_VISIT_LIMIT = 5_000_000;
 /** 前処理を含む検索時間の目安となる既定値。単位はミリ秒。 */
 export const SEARCH_DURATION_LIMIT_MS = 5_000;
-/** 利用者が指定できる改札外乗換回数の上限。 */
-export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
 
 /** 期限を再確認するまでの主探索の訪問回数。 */
 const SEARCH_DEADLINE_CHECK_INTERVAL = 1_000;
@@ -1047,7 +1053,7 @@ export type RouteSearchOptions = {
 
 /** 指定回数が1以上かつ公開上限以下の整数かを判定する。 */
 export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
-    Number.isInteger(value) && value >= 1 && value <= MAX_OUTSIDE_TRANSFER_COUNT;
+    maximumOutsideTransferCountSchema.safeParse(value).success;
 
 /**
  * 発着駅と改札外乗換回数の上限から、発見できた最大回数の経路を最大20件返す。
@@ -1068,11 +1074,9 @@ export const searchRoutes = (
     }
 
     const outsideTransferIds = options.outsideTransferIds ?? allOutsideTransferIds;
-    if (outsideTransferIds.length === 0) {
-        throw new Error(emptyOutsideTransfersMessage);
-    }
-    if (!outsideTransferIds.every(isOutsideTransferId)) {
-        throw new Error('指定された改札外乗換駅が見つかりません');
+    const outsideTransferValidation = outsideTransferIdsSchema.safeParse(outsideTransferIds);
+    if (!outsideTransferValidation.success) {
+        throw new Error(outsideTransferValidation.error.issues[0].message);
     }
     const selectedOutsideTransferIds = new Set(outsideTransferIds);
     const selectedOutsideMask = outsideOpportunities.reduce(
@@ -1086,12 +1090,7 @@ export const searchRoutes = (
     // 前処理を含む検索時間の目安。単位はミリ秒。
     const durationLimitMs = options.durationLimitMs ?? SEARCH_DURATION_LIMIT_MS;
     const includeInsideTransfers = options.includeInsideTransfers ?? true;
-    if (
-        !Number.isSafeInteger(visitLimit) ||
-        visitLimit < 0 ||
-        !Number.isFinite(durationLimitMs) ||
-        durationLimitMs < 0
-    ) {
+    if (!searchBudgetSchema.safeParse({ visitLimit, durationLimitMs }).success) {
         throw new Error('探索予算は0以上の有限値で指定してください（訪問数は整数）');
     }
     // 検索全体の終了期限。performance.nowと同じ時刻基準。
