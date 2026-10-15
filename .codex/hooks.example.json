@@ -6,7 +6,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "sh .codex/hooks/run-checks.sh post-tool-use",
+                        "command": "sh \"$(git rev-parse --show-toplevel)/.codex/hooks/run-checks.sh\" post-tool-use",
                         "timeout": 120,
                         "statusMessage": "Lint・整形・型検査を順に実行"
                     }
@@ -18,7 +18,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "sh .codex/hooks/run-checks.sh stop",
+                        "command": "sh \"$(git rev-parse --show-toplevel)/.codex/hooks/run-checks.sh\" stop",
                         "timeout": 120,
                         "statusMessage": "Lint・整形・型検査・テストを順に実行"
                     }
