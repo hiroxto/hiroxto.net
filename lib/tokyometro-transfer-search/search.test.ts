@@ -481,3 +481,42 @@ describe('searchRoutes', () => {
         });
     });
 });
+
+describe('searchRoutesの入力検証', () => {
+    it.each([0, 15, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+        '最大改札外乗換回数 %s は同駅発着でもエラーにする',
+        (value) => {
+            expect(() => searchRoutes('tokyo', 'tokyo', value)).toThrow(
+                '最大改札外乗換回数は1〜14回で指定してください',
+            );
+        },
+    );
+    it('利用可能な改札外乗換駅が空の場合はエラーにする', () => {
+        expect(() => searchRoutes('tokyo', 'tokyo', null, { outsideTransferIds: [] })).toThrow(
+            '利用する改札外乗換駅を1つ以上選択してください',
+        );
+    });
+    it('東京駅は改札外乗換駅として指定できない', () => {
+        expect(() => searchRoutes('tokyo', 'tokyo', null, { outsideTransferIds: ['tokyo'] })).toThrow(
+            '指定された改札外乗換駅が見つかりません',
+        );
+    });
+    it.each([-1, 0.5, Number.MAX_SAFE_INTEGER + 1, Number.NaN, Number.POSITIVE_INFINITY])(
+        '訪問予算 %s は同駅発着でもエラーにする',
+        (value) => {
+            expect(() => searchRoutes('tokyo', 'tokyo', null, { visitLimit: value })).toThrow(
+                '探索予算は0以上の有限値で指定してください（訪問数は整数）',
+            );
+        },
+    );
+    it.each([-1, Number.NaN, Number.POSITIVE_INFINITY])('時間予算 %s は同駅発着でもエラーにする', (value) => {
+        expect(() => searchRoutes('tokyo', 'tokyo', null, { durationLimitMs: value })).toThrow(
+            '探索予算は0以上の有限値で指定してください（訪問数は整数）',
+        );
+    });
+    it('正しい改札外乗換駅と0の探索予算では同駅発着の確定結果を返す', () => {
+        expect(
+            searchRoutes('tokyo', 'tokyo', 14, { outsideTransferIds: ['ueno'], visitLimit: 0, durationLimitMs: 0 }),
+        ).toEqual({ routes: [], truncated: false, outsideTransferUpperBound: 0 });
+    });
+});

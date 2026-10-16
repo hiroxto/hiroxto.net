@@ -56,12 +56,10 @@ describe('calcTrainNumberType', () => {
         expect(calcTrainNumberType('9190')).toBe('臨専貨B');
     });
 
-    it('空文字・先頭ゼロ・数字以外・範囲外の入力には null を返す', () => {
-        expect(calcTrainNumberType('')).toBeNull();
-        expect(calcTrainNumberType('0')).toBeNull();
-        expect(calcTrainNumberType('0001')).toBeNull();
-        expect(calcTrainNumberType('A12')).toBeNull();
-        expect(calcTrainNumberType('12 ')).toBeNull();
-        expect(calcTrainNumberType('10000')).toBeNull();
-    });
+    it.each(['', '0', '0001', 'A12', '12 ', '10000', '1.5', '-1', '１２', '1e2'])(
+        '不正な列車番号「%s」では種別を返さない',
+        (value) => {
+            expect(calcTrainNumberType(value)).toBeNull();
+        },
+    );
 });

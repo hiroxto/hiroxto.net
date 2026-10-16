@@ -1,12 +1,8 @@
 import { z } from 'zod';
 import type { StationId } from './data';
-import { allOutsideTransferIds, emptyOutsideTransfersMessage, isOutsideTransferId } from './outside-transfers';
-import {
-    isStationId,
-    isValidMaximumOutsideTransferCount,
-    MAX_OUTSIDE_TRANSFER_COUNT,
-    SEARCH_DURATION_LIMIT_MS,
-} from './search';
+import { allOutsideTransferIds, outsideTransferIdsSchema } from './outside-transfers';
+import { SEARCH_DURATION_LIMIT_MS } from './search';
+import { maximumOutsideTransferCountSchema, searchFormDurationSchema, stationIdSchema } from './validation';
 
 export type TokyoMetroTransferSearchParams = Record<string, string | string[] | undefined>;
 
@@ -20,21 +16,8 @@ export interface TokyoMetroTransferSearchQuery {
     error: string | null;
 }
 
-const stationNotFoundMessage = '指定された駅が見つかりません';
 const sameStationMessage = '乗車駅と降車駅には異なる駅を指定してください';
-const invalidMaximumOutsideTransferCountMessage = `最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`;
-
 const searchParamSchema = z.union([z.string(), z.array(z.string())]).optional();
-
-const stationIdSchema = z.custom<StationId>(
-    (value) => typeof value === 'string' && isStationId(value),
-    stationNotFoundMessage,
-);
-
-const maximumOutsideTransferCountSchema = z.custom<number>(
-    (value) => typeof value === 'number' && isValidMaximumOutsideTransferCount(value),
-    invalidMaximumOutsideTransferCountMessage,
-);
 
 const tokyoMetroTransferSearchParamsSchema = z
     .object({
@@ -69,13 +52,8 @@ const tokyoMetroTransferSearchParamsSchema = z
     .pipe(
         z
             .object({
-                durationLimitMs: z
-                    .number({ error: '探索時間は正の整数で指定してください' })
-                    .int('探索時間は正の整数で指定してください')
-                    .positive('探索時間は正の整数で指定してください'),
-                outsideTransferIds: z
-                    .array(z.custom<StationId>(isOutsideTransferId, '指定された改札外乗換駅が見つかりません'))
-                    .min(1, emptyOutsideTransfersMessage),
+                durationLimitMs: searchFormDurationSchema,
+                outsideTransferIds: outsideTransferIdsSchema,
                 maximumOutsideTransferCount: maximumOutsideTransferCountSchema.nullable(),
                 includeInsideTransfers: z
                     .enum(['true', 'false'], { error: '改札内乗換の指定はtrueまたはfalseにしてください' })

@@ -4,69 +4,14 @@ import { Anchor, Badge, NumberInput, Paper, Radio, SimpleGrid, Stack, Text, Titl
 import { useMemo, useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { compareTimesCarEstimate } from '@/lib/times-car-estimate-comparison/calc';
-import type {
-    CarShareDistanceChargeMode,
-    TimesCarEstimateComparisonInput,
-} from '@/lib/times-car-estimate-comparison/types';
+import type { CarShareDistanceChargeMode } from '@/lib/times-car-estimate-comparison/types';
+import { parseTimesCarEstimateComparisonInput } from '@/lib/times-car-estimate-comparison/validation';
 
 type NumberInputValue = string | number;
 
 const currencyFormatter = new Intl.NumberFormat('ja-JP');
 
 const formatYen = (value: number): string => `${currencyFormatter.format(value)}円`;
-
-const parseInputNumber = (value: NumberInputValue): number | null => {
-    if (typeof value === 'number') {
-        return Number.isFinite(value) ? value : null;
-    }
-
-    if (value.trim() === '') {
-        return null;
-    }
-
-    const numberValue = Number(value);
-
-    return Number.isFinite(numberValue) ? numberValue : null;
-};
-
-const buildInput = (
-    carShareUsageFeeValue: NumberInputValue,
-    rentalCarUsageFeeValue: NumberInputValue,
-    distanceKmValue: NumberInputValue,
-    gasolinePricePerLiterValue: NumberInputValue,
-    fuelEfficiencyKmPerLiterValue: NumberInputValue,
-    carShareDistanceChargeMode: CarShareDistanceChargeMode,
-): TimesCarEstimateComparisonInput | null => {
-    const carShareUsageFee = parseInputNumber(carShareUsageFeeValue);
-    const rentalCarUsageFee = parseInputNumber(rentalCarUsageFeeValue);
-    const distanceKm = parseInputNumber(distanceKmValue);
-    const gasolinePricePerLiter = parseInputNumber(gasolinePricePerLiterValue);
-    const fuelEfficiencyKmPerLiter = parseInputNumber(fuelEfficiencyKmPerLiterValue);
-
-    if (
-        carShareUsageFee == null ||
-        rentalCarUsageFee == null ||
-        distanceKm == null ||
-        gasolinePricePerLiter == null ||
-        fuelEfficiencyKmPerLiter == null ||
-        carShareUsageFee < 0 ||
-        rentalCarUsageFee < 0 ||
-        distanceKm < 0 ||
-        gasolinePricePerLiter < 0 ||
-        fuelEfficiencyKmPerLiter <= 0
-    ) {
-        return null;
-    }
-
-    return {
-        carShareUsageFee,
-        rentalCarUsageFee,
-        distanceKm,
-        gasolinePricePerLiter,
-        fuelEfficiencyKmPerLiter,
-        carShareDistanceChargeMode,
-    };
-};
 
 const getComparisonText = (cheaperService: 'carShare' | 'rentalCar' | 'same', difference: number): string => {
     if (cheaperService === 'same') {
@@ -88,14 +33,14 @@ export function TimesCarEstimateComparisonPage() {
         useState<CarShareDistanceChargeMode>('after20km');
 
     const comparisonResult = useMemo(() => {
-        const input = buildInput(
+        const input = parseTimesCarEstimateComparisonInput({
             carShareUsageFee,
             rentalCarUsageFee,
             distanceKm,
             gasolinePricePerLiter,
             fuelEfficiencyKmPerLiter,
             carShareDistanceChargeMode,
-        );
+        });
 
         return input == null ? null : compareTimesCarEstimate(input);
     }, [

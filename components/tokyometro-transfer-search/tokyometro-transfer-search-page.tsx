@@ -29,11 +29,7 @@ import {
     STATION_READINGS,
     type StationId,
 } from '@/lib/tokyometro-transfer-search/data';
-import {
-    allOutsideTransferIds,
-    emptyOutsideTransfersMessage,
-    outsideTransferOptions,
-} from '@/lib/tokyometro-transfer-search/outside-transfers';
+import { allOutsideTransferIds, outsideTransferOptions } from '@/lib/tokyometro-transfer-search/outside-transfers';
 import {
     formatDistance,
     MAX_OUTSIDE_TRANSFER_COUNT,
@@ -42,6 +38,7 @@ import {
     stations,
 } from '@/lib/tokyometro-transfer-search/search';
 import type { RouteSearchRequest, RouteSearchResponse } from '@/lib/tokyometro-transfer-search/search-worker-protocol';
+import { parseTokyoMetroTransferSearchForm } from '@/lib/tokyometro-transfer-search/validation';
 import styles from './tokyometro-transfer-search-page.module.css';
 
 interface TokyoMetroTransferSearchPageProps {
@@ -315,23 +312,13 @@ export function TokyoMetroTransferSearchPage({
         event.preventDefault();
 
         const submittedDurationLimitMs = Number(durationLimitMs);
-        if (!Number.isSafeInteger(submittedDurationLimitMs) || submittedDurationLimitMs <= 0) {
-            setFormError('探索時間は正の整数で指定してください');
-            return;
-        }
-
-        if (fromStationId == null || toStationId == null) {
-            setFormError('乗車駅と降車駅を指定してください');
-            return;
-        }
-
-        if (fromStationId === toStationId) {
-            setFormError('乗車駅と降車駅には異なる駅を指定してください');
-            return;
-        }
-
-        if (outsideTransferIds.length === 0) {
-            setFormError(emptyOutsideTransfersMessage);
+        const formResult = parseTokyoMetroTransferSearchForm({
+            durationLimitMs: submittedDurationLimitMs,
+            stations: { fromStationId, toStationId },
+            outsideTransferIds,
+        });
+        if (formResult.error != null) {
+            setFormError(formResult.error);
             return;
         }
 
@@ -349,7 +336,10 @@ export function TokyoMetroTransferSearchPage({
             return;
         }
 
-        const query = new URLSearchParams({ from: fromStationId, to: toStationId });
+        const query = new URLSearchParams({
+            from: formResult.data.stations.fromStationId,
+            to: formResult.data.stations.toStationId,
+        });
 
         if (maximumOutsideTransferCount != null) {
             query.set('maxOutsideTransfers', String(maximumOutsideTransferCount));

@@ -1,16 +1,13 @@
+import { trainNumberValueSchema } from '@/lib/train-number-calc/train-number-form';
 import type { TrainNumberType } from './train-number-type';
 
 export const calcTrainNumberType = (trainNumber: string): TrainNumberType | null => {
-    const splitNumber = convertToSplitNumber(trainNumber);
-
-    if (
-        trainNumber === '' ||
-        splitNumber.includes(Number.NaN) ||
-        splitNumber.length !== 4 ||
-        trainNumber.startsWith('0')
-    ) {
+    const result = trainNumberValueSchema.safeParse(trainNumber);
+    if (!result.success) {
         return null;
     }
+
+    const splitNumber = convertToSplitNumber(result.data);
 
     return isPassengerNumber(splitNumber) ? getPassengerType(splitNumber) : getFreightType(splitNumber);
 };
