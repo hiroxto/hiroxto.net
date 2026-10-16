@@ -142,3 +142,5 @@ next-env.d.ts
 
 .playwright-cli/
 .wrangler/
+
+/.codex/hooks.json

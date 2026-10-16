@@ -1,0 +1,29 @@
+{
+    "hooks": {
+        "PostToolUse": [
+            {
+                "matcher": "apply_patch",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "sh \"$(git rev-parse --show-toplevel)/.codex/hooks/run-checks.sh\" post-tool-use",
+                        "timeout": 120,
+                        "statusMessage": "Lint・整形・型検査を順に実行"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "sh \"$(git rev-parse --show-toplevel)/.codex/hooks/run-checks.sh\" stop",
+                        "timeout": 120,
+                        "statusMessage": "Lint・整形・型検査・テストを順に実行"
+                    }
+                ]
+            }
+        ]
+    }
+}
