@@ -8,7 +8,6 @@ import { renderWithMantine } from '@/test/test-utils';
 import { TokyoMetroTransferSearchPage } from './tokyometro-transfer-search-page';
 
 const pushMock = vi.fn();
-const workerRequestMock = vi.fn<(request: RouteSearchRequest) => void>();
 
 const inarichoToIriyaRoute: RouteResult = {
     key: 'inaricho-ueno-iriya',
@@ -50,18 +49,18 @@ const inarichoToIriyaRoute: RouteResult = {
 };
 
 let workerRoute = inarichoToIriyaRoute;
+let workerRouteForRequest = (_request: RouteSearchRequest): RouteResult => workerRoute;
 
 class WorkerMock {
     onmessage: ((event: MessageEvent<RouteSearchResponse>) => void) | null = null;
     onerror: (() => void) | null = null;
 
     postMessage(request: RouteSearchRequest) {
-        workerRequestMock(request);
         const routes =
             (request.originStationId === 'ayase' && request.destinationStationId === 'kita-ayase') ||
             request.originStationId === 'honancho'
                 ? []
-                : [workerRoute];
+                : [workerRouteForRequest(request)];
 
         queueMicrotask(() => {
             this.onmessage?.(
@@ -113,6 +112,7 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
         await screen.findByRole('heading', { name: '検索結果' });
+        workerRoute = { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } };
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
@@ -120,7 +120,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(screen.getByText('探索時間は正の整数で指定してください')).toBeInTheDocument();
         expect(pushMock).not.toHaveBeenCalled();
-        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+        expect(screen.getByText('178円')).toBeInTheDocument();
     });
 
     it('先頭ゼロ付きの正の整数をEnterで送信しても再検索できる', async () => {
@@ -140,10 +140,13 @@ describe('TokyoMetroTransferSearchPage', () => {
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
+        workerRouteForRequest = (request) =>
+            request.durationLimitMs === 5000
+                ? { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } }
+                : inarichoToIriyaRoute;
         await user.type(input, '05000{Enter}');
         expect(screen.queryByText('探索時間は正の整数で指定してください')).not.toBeInTheDocument();
-        expect(workerRequestMock).toHaveBeenCalledTimes(2);
-        expect(workerRequestMock).toHaveBeenLastCalledWith(expect.objectContaining({ durationLimitMs: 5000 }));
+        expect(await screen.findByText('209円')).toBeInTheDocument();
     });
 
     it('探索時間を変更すると検索時にURLへ反映し、URLの値で検索する', async () => {
@@ -163,15 +166,19 @@ describe('TokyoMetroTransferSearchPage', () => {
         const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
         await user.type(input, '12000');
-        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+        expect(screen.getByRole('heading', { name: '検索結果' })).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(pushMock).toHaveBeenCalledWith(
             '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1&durationLimitMs=12000',
         );
+        workerRouteForRequest = (request) =>
+            request.durationLimitMs === 12000
+                ? { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } }
+                : inarichoToIriyaRoute;
         rerender(<TokyoMetroTransferSearchPage {...props} initialDurationLimitMs={12000} />);
         await screen.findByRole('heading', { name: '検索結果' });
         expect(input).toHaveValue('12000');
-        expect(workerRequestMock).toHaveBeenLastCalledWith(expect.objectContaining({ durationLimitMs: 12000 }));
+        expect(await screen.findByText('209円')).toBeInTheDocument();
     });
 
     it('詳細指定は初期状態で閉じ、開くと全駅が選択されている', async () => {
@@ -207,6 +214,7 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
         await screen.findByRole('heading', { name: '検索結果' });
+        workerRoute = { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } };
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         await user.click(await screen.findByRole('button', { name: '全解除' }));
         for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).not.toBeChecked();
@@ -218,7 +226,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         expect(screen.getByRole('button', { name: '全解除' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: '全選択' })).not.toBeInTheDocument();
         expect(pushMock).not.toHaveBeenCalled();
-        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+        expect(screen.getByText('178円')).toBeInTheDocument();
         await user.click(screen.getByRole('checkbox', { name: '上野' }));
         await user.click(screen.getByRole('button', { name: '全選択' }));
         expect(screen.getByRole('checkbox', { name: '上野' })).toBeChecked();
@@ -239,12 +247,13 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
         await screen.findByRole('heading', { name: '検索結果' });
+        workerRoute = { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } };
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         expect(await screen.findByRole('checkbox', { name: '上野' })).toBeChecked();
         expect(screen.getByRole('checkbox', { name: '日比谷 / 有楽町' })).not.toBeChecked();
         await user.click(screen.getByRole('checkbox', { name: '日比谷 / 有楽町' }));
         expect(pushMock).not.toHaveBeenCalled();
-        expect(workerRequestMock).toHaveBeenCalledTimes(1);
+        expect(screen.getByText('178円')).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(pushMock).toHaveBeenCalledWith(
@@ -252,7 +261,7 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
     });
 
-    it('同じ駅の選択条件で再検索するとWorkerへその条件を送る', async () => {
+    it('同じ駅の選択条件で再検索すると新しい検索結果を表示する', async () => {
         const user = userEvent.setup();
         renderWithMantine(
             <TokyoMetroTransferSearchPage
@@ -266,10 +275,13 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
         await screen.findByRole('heading', { name: '検索結果' });
+        workerRouteForRequest = (request) =>
+            request.outsideTransferIds.length === 1 && request.outsideTransferIds[0] === 'ueno'
+                ? { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } }
+                : inarichoToIriyaRoute;
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(pushMock).not.toHaveBeenCalled();
-        expect(workerRequestMock).toHaveBeenCalledTimes(2);
-        expect(workerRequestMock).toHaveBeenLastCalledWith(expect.objectContaining({ outsideTransferIds: ['ueno'] }));
+        expect(await screen.findByText('209円')).toBeInTheDocument();
     });
 
     it('全駅の選択を外して検索するとエラーを表示して遷移しない', async () => {
@@ -294,8 +306,8 @@ describe('TokyoMetroTransferSearchPage', () => {
 
     beforeEach(() => {
         workerRoute = inarichoToIriyaRoute;
+        workerRouteForRequest = () => workerRoute;
         pushMock.mockClear();
-        workerRequestMock.mockClear();
         vi.stubGlobal('Worker', WorkerMock);
     });
 
@@ -450,12 +462,12 @@ describe('TokyoMetroTransferSearchPage', () => {
                 />,
             );
             await screen.findByRole('heading', { name: '検索結果' });
+            workerRoute = { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } };
             const toggle = screen.getByRole('switch', { name: '改札内乗換を含める' });
             expect(toggle).toHaveProperty('checked', initialValue);
             await user.click(toggle);
             expect(pushMock).not.toHaveBeenCalled();
-            expect(workerRequestMock).toHaveBeenCalledTimes(1);
-            expect(screen.getByRole('heading', { name: '検索結果' })).toBeInTheDocument();
+            expect(screen.getByText('178円')).toBeInTheDocument();
 
             await user.click(screen.getByRole('button', { name: '検索' }));
             expect(pushMock).toHaveBeenCalledWith(
@@ -480,6 +492,7 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
         await screen.findByRole('heading', { name: '検索結果' });
+        workerRoute = { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } };
         const fromInput = screen.getByRole('combobox', { name: '乗車駅' });
         const toInput = screen.getByRole('combobox', { name: '降車駅' });
         await user.click(fromInput);
@@ -492,9 +505,8 @@ describe('TokyoMetroTransferSearchPage', () => {
         expect((fromInput as HTMLInputElement).value).toMatch(/^入谷｜/);
         expect((toInput as HTMLInputElement).value).toMatch(/^銀座｜/);
         expect(screen.getByRole('combobox', { name: '最大改札外乗換回数' })).toHaveValue('1回');
-        expect(screen.getByRole('heading', { name: '検索結果' })).toBeInTheDocument();
+        expect(screen.getByText('178円')).toBeInTheDocument();
         expect(pushMock).not.toHaveBeenCalled();
-        expect(workerRequestMock).toHaveBeenCalledTimes(1);
 
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(pushMock).toHaveBeenCalledWith(
@@ -547,22 +559,14 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
 
         expect(await screen.findByRole('heading', { name: '検索結果' })).toBeInTheDocument();
-        expect(workerRequestMock).toHaveBeenCalledWith({
-            durationLimitMs: 5000,
-            originStationId: 'inaricho',
-            destinationStationId: 'iriya',
-            maximumOutsideTransferCount: 1,
-            includeInsideTransfers: true,
-            outsideTransferIds: allOutsideTransferIds,
-        });
-        expect(screen.getAllByText(/改札外乗換 \d+回/).length).toBeGreaterThan(0);
-        expect(screen.getAllByText('IC').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('きっぷ').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('改札外乗換 1回')).not.toHaveLength(0);
+        expect(screen.getByText('178円')).toBeInTheDocument();
+        expect(screen.getByText('180円')).toBeInTheDocument();
 
         await user.click(screen.getAllByText('デバッグ情報')[0]);
 
-        expect(screen.getAllByText(/実走営業キロ:/).length).toBeGreaterThan(0);
-        expect(screen.getAllByText(/運賃計算用最短営業キロ:/).length).toBeGreaterThan(0);
+        expect(screen.getByText('実走営業キロ: 1.9km')).toBeInTheDocument();
+        expect(screen.getByText('運賃計算用最短営業キロ: 1.9km')).toBeInTheDocument();
     });
 
     it.each(['Workerのエラー', '検索処理のエラー'] as const)(

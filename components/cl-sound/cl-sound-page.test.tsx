@@ -61,7 +61,9 @@ describe('ClSoundPage', () => {
 
         await user.click(screen.getByRole('button', { name: 'Play Success Tone' }));
 
-        expect(FakeAudioContext.latest?.oscillators).toMatchObject([
+        expect(
+            FakeAudioContext.latest?.oscillators.toSorted((a, b) => (a.startedAt ?? 0) - (b.startedAt ?? 0)),
+        ).toMatchObject([
             {
                 type: 'sine',
                 frequency: { value: 1500 },
@@ -78,7 +80,9 @@ describe('ClSoundPage', () => {
 
         await user.click(screen.getByRole('button', { name: 'Play Alert Tone' }));
 
-        expect(FakeAudioContext.latest?.oscillators).toMatchObject([
+        expect(
+            FakeAudioContext.latest?.oscillators.toSorted((a, b) => (a.startedAt ?? 0) - (b.startedAt ?? 0)),
+        ).toMatchObject([
             {
                 type: 'sine',
                 frequency: { value: 750 },

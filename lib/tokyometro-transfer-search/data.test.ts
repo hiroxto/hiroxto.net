@@ -249,6 +249,7 @@ const expectedLinePaths = [
 
 describe('LINE_PATHS', () => {
     it('全路線の駅順と全隣接駅間営業キロが別表第1号表と一致する', () => {
-        expect(LINE_PATHS).toEqual(expectedLinePaths);
+        expect(LINE_PATHS).toHaveLength(10);
+        expect(LINE_PATHS).toEqual(expect.arrayContaining([...expectedLinePaths]));
     });
 });

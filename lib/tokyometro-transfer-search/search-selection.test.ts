@@ -6,7 +6,27 @@ describe('改札外乗換駅の選択', () => {
         const result = searchRoutes('inaricho', 'iriya', null, { outsideTransferIds: ['ueno'] });
         expect(result.truncated).toBe(false);
         expect(result.outsideTransferUpperBound).toBe(1);
-        expect(result.routes.length).toBeGreaterThan(0);
+        // 銀座線の稲荷町―上野0.7kmと日比谷線の上野―入谷1.2kmを接続する。
+        expect(result.routes[0]).toMatchObject({
+            outsideTransferCount: 1,
+            insideTransferCount: 0,
+            actualDistanceTenths: 19,
+            shortestDistanceTenths: 19,
+            fare: { ic: 178, ticket: 180 },
+            legs: [
+                { fromStationId: 'inaricho', toStationId: 'ueno', lineId: 'ginza', distanceTenths: 7 },
+                { fromStationId: 'ueno', toStationId: 'iriya', lineId: 'hibiya', distanceTenths: 12 },
+            ],
+            transfers: [
+                {
+                    fromStationId: 'ueno',
+                    toStationId: 'ueno',
+                    fromLineId: 'ginza',
+                    toLineId: 'hibiya',
+                    type: 'outside',
+                },
+            ],
+        });
         for (const route of result.routes) {
             expect(route.transfers.filter((transfer) => transfer.type === 'outside')).toEqual([
                 expect.objectContaining({ fromStationId: 'ueno', toStationId: 'ueno' }),

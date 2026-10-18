@@ -6,10 +6,6 @@ describe('useInputSettingStore', () => {
         useInputSettingStore.setState({ useComplete: true });
     });
 
-    test('初期値は useComplete=true であること', () => {
-        expect(useInputSettingStore.getState().useComplete).toBe(true);
-    });
-
     test('enableComplete と disableComplete で状態を切り替えられること', () => {
         useInputSettingStore.getState().disableComplete();
         expect(useInputSettingStore.getState().useComplete).toBe(false);
