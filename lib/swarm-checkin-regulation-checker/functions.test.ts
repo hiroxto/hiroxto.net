@@ -12,7 +12,6 @@ import {
     getNextJstMidnight,
     getNextManualAutoFetchAt,
     getNextRefreshAt,
-    resolveAutoFetchFailure,
     resolveAutoFetchSuccess,
 } from '@/lib/swarm-checkin-regulation-checker/functions';
 import type { AllLimitCheckResult, CheckinItem, LimitCheckResult } from '@/lib/swarm-checkin-regulation-checker/types';
@@ -351,17 +350,6 @@ describe('resolveAutoFetchSuccess()', () => {
         expect(
             resolveAutoFetchSuccess({ previousCount: 1, unchangedCount: 1 }, result, fetchedAt, 5, false),
         ).toStrictEqual({
-            autoFetchEnabled: false,
-            nextAutoFetchAt: null,
-            previousCount: null,
-            unchangedCount: 0,
-        });
-    });
-});
-
-describe('resolveAutoFetchFailure()', () => {
-    it('自動取得失敗時の停止状態を返すこと', () => {
-        expect(resolveAutoFetchFailure()).toStrictEqual({
             autoFetchEnabled: false,
             nextAutoFetchAt: null,
             previousCount: null,
