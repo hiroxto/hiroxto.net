@@ -165,7 +165,8 @@ describe('TokyoMetroTransferSearchPage', () => {
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
-        await user.type(input, '12000');
+        // 検証対象は値の反映なので、1文字ごとの再描画を避けて一括入力する。
+        await user.paste('12000');
         expect(screen.getByRole('heading', { name: '検索結果' })).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(pushMock).toHaveBeenCalledWith(
