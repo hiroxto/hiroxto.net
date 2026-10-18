@@ -7,14 +7,16 @@ import { siteOrigin } from '@/lib/metadata/site-origin';
 const title = 'Tools';
 const description = '便利(?)ツール類';
 
+// ツールを追加する際は、ユーザーに一覧内の追加位置を指定してもらうこと。
+// 追加位置が未指定の場合は、独自に決めずユーザーに確認すること。
 const tools = [
+    {
+        href: '/tools/tokyometro-transfer-search',
+        title: '東京メトロ 改札外乗換検索',
+    },
     {
         href: '/tools/fare-ticket-route-planner',
         title: '乗車券の経路作成',
-    },
-    {
-        href: '/tools/times-car-estimate-comparison',
-        title: 'タイムズカー/タイムズカーレンタル概算比較',
     },
     {
         href: '/tools/cl-sound',
@@ -25,24 +27,24 @@ const tools = [
         title: 'DTMF',
     },
     {
-        href: '/tools/qr-code-gen',
-        title: 'QRコード生成',
+        href: '/tools/times-car-estimate-comparison',
+        title: 'タイムズカー/タイムズカーレンタル概算比較',
     },
     {
         href: '/tools/train-number-calc',
         title: '列車番号から列車種別を計算',
     },
     {
-        href: '/tools/train-number',
-        title: '列車番号メモ',
-    },
-    {
-        href: '/tools/tokyometro-transfer-search',
-        title: '東京メトロ 改札外乗換検索',
+        href: '/tools/qr-code-gen',
+        title: 'QRコード生成',
     },
     {
         href: '/tools/swarm-checkin-regulation-checker',
         title: 'Swarm コイン規制チェッカー',
+    },
+    {
+        href: '/tools/train-number',
+        title: '列車番号メモ',
     },
 ] as const;
 
