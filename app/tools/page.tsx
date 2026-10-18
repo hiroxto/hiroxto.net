@@ -7,6 +7,8 @@ import { siteOrigin } from '@/lib/metadata/site-origin';
 const title = 'Tools';
 const description = '便利(?)ツール類';
 
+// ツールを追加する際は、ユーザーに一覧内の追加位置を指定してもらうこと。
+// 追加位置が未指定の場合は、独自に決めずユーザーに確認すること。
 const tools = [
     {
         href: '/tools/tokyometro-transfer-search',
