@@ -1,16 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import React from 'react';
 import { afterEach, vi } from 'vitest';
-
-vi.mock('next/link', () => ({
-    default: ({
-        href,
-        children,
-        ...props
-    }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children: React.ReactNode }) =>
-        React.createElement('a', { href, ...props }, children),
-}));
 
 afterEach(() => {
     cleanup();
@@ -39,33 +29,6 @@ class ResizeObserverMock {
 Object.defineProperty(window, 'ResizeObserver', {
     writable: true,
     value: ResizeObserverMock,
-});
-
-const localStorageMock = (() => {
-    let store = new Map<string, string>();
-
-    return {
-        clear: vi.fn(() => {
-            store = new Map<string, string>();
-        }),
-        getItem: vi.fn((key: string) => store.get(key) ?? null),
-        key: vi.fn((index: number) => Array.from(store.keys())[index] ?? null),
-        removeItem: vi.fn((key: string) => {
-            store.delete(key);
-        }),
-        setItem: vi.fn((key: string, value: string) => {
-            store.set(key, value);
-        }),
-        get length() {
-            return store.size;
-        },
-    };
-})();
-
-Object.defineProperty(window, 'localStorage', {
-    configurable: true,
-    writable: true,
-    value: localStorageMock,
 });
 
 Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {

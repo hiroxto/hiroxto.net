@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SavedRoutesPage } from '@/components/fare-ticket-route-planner/saved-routes-page';
 import { useSavedRouteStore } from '@/components/fare-ticket-route-planner/stores/saved-route-store';
 import { renderWithMantine } from '@/test/test-utils';
@@ -9,11 +9,22 @@ vi.mock('next/navigation', () => ({
     useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock('@/components/fare-ticket-route-planner/use-sound', () => ({
-    useSound: () => () => {},
-}));
+// jsdomで未対応の音声APIだけを置き換える。
+vi.hoisted(() => {
+    vi.stubGlobal(
+        'Audio',
+        class {
+            currentTime = 0;
+            load() {}
+            play() {
+                return Promise.resolve();
+            }
+        },
+    );
+});
 
 describe('SavedRoutesPage', () => {
+    afterAll(() => vi.unstubAllGlobals());
     beforeEach(() => {
         window.localStorage.clear();
         useSavedRouteStore.setState({
@@ -37,10 +48,7 @@ describe('SavedRoutesPage', () => {
         const user = userEvent.setup();
         renderWithMantine(<SavedRoutesPage />);
 
-        const rowA = screen.getByRole('cell', { name: '駅A' }).closest('tr');
-        if (rowA == null) {
-            throw new Error('駅Aの行が見つかりません');
-        }
+        const rowA = screen.getByRole('row', { name: /駅A/ });
         await user.click(within(rowA).getByRole('checkbox', { name: '選択' }));
         await user.click(within(rowA).getByRole('button', { name: '削除' }));
         await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '削除' }));

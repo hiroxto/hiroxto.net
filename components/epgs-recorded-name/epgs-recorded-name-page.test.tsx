@@ -38,7 +38,7 @@ describe('EpgsRecordedNamePage', () => {
 
             expect(screen.getByLabelText('放送開始年')).toHaveValue(2027);
             expect(screen.getByRole('combobox', { name: 'シーズン' })).toHaveValue('冬アニメ');
-            expect(container.querySelector('pre')).toHaveTextContent('2027/01_winter/');
+            expect(screen.getByText('2027/01_winter/')).toBeInTheDocument();
             expect(errors).toEqual([]);
         } finally {
             await act(async () => root.unmount());

@@ -39,7 +39,12 @@ class FakeAudioContext {
         FakeAudioContext.latest = this;
     }
 
-    close = vi.fn().mockResolvedValue(undefined);
+    state: AudioContextState = 'running';
+
+    close() {
+        this.state = 'closed';
+        return Promise.resolve();
+    }
 
     createOscillator() {
         const oscillator = new FakeOscillator();
@@ -97,19 +102,19 @@ describe('ClSoundPage', () => {
             },
         ]);
     });
-    it('成功音の終了後に、その再生のAudioContextを閉じる', async () => {
+    it('成功音の終了後に音声リソースを解放する', async () => {
         const user = userEvent.setup();
         vi.stubGlobal('AudioContext', FakeAudioContext);
         renderWithMantine(<ClSoundPage />);
 
         await user.click(screen.getByRole('button', { name: 'Play Success Tone' }));
         const context = FakeAudioContext.latest;
-        expect(context?.close).not.toHaveBeenCalled();
+        expect(context?.state).toBe('running');
         context?.oscillators[0].dispatchEvent(new Event('ended'));
-        expect(context?.close).toHaveBeenCalledTimes(1);
+        expect(context?.state).toBe('closed');
     });
 
-    it('警告音は両方の音が終了するまで閉じず、再生ごとのAudioContextを閉じる', async () => {
+    it('警告音を続けて再生しても、終了した音のリソースだけを解放する', async () => {
         const user = userEvent.setup();
         vi.stubGlobal('AudioContext', FakeAudioContext);
         renderWithMantine(<ClSoundPage />);
@@ -119,16 +124,15 @@ describe('ClSoundPage', () => {
         const firstContext = FakeAudioContext.latest;
         await user.click(button);
         const secondContext = FakeAudioContext.latest;
-        expect(secondContext).not.toBe(firstContext);
 
         firstContext?.oscillators[0].dispatchEvent(new Event('ended'));
-        expect(firstContext?.close).not.toHaveBeenCalled();
+        expect(firstContext?.state).toBe('running');
         firstContext?.oscillators[1].dispatchEvent(new Event('ended'));
-        expect(firstContext?.close).toHaveBeenCalledTimes(1);
-        expect(secondContext?.close).not.toHaveBeenCalled();
+        expect(firstContext?.state).toBe('closed');
+        expect(secondContext?.state).toBe('running');
 
         secondContext?.oscillators[0].dispatchEvent(new Event('ended'));
         secondContext?.oscillators[1].dispatchEvent(new Event('ended'));
-        expect(secondContext?.close).toHaveBeenCalledTimes(1);
+        expect(secondContext?.state).toBe('closed');
     });
 });

@@ -165,7 +165,8 @@ describe('TokyoMetroTransferSearchPage', () => {
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         const input = await screen.findByRole('textbox', { name: '探索時間（ミリ秒）' });
         await user.clear(input);
-        await user.type(input, '12000');
+        // 検証対象は値の反映なので、1文字ごとの再描画を避けて一括入力する。
+        await user.paste('12000');
         expect(screen.getByRole('heading', { name: '検索結果' })).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(pushMock).toHaveBeenCalledWith(
@@ -317,11 +318,23 @@ describe('TokyoMetroTransferSearchPage', () => {
     });
 
     it.each([
-        { from: 'ueno', to: 'ueno', type: 'outside', station: '上野', label: '改札外乗換' },
-        { from: 'ueno', to: 'ueno', type: 'inside', station: '上野', label: '改札内乗換' },
-        { from: 'yurakucho', to: 'hibiya', type: 'outside', station: '有楽町 / 日比谷', label: '改札外乗換' },
-        { from: 'hibiya', to: 'yurakucho', type: 'outside', station: '日比谷 / 有楽町', label: '改札外乗換' },
-    ] as const)('$station の駅名の後ろに $label を表示する', async ({ from, to, type, station, label }) => {
+        { from: 'ueno', to: 'ueno', type: 'outside', station: '上野', description: '上野改札外乗換' },
+        { from: 'ueno', to: 'ueno', type: 'inside', station: '上野', description: '上野改札内乗換' },
+        {
+            from: 'yurakucho',
+            to: 'hibiya',
+            type: 'outside',
+            station: '有楽町 / 日比谷',
+            description: '有楽町 / 日比谷改札外乗換',
+        },
+        {
+            from: 'hibiya',
+            to: 'yurakucho',
+            type: 'outside',
+            station: '日比谷 / 有楽町',
+            description: '日比谷 / 有楽町改札外乗換',
+        },
+    ] as const)('乗換駅を「$description」と表示する', async ({ from, to, type, station, description }) => {
         workerRoute = {
             ...inarichoToIriyaRoute,
             legs: [
@@ -342,9 +355,9 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
 
-        const results = within(await screen.findByRole('region', { name: '検索結果' }));
-        const stationName = results.getByText(station, { exact: true });
-        expect(stationName.parentElement).toHaveTextContent(`${station}${label}`);
+        const region = await screen.findByRole('region', { name: '検索結果' });
+        const results = within(region);
+        expect(region).toHaveTextContent(description);
         expect(results.getAllByText(station, { exact: true })).toHaveLength(1);
     });
 
@@ -446,9 +459,19 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
     });
 
-    it.each([true, false])(
-        '改札内乗換が%sの状態から切り替えても検索ボタン押下までは反映しない',
-        async (initialValue) => {
+    it.each([
+        {
+            initialValue: true,
+            expectedUrl:
+                '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1&includeInsideTransfers=false',
+        },
+        {
+            initialValue: false,
+            expectedUrl: '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1',
+        },
+    ])(
+        '改札内乗換が$initialValueの状態から切り替えても検索ボタン押下までは反映しない',
+        async ({ initialValue, expectedUrl }) => {
             const user = userEvent.setup();
             renderWithMantine(
                 <TokyoMetroTransferSearchPage
@@ -470,11 +493,7 @@ describe('TokyoMetroTransferSearchPage', () => {
             expect(screen.getByText('178円')).toBeInTheDocument();
 
             await user.click(screen.getByRole('button', { name: '検索' }));
-            expect(pushMock).toHaveBeenCalledWith(
-                initialValue
-                    ? '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1&includeInsideTransfers=false'
-                    : '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1',
-            );
+            expect(pushMock).toHaveBeenCalledWith(expectedUrl);
         },
     );
 
