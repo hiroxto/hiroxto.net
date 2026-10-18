@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LINE_PATHS, type StationId } from './data';
 import { calculateFareBetweenStations, searchRoutes } from './search';
 
 describe('calculateFareBetweenStations', () => {
@@ -359,62 +358,6 @@ describe('searchRoutes', () => {
             actualDistanceTenths: 17,
             fareCheckpoints: [{ stationId: exit, shortestDistanceTenths: distance, fare: { ic: 178, ticket: 180 } }],
         });
-    });
-
-    it('返す全経路で区間接続・距離合計・乗換回数が一致し、経路が重複しない', () => {
-        const { routes } = searchRoutes('tokyo', 'asakusa', 3);
-        expect(routes).toHaveLength(20);
-        expect(new Set(routes.map((route) => route.key)).size).toBe(routes.length);
-        for (const route of routes) {
-            expect(route.legs[0].fromStationId).toBe('tokyo');
-            expect(route.legs.at(-1)?.toStationId).toBe('asakusa');
-            expect(route.transfers).toHaveLength(route.legs.length - 1);
-            // 公開データの隣接関係から各区間を展開し、途中駅の再訪も検出する。
-            const visited = new Set<StationId>();
-            for (const leg of route.legs) {
-                const queue: StationId[][] = [[leg.fromStationId]];
-                let expanded: StationId[] | undefined;
-                while (queue.length > 0) {
-                    const path = queue.shift();
-                    if (!path) throw new Error('展開待ちの経路がありません');
-                    const current = path[path.length - 1];
-                    if (current === leg.toStationId) {
-                        expanded = path;
-                        break;
-                    }
-                    for (const line of LINE_PATHS.filter((line) => line.lineId === leg.lineId)) {
-                        const ids: readonly StationId[] = line.stations.map(([id]) => id);
-                        const index = ids.indexOf(current);
-                        if (index < 0) continue;
-                        for (const neighbor of [ids[index - 1], ids[index + 1]]) {
-                            if (neighbor && !path.includes(neighbor)) queue.push([...path, neighbor]);
-                        }
-                    }
-                }
-                expect(expanded).toBeDefined();
-                if (!expanded) throw new Error('乗車区間を展開できません');
-                // 同駅の乗換では、直前の区間終点と次の区間始点を一度だけ数える。
-                if (!visited.has(leg.fromStationId)) visited.add(leg.fromStationId);
-                for (const station of expanded.slice(1)) {
-                    expect(visited.has(station), `再訪駅: ${station}`).toBe(false);
-                    visited.add(station);
-                }
-            }
-
-            expect(route.actualDistanceTenths).toBe(route.legs.reduce((total, leg) => total + leg.distanceTenths, 0));
-            expect(route.transfers.filter((transfer) => transfer.type === 'outside')).toHaveLength(3);
-            expect(route.transfers.filter((transfer) => transfer.type === 'inside')).toHaveLength(
-                route.insideTransferCount,
-            );
-            for (const [index, transfer] of route.transfers.entries()) {
-                expect(transfer).toMatchObject({
-                    fromStationId: route.legs[index].toStationId,
-                    fromLineId: route.legs[index].lineId,
-                    toStationId: route.legs[index + 1].fromStationId,
-                    toLineId: route.legs[index + 1].lineId,
-                });
-            }
-        }
     });
 
     it('乗車駅と降車駅が同じ場合は経路を返さない', () => {

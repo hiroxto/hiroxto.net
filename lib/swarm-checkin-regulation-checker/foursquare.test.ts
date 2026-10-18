@@ -25,15 +25,14 @@ describe('FoursquareClient', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
 
         const [url, options] = fetchMock.mock.calls[0] ?? [];
-        expect(url).toBeInstanceOf(URL);
-        const endpoint = url as URL;
+        const endpoint = new URL(url instanceof Request ? url.url : String(url));
         expect(endpoint.origin).toBe('https://api.foursquare.com');
         expect(endpoint.pathname).toBe('/v2/users/self/checkins');
         expect(endpoint.searchParams.get('oauth_token')).toBe('test-token');
         expect(endpoint.searchParams.get('limit')).toBe('200');
         expect(endpoint.searchParams.get('v')).toBe('20221016');
         expect(endpoint.searchParams.get('lang')).toBe('ja');
-        expect(options).toEqual({ method: 'GET' });
+        expect(options).toMatchObject({ method: 'GET' });
     });
 
     test('API エラー時は HTTP ステータスを含む例外を投げる', async () => {

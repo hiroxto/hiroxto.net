@@ -4,31 +4,13 @@ import { useSwarmCheckinRegulationCheckerTokenStore } from '@/components/swarm-c
 import { renderWithMantine } from '@/test/test-utils';
 import { SwarmCheckinRegulationCheckerPage } from './swarm-checkin-regulation-checker-page';
 
-const { getSelfCheckinsMock, mockCurrentTime } = vi.hoisted(() => ({
-    getSelfCheckinsMock: vi.fn(),
-    mockCurrentTime: { value: null as Date | null },
-}));
-
-vi.mock('@/hooks/use-current-time', () => ({
-    useCurrentTime: () => mockCurrentTime.value,
-}));
-
-vi.mock('@/lib/swarm-checkin-regulation-checker/foursquare', () => ({
-    FoursquareClient: class {
-        getSelfCheckins = getSelfCheckinsMock;
-    },
-}));
-
 describe('SwarmCheckinRegulationCheckerPage', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.setSystemTime(new Date('2024-10-01T03:34:56Z'));
-        mockCurrentTime.value = new Date('2024-10-01T03:34:56Z');
-        getSelfCheckinsMock.mockReset();
-        getSelfCheckinsMock.mockResolvedValue([]);
         window.localStorage.clear();
         useSwarmCheckinRegulationCheckerTokenStore.setState({
-            token: 'token-value',
+            token: '',
             autoFetchIntervalSeconds: 5,
         });
     });
@@ -39,7 +21,7 @@ describe('SwarmCheckinRegulationCheckerPage', () => {
 
     it('保存済みの自動取得秒数を初期表示に反映すること', async () => {
         useSwarmCheckinRegulationCheckerTokenStore.setState({
-            token: 'token-value',
+            token: '',
             autoFetchIntervalSeconds: 30,
         });
 

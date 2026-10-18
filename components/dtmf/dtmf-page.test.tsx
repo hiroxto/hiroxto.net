@@ -96,7 +96,9 @@ describe('DtmfPage', () => {
         fireEvent.pointerDown(button, { button: 0, pointerId: 1, pointerType: 'mouse' });
 
         expect(screen.getByText('5 (770 Hz + 1336 Hz)')).toBeInTheDocument();
-        expect(FakeAudioContext.latest?.oscillators).toMatchObject([
+        expect(
+            FakeAudioContext.latest?.oscillators.toSorted((a, b) => a.frequency.value - b.frequency.value),
+        ).toMatchObject([
             { frequency: { value: 770 }, stoppedAt: null, type: 'sine' },
             { frequency: { value: 1336 }, stoppedAt: null, type: 'sine' },
         ]);
@@ -104,10 +106,9 @@ describe('DtmfPage', () => {
         fireEvent.pointerUp(button, { pointerId: 1, pointerType: 'mouse' });
 
         expect(screen.getByText('停止中')).toBeInTheDocument();
-        expect(FakeAudioContext.latest?.oscillators).toMatchObject([
-            { stoppedAt: expect.any(Number) },
-            { stoppedAt: expect.any(Number) },
-        ]);
+        expect(
+            FakeAudioContext.latest?.oscillators.toSorted((a, b) => a.frequency.value - b.frequency.value),
+        ).toMatchObject([{ stoppedAt: expect.any(Number) }, { stoppedAt: expect.any(Number) }]);
     });
 
     it('物理キーボードの#を押している間は941 Hzと1477 Hzの信号音を再生すること', () => {
@@ -116,7 +117,9 @@ describe('DtmfPage', () => {
         fireEvent.keyDown(window, { code: 'Digit3', key: '#', shiftKey: true });
 
         expect(screen.getByText('# (941 Hz + 1477 Hz)')).toBeInTheDocument();
-        expect(FakeAudioContext.latest?.oscillators).toMatchObject([
+        expect(
+            FakeAudioContext.latest?.oscillators.toSorted((a, b) => a.frequency.value - b.frequency.value),
+        ).toMatchObject([
             { frequency: { value: 941 }, stoppedAt: null },
             { frequency: { value: 1477 }, stoppedAt: null },
         ]);

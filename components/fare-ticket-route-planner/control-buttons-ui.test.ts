@@ -1,69 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import {
-    createSaveLabels,
-    createSaveRoutePayload,
-    createUpdateRoutePayload,
-    isSameCalendarDate,
-} from '@/components/fare-ticket-route-planner/control-buttons-ui';
+import { createSaveLabels, isSameCalendarDate } from '@/components/fare-ticket-route-planner/control-buttons-ui';
 import type { SavedRouteState } from '@/lib/fare-ticket-route-planner/types';
 
 describe('control buttons ui', () => {
-    test('新規保存用のデータに現在の経路設定を含める', () => {
-        const payload = createSaveRoutePayload({
-            month: '1',
-            day: '2',
-            dateOption: 'skip',
-            departure: '東京',
-            destination: '尼崎',
-            routes: [
-                { id: 'route-1', line: '新幹線', station: '新大阪' },
-                { id: 'route-2', line: '東海道線', station: '' },
-            ],
-            notes: 'テスト用の備考',
-        });
-
-        expect(payload).toEqual({
-            month: '1',
-            day: '2',
-            dateOption: 'skip',
-            departure: '東京',
-            destination: '尼崎',
-            routes: [
-                { id: 'route-1', line: '新幹線', station: '新大阪' },
-                { id: 'route-2', line: '東海道線', station: '' },
-            ],
-            notes: 'テスト用の備考',
-        });
-    });
-
-    test('更新用のデータに現在の経路設定を含める', () => {
-        const payload = createUpdateRoutePayload({
-            month: '1',
-            day: '2',
-            dateOption: 'skip',
-            departure: '東京',
-            destination: '尼崎',
-            routes: [
-                { id: 'route-1', line: '新幹線', station: '新大阪' },
-                { id: 'route-2', line: '東海道線', station: '' },
-            ],
-            notes: 'テスト用の備考',
-        });
-
-        expect(payload).toEqual({
-            month: '1',
-            day: '2',
-            dateOption: 'skip',
-            departure: '東京',
-            destination: '尼崎',
-            routes: [
-                { id: 'route-1', line: '新幹線', station: '新大阪' },
-                { id: 'route-2', line: '東海道線', station: '' },
-            ],
-            notes: 'テスト用の備考',
-        });
-    });
-
     test('保存済み経路の表示名に発駅・着駅・ID を含める', () => {
         const savedRoutes: SavedRouteState[] = [
             {

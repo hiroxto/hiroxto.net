@@ -1,51 +1,36 @@
-import { screen } from '@testing-library/react';
+import { MantineProvider } from '@mantine/core';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ControlButtons } from '@/components/fare-ticket-route-planner/control-buttons';
 import { useInputSettingStore } from '@/components/fare-ticket-route-planner/stores/input-setting-store';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
 import { useSavedRouteStore } from '@/components/fare-ticket-route-planner/stores/saved-route-store';
-import { renderWithMantine } from '@/test/test-utils';
 
-vi.mock('@mantine/core', async () => {
-    const actual = await vi.importActual<typeof import('@mantine/core')>('@mantine/core');
-
-    return {
-        ...actual,
-        Modal: ({ opened, title, children }: { opened: boolean; title?: ReactNode; children: ReactNode }) =>
-            opened ? (
-                <div>
-                    <div>{title}</div>
-                    {children}
-                </div>
-            ) : null,
-    };
+// jsdomで未対応の音声APIだけを置き換え、画面部品は実物を使う。
+vi.hoisted(() => {
+    vi.stubGlobal(
+        'Audio',
+        class {
+            currentTime = 0;
+            load() {}
+            play() {
+                return Promise.resolve();
+            }
+        },
+    );
 });
 
-vi.mock('@mantine/dates', () => ({
-    DatePicker: () => null,
-}));
-
-vi.mock('@/components/fare-ticket-route-planner/sound-button', () => ({
-    SoundButton: ({
-        children,
-        onClick,
-        soundType: _soundType,
-        fullWidth: _fullWidth,
-        ...props
-    }: ComponentPropsWithoutRef<'button'> & {
-        children: ReactNode;
-        soundType?: string;
-        fullWidth?: boolean;
-    }) => (
-        <button type="button" onClick={onClick} {...props}>
-            {children}
-        </button>
-    ),
-}));
+function renderControls() {
+    return render(
+        <MantineProvider env="test">
+            <ControlButtons />
+        </MantineProvider>,
+    );
+}
 
 describe('ControlButtons', () => {
+    afterAll(() => vi.unstubAllGlobals());
     beforeEach(() => {
         window.localStorage.clear();
 
@@ -64,13 +49,14 @@ describe('ControlButtons', () => {
 
     afterEach(() => {
         vi.useRealTimers();
+        vi.restoreAllMocks();
     });
 
     test('本日ボタンで現在日付を設定できる', async () => {
         vi.useFakeTimers({ toFake: ['Date'] });
         vi.setSystemTime(new Date(2026, 2, 10, 12));
         const user = userEvent.setup();
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         await user.click(screen.getByRole('button', { name: '本日' }));
 
@@ -83,7 +69,7 @@ describe('ControlButtons', () => {
 
     test('補完の有効状態を切り替えられる', async () => {
         const user = userEvent.setup();
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         await user.click(screen.getByRole('button', { name: /補完\s*無効化/ }));
         expect(useInputSettingStore.getState().useComplete).toBe(false);
@@ -105,7 +91,7 @@ describe('ControlButtons', () => {
             ],
         });
 
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         await user.click(screen.getByRole('button', { name: '発着逆転' }));
 
@@ -121,7 +107,7 @@ describe('ControlButtons', () => {
 
     test('経路追加ボタンで経路を1行追加できる', async () => {
         const user = userEvent.setup();
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         await user.click(screen.getByRole('button', { name: '経路追加' }));
 
@@ -138,7 +124,7 @@ describe('ControlButtons', () => {
             ],
         });
 
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         await user.click(screen.getByRole('button', { name: /空経路\s*クリア/ }));
 
@@ -148,7 +134,7 @@ describe('ControlButtons', () => {
     });
 
     test('保存済み経路へのリンクを表示する', () => {
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         expect(screen.getByRole('link', { name: /保存済み\s*経路/ })).toHaveAttribute(
             'href',
@@ -164,12 +150,12 @@ describe('ControlButtons', () => {
             destination: '新大阪',
         });
 
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         await user.click(screen.getByRole('button', { name: /設定\s*クリア/ }));
-        expect(screen.getByText('設定をクリアしますか？')).toBeInTheDocument();
+        expect(await screen.findByText('設定をクリアしますか？')).toBeInTheDocument();
 
-        await user.click(screen.getByRole('button', { name: 'クリア' }));
+        await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'クリア' }));
 
         expect(useRouteStateStore.getState()).toMatchObject({
             dateOption: 'use',
@@ -193,10 +179,10 @@ describe('ControlButtons', () => {
             notes: 'テストnotes',
         });
 
-        renderWithMantine(<ControlButtons />);
+        renderControls();
 
         await user.click(screen.getByRole('button', { name: '保存・更新' }));
-        await user.click(screen.getByRole('button', { name: '新規保存' }));
+        await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '新規保存' }));
 
         expect(useSavedRouteStore.getState().routes).toHaveLength(1);
         expect(useSavedRouteStore.getState().routes[0]?.route).toEqual({
@@ -211,5 +197,69 @@ describe('ControlButtons', () => {
             ],
             notes: 'テストnotes',
         });
+    });
+
+    test('保存済み経路を選んで更新すると、その経路の設定だけを変更する', async () => {
+        const user = userEvent.setup();
+        const savedRoute = {
+            month: '1',
+            day: '2',
+            dateOption: 'skip' as const,
+            departure: '東京',
+            destination: '尼崎',
+            routes: [{ id: 'route-1', line: '東海道線', station: '' }],
+            notes: '保存時の備考',
+        };
+        useSavedRouteStore.setState({
+            routes: [
+                { id: 'saved-1', createdAtTs: 1, route: savedRoute },
+                { id: 'saved-2', createdAtTs: 2, route: savedRoute },
+            ],
+        });
+        useRouteStateStore.setState({
+            month: '3',
+            day: '14',
+            dateOption: 'use',
+            departure: '新大阪',
+            destination: '博多',
+            routes: [{ id: 'current-route', line: '山陽新幹線', station: '' }],
+            notes: '更新後の備考',
+        });
+        renderControls();
+
+        await user.click(screen.getByRole('button', { name: '保存・更新' }));
+        const dialog = within(await screen.findByRole('dialog'));
+        expect(dialog.getByRole('button', { name: '更新' })).toBeDisabled();
+        await user.click(dialog.getByRole('combobox', { name: '更新先を選択' }));
+        await user.click(await screen.findByRole('option', { name: '東京 → 尼崎 / ID: saved-1' }));
+        await user.click(dialog.getByRole('button', { name: '更新' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+        expect(useSavedRouteStore.getState().routes.map(({ id, route }) => ({ id, route }))).toEqual([
+            {
+                id: 'saved-1',
+                route: {
+                    month: '3',
+                    day: '14',
+                    dateOption: 'use',
+                    departure: '新大阪',
+                    destination: '博多',
+                    routes: [{ id: 'current-route', line: '山陽新幹線', station: '' }],
+                    notes: '更新後の備考',
+                },
+            },
+            {
+                id: 'saved-2',
+                route: {
+                    month: '1',
+                    day: '2',
+                    dateOption: 'skip',
+                    departure: '東京',
+                    destination: '尼崎',
+                    routes: [{ id: 'route-1', line: '東海道線', station: '' }],
+                    notes: '保存時の備考',
+                },
+            },
+        ]);
     });
 });
