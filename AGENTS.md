@@ -1,111 +1,71 @@
-# Repository Guidelines
+# リポジトリの作業規則
 
-## 基本方針
+## このファイルの管理
 
-- このファイルには、このリポジトリで作業する際の repo 固有ルールだけを書く。
-- 各セッションで得た学びや依頼者からのフィードバックのうち、このリポジトリで今後も繰り返し有効なリポジトリ固有ルールに限り `AGENTS.md` に反映する。一般的な開発論、単発の作業メモ、その場限りの判断は追記しない。
-- 実装前に、依頼内容と既存コードの責務分担を確認してから変更する。
-- 対象機能、入力・出力、変更後の期待表示や挙動が不明な場合は、推測で実装を進めず依頼者へ確認する。
-- 配置先や責務が迷う場合は、先に同じ feature の既存ファイル構成と近接テストを確認し、既存パターンに合わせる。
+リポジトリ固有で、今後も繰り返し使う規則だけを記載する。一般的な開発論、単発の作業メモ、その場限りの判断は追加しない。依頼者からの指摘も、この基準で反映する。
 
-## 技術スタック
+## 作業に応じて読むスキル
 
-- フレームワーク: Next.js App Router
-- 言語: TypeScript
-- UI: Mantine
-- スタイリング: Tailwind CSS v4
-  - UI は Mantine を優先し、Tailwind は補助用途に留める。
-- 状態管理: Zustand
-- テスト: Vitest + Testing Library + jsdom
-- 整形 / Lint: Biome
-- デプロイ: Cloudflare Workers
-  - OpenNext を使用する。
-- ローカルの Node.js バージョン管理: mise
+| 作業 | 参照先 |
+| --- | --- |
+| テストの設計・修正、変更後の検証 | [verify-repository-changes](.agents/skills/verify-repository-changes/SKILL.md) |
+| Playwright による確認の要否・範囲の判断、計画・実行 | [plan-playwright-verification](.agents/skills/plan-playwright-verification/SKILL.md) |
+| コミットや PR 作成を伴う作業への着手、PR 本文の作成・更新 | [prepare-repository-pull-request](.agents/skills/prepare-repository-pull-request/SKILL.md) |
 
-## ディレクトリ構成
+## 技術構成と開発コマンド
 
-- `app/`: ルーティングとレイアウト。トップページは `app/page.tsx`、各ツールページは `app/tools/*/page.tsx` に配置する。
-- `components/`: 再利用可能な UI と画面単位の表示ロジック。共通部品は `components/common/` に配置する。
-- `lib/`: ドメインロジック、データ変換、純粋関数、ページ設定などを配置する。
-- `hooks/`: 複数箇所で再利用する React Hooks を配置する。
-- `types/`: グローバル型定義や補助的な型宣言を配置する。
-- `public/`: 静的ファイルを配置する。
-- `scripts/`: 生成スクリプトや保守用スクリプトを配置する。
-- `test/`: Vitest の共通セットアップやテストユーティリティを配置する。
+- Next.js App Router / TypeScript
+- UI は Mantine を優先し、Tailwind CSS v4 は補助用途に使う。
+- 状態管理は Zustand、テストは Vitest + Testing Library + jsdom、整形・Lint は Biome を使う。
+- Cloudflare Workers へ OpenNext でデプロイする。ローカルの Node.js は mise で管理する。
 
-## 主要コマンド
+| コマンド | 用途 |
+| --- | --- |
+| `npm run dev` | 開発サーバーを `http://localhost:3000/` で起動 |
+| `npm run build` | Next.js の本番ビルド |
+| `npm run build:cf` | Cloudflare Workers 向けのビルド |
+| `npm run check` | TypeScript の型検査 |
 
-- `npm run dev`: ローカル開発サーバーを `http://localhost:3000/` で起動する。
-- `npm run build`: Next.js の本番ビルドを作成する。
-- `npm run build:cf`: OpenNext / Cloudflare Workers 向けのビルドを実行する。
-- `npm run test`: Vitest を実行する。
-- `npm run check`: TypeScript の型検査を行う。
-- `npm run lint:fix`: Biome のチェックと自動修正を実行する。
-- `npm run format:fix`: Biome で整形を適用する。
+## 配置と責務
 
-## 実装ルール
+実装前に依頼内容と既存コードの責務を確認する。ファイルを追加する際や配置に迷う場合は、同種の機能と近接テストを読み、命名・分割の粒度を合わせる。対象機能、入出力、期待する表示・挙動が不明な場合は、推測で実装せず依頼者へ確認する。
 
-- プロジェクト全体で TypeScript を使用する。
-- export は named export を優先し、Next.js のページやレイアウトなどフレームワーク都合の箇所のみ default export を使用する。
-- 関数定義は、TSX では `function` による関数宣言、`lib/` 配下ではアロー関数を優先する。
-- ファイル名は `site-page-frame.tsx` のような kebab-case、React コンポーネント名は PascalCase、変数名・関数名は camelCase を使用する。
-- ページ固有でない表示ロジックは `components/`、純粋なロジックは `lib/` に配置する。
-- UI に密接な state / store は feature 配下の `components/<feature>/stores/` に置いてよい。再利用前提の純粋ロジックまで `components/` に混ぜない。
-- 単一コンポーネント内で完結する一時的な UI state は component local state を優先し、複数コンポーネントで共有する state や永続化する state は feature 配下の store を検討する。
-- import にはプロジェクトルートのエイリアス `@/` を使用する。
-- 単純な props 組み立てや単発の Web API 呼び出しのためだけに `lib/` へ切り出さない。再利用性や独立した仕様が薄い場合は、コンポーネント内に寄せたまま責務だけ整理する。
-- 新しいファイルを追加する場合は、既存の同種 feature の命名、分割粒度、テスト配置を確認してから最小単位で追加する。
+| ディレクトリ | 配置するもの |
+| --- | --- |
+| `app/` | ルーティングとレイアウト。トップページは `app/page.tsx`、ツールは `app/tools/*/page.tsx` |
+| `components/` | 再利用する UI と画面単位の表示ロジック。共通部品は `components/common/` |
+| `lib/` | ドメインロジック、データ変換、純粋関数、ページ設定 |
+| `hooks/` | 複数箇所で再利用する React Hooks |
+| `types/` | グローバル型定義、補助的な型宣言 |
+| `public/` | 静的ファイル |
+| `scripts/` | 生成・保守用スクリプト |
+| `test/` | Vitest の共通セットアップ、テストユーティリティ |
 
-## ソースコード内の仕様書
+- UI に密接な state / store は `components/<feature>/stores/` に置いてよい。再利用する純粋ロジックは `lib/` に置く。
+- 一つのコンポーネントで完結する一時的な状態はローカル state を優先する。共有・永続化する状態には、その機能の store を検討する。
+- 単純な props の組み立てや単発の Web API 呼び出しだけを理由に `lib/` へ切り出さない。再利用性や独立した仕様がなければ、コンポーネント内で責務を整理する。
 
-- 一部の機能では、ソースコードのコメントに仕様書を記述している。例: `lib/tokyometro-transfer-search/search.ts` 冒頭のコメント。
-- 機能を変更する前に、対象機能に関係するコードの仕様コメントを確認する。
-- 条件、入出力、制約、処理手順など、仕様コメントに記載された内容が変わる場合は、エージェントが実装の変更と併せて該当する記述も更新する。
-- 仕様が不明な場合は、依頼者に確認してから変更する。実装から推測して仕様コメントを書き換えない。
-- 作業を完了する前に、仕様コメント、実装、関連テストの内容に矛盾がないか確認する。完了報告には、仕様コメントの更新箇所、または更新が不要と判断した理由を記載する。
+## コードの書き方
 
-## 生成物の扱い
+- named export を優先する。Next.js のページやレイアウトなど、フレームワークが求める箇所では default export を使う。
+- 関数は TSX では `function` による宣言、`lib/` ではアロー関数を優先する。
+- ファイル名は `site-page-frame.tsx` のような kebab-case、コンポーネント名は PascalCase、変数・関数名は camelCase とする。
+- import にはルートを指すエイリアス `@/` を使う。
 
-- `lib/train-number/gen/*.ts` は生成ファイルのため、直接編集しない。
-- `lib/train-number/content/*.md` を更新した場合は `npm run generate:train-number-content` で再生成する。
-- 生成物の差分確認には `npm run check:train-number-content` を使用する。
+## 仕様コメントと実装を一致させる
 
-## テスト方針
+一部の機能では、ソースコード内のコメントを仕様書としている。例は `lib/tokyometro-transfer-search/search.ts` の冒頭を参照する。
 
-- テストには Vitest を使用する。
-- テストファイル名は `*.test.ts` または `*.test.tsx` とし、対象実装の近くに配置する。
-  - 例: `lib/foo/bar.ts` に対するテストは `lib/foo/bar.test.ts`
-- ページのテストは画面表示の確認を優先し、入力値の組み立てや状態遷移のような純粋ロジックは可能な限り関数単位のテストへ寄せる。
-- コンポーネントのテストは props の細かな変換結果よりも、ユーザー操作に対する振る舞いの確認を優先する。
-- `title` や `description` のようなページメタ情報や説明文そのものの自動テストは原則不要。
-- 固定値や静的文言など、コードから自明な事項だけを確認するテストは作成しない。
-- テストケース名は「それ以外」のような曖昧な表現を避け、前提条件と期待結果が分かる具体的な文言にする。
-- ロジック変更時は、関連テストの追加または更新を行う。
+- 機能を変更する前に、関係する仕様コメントを読む。
+- 条件、入出力、制約、処理手順が変わる場合は、実装と併せて仕様コメントも更新する。
+- 仕様が不明な場合は依頼者へ確認する。実装から推測して仕様コメントを書き換えない。
+- 完了前に仕様コメント・実装・関連テストの整合を確認する。完了報告には、更新箇所または更新不要と判断した理由を書く。
 
-## 修正後の確認内容
+## 生成ファイルは生成元から更新する
 
-1. Biome のチェックと自動修正を行う。実行コマンド: `npm run lint:fix`
-2. Biome で整形を適用する。実行コマンド: `npm run format:fix`
-3. テストを実行する。実行コマンド: `npm run test`
-
-## 動作確認
-
-Playwright による動作確認の要否、確認範囲、実行手順は、[plan-playwright-verification](.agents/skills/plan-playwright-verification/SKILL.md) に従う。
-
-## コミットとプルリクエスト
-
-- コミットやプルリクエスト作成を伴う作業では、変更内容を意図単位で分離する。
-- コミットが必要な場合は、タスク完了時に一括でコミットせず、作業の区切りごとに適切な粒度でコミットする。
-- `git add`、`git commit`、`git restore`、`git rebase` など `.git/index.lock` を使う操作は並列実行しない。
-- `git status`、`git diff`、`git log` などの参照系コマンドは並列でもよいが、index を更新する操作は必ず直列で行う。
-- コミットメッセージは短い Conventional Commits 形式を使用し、簡潔な日本語で記述する。
-  - 使用する接頭辞: `feat:`, `fix:`, `delete:`, `style:`, `docs:`, `chore:`, `test:`, `ci:`
-  - スコープや `BREAKING CHANGE` は不要
-  - 削除が主目的の変更では `delete:` を優先する
-- プルリクエストには概要、確認内容、関連 Issue があればそのリンクを含める。UI 変更時はスクリーンショットを添付する。
-- PR 本文は `.github/PULL_REQUEST_TEMPLATE.md` に従い、スクリーンショットは画面サイズを併記して「動作確認」セクション内に配置する。
-- `gh pr create --attach` などで画像が本文末尾に追加された場合は、作成後に本文を編集して「動作確認」セクションへ移動する。作成・更新後は GitHub 上の本文を取得し、画像の配置がテンプレートに従っていることを確認してから完了を報告する。
-- PR の説明で箇条書きの項目に補足を書く場合は、対応する項目の下にインデントした箇条書きで記載する。
+- `lib/train-number/gen/*.ts` は直接編集しない。
+- `lib/train-number/content/*.md` を更新したら、`npm run generate:train-number-content` で再生成する。
+- 生成結果の差分は `npm run check:train-number-content` で確認する。
 
 <!-- BEGIN:nextjs-agent-rules -->
 
