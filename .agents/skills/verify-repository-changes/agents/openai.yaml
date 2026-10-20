@@ -1,0 +1,3 @@
+interface:
+  display_name: "Verify Repository Changes"
+  short_description: "テストを設計し、コード・設定・文書の変更後に必要な検証を行う"

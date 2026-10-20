@@ -1,0 +1,3 @@
+interface:
+  display_name: "Prepare Repository Pull Request"
+  short_description: "変更を目的ごとにコミットし、テンプレートに沿ってPR本文を作成・確認する"
