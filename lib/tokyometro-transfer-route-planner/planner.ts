@@ -7,6 +7,8 @@
  * 同一路線の再利用は認める。降車駅で終了し、改札外乗換0回・乗換なしでも完成とする。
  *
  * 各行は路線と接続駅を持つ。接続駅は乗車区間の終点で、候補は乗換可能駅と降車駅。
+ * 接続駅候補は乗車方向によらず駅番号順（LINE_PATHSの駅順）に並べる。丸ノ内線は本線の後に支線を並べ、
+ * 両方に属する中野坂上は本線上の位置で1回だけ表示する。無効候補の表示・非表示でも順序は変えない。
  * 路線は発駅の所属路線、または前行の接続駅から乗換可能な路線を表示する。
  * 路線では完成可能性を検証しない。接続駅は入力済みの通過駅・乗換を考慮し、降車駅まで
  * 完成できない候補は選択不可能にする。フォームの詳細指定に「利用不可能な駅を非表示にする」を置き、既定ONとする。
@@ -46,7 +48,13 @@
  * 出場駅は「改札外乗換 1 (有楽町) : 1.0km / IC 178円 / きっぷ 180円」の書式で表示する。
  * 利用日・途中行の単体削除・保存・URL共有・再読込による復元は設けない。
  */
-import { LINE_DEFINITIONS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-transfer-search/data';
+import {
+    LINE_DEFINITIONS,
+    LINE_PATHS,
+    type LineId,
+    STATION_NAMES,
+    type StationId,
+} from '@/lib/tokyometro-transfer-search/data';
 import {
     calculateFareBetweenStations,
     getRoutePlannerSegments,
@@ -217,6 +225,9 @@ export const getPlannerStationOptions = (state: PlannerState, index: number): Pl
         prefix = addTransfer(prefix, transfer);
     }
     const context = prefix;
+    const stationOrder = LINE_PATHS.filter((path) => path.lineId === row.lineId).flatMap((path) =>
+        path.stations.map(([stationId]) => stationId),
+    );
     return getRoutePlannerSegments(context.stationId, row.lineId, destination)
         .map((segment) => {
             let reason: string | undefined;
@@ -241,7 +252,7 @@ export const getPlannerStationOptions = (state: PlannerState, index: number): Pl
                 reason,
             };
         })
-        .sort((a, b) => a.label.localeCompare(b.label, 'ja'));
+        .sort((a, b) => stationOrder.indexOf(a.value as StationId) - stationOrder.indexOf(b.value as StationId));
 };
 
 export const buildPlannerResult = (state: PlannerState): RouteResult | null => {

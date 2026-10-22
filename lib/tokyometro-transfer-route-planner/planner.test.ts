@@ -9,6 +9,81 @@ import {
 } from './planner';
 
 describe('経路作成の候補と完成判定', () => {
+    it('接続駅を駅番号順に並べ、乗換駅でない降車駅も路線上の位置へ含める', () => {
+        const options = getPlannerStationOptions(
+            {
+                fromStationId: 'kyobashi',
+                toStationId: 'tawaramachi',
+                rows: [{ lineId: 'ginza', stationId: null }],
+            },
+            0,
+        );
+        expect(options.map((option) => option.value)).toEqual([
+            'shibuya',
+            'omote-sando',
+            'aoyama-itchome',
+            'akasaka-mitsuke',
+            'tameike-sanno',
+            'toranomon',
+            'ginza',
+            'nihombashi',
+            'mitsukoshimae',
+            'ueno-hirokoji',
+            'ueno',
+            'tawaramachi',
+        ]);
+        expect(options.find((option) => option.value === 'tawaramachi')).toMatchObject({ disabled: false });
+    });
+    it('反対方向に乗車する場合も接続駅は駅番号の昇順で表示する', () => {
+        const options = getPlannerStationOptions(
+            {
+                fromStationId: 'asakusa',
+                toStationId: 'shibuya',
+                rows: [{ lineId: 'ginza', stationId: null }],
+            },
+            0,
+        );
+        expect(options.map((option) => option.value)).toEqual([
+            'shibuya',
+            'omote-sando',
+            'aoyama-itchome',
+            'akasaka-mitsuke',
+            'tameike-sanno',
+            'toranomon',
+            'ginza',
+            'nihombashi',
+            'mitsukoshimae',
+            'ueno-hirokoji',
+            'ueno',
+        ]);
+    });
+    it('丸ノ内線は本線の候補の後に支線の降車駅を表示する', () => {
+        const options = getPlannerStationOptions(
+            {
+                fromStationId: 'ginza',
+                toStationId: 'honancho',
+                rows: [{ lineId: 'marunouchi', stationId: null }],
+            },
+            0,
+        );
+        const values = options.map((option) => option.value);
+        expect(values[0]).toBe('shinjuku-sanchome');
+        expect(values.slice(-2)).toEqual(['ikebukuro', 'honancho']);
+        expect(values.filter((value) => value === 'honancho')).toHaveLength(1);
+    });
+    it('本線と支線に属する中野坂上を降車駅にしても本線上の位置に1回だけ表示する', () => {
+        const options = getPlannerStationOptions(
+            {
+                fromStationId: 'ginza',
+                toStationId: 'nakano-sakaue',
+                rows: [{ lineId: 'marunouchi', stationId: null }],
+            },
+            0,
+        );
+        const values = options.map((option) => option.value);
+        expect(values[0]).toBe('nakano-sakaue');
+        expect(values.filter((value) => value === 'nakano-sakaue')).toHaveLength(1);
+    });
     it('降車駅への徒歩到達しか残らない接続駅を無効化し、直接乗車できる降車駅は選択可能にする', () => {
         const options = getPlannerStationOptions(
             {
