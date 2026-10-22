@@ -85,41 +85,22 @@ function PlannerResult({ result }: { result: RouteResult }) {
     );
 }
 
-function DebugDetails({ state, result }: { state: PlannerState; result: RouteResult | null }) {
+function DebugDetails({ result }: { result: RouteResult }) {
     return (
         <Accordion variant="contained" radius="sm">
             <Accordion.Item value="debug">
                 <Accordion.Control>デバッグ情報</Accordion.Control>
                 <Accordion.Panel>
                     <Stack gap="xs">
-                        {result && (
-                            <>
-                                <Text size="sm">実走営業キロ: {formatDistance(result.actualDistanceTenths)}</Text>
-                                <Text size="sm">
-                                    運賃計算用最短営業キロ: {formatDistance(result.shortestDistanceTenths)}
-                                </Text>
-                                {result.fareCheckpoints.map((checkpoint, index) => (
-                                    <Text size="sm" key={checkpoint.stationId}>
-                                        改札外乗換 {index + 1} ({STATION_NAMES[checkpoint.stationId]}) :{' '}
-                                        {formatDistance(checkpoint.shortestDistanceTenths)} / IC{' '}
-                                        {yen(checkpoint.fare.ic)} / きっぷ {yen(checkpoint.fare.ticket)}
-                                    </Text>
-                                ))}
-                            </>
-                        )}
-                        <Text size="sm" fw={600}>
-                            入力状態
-                        </Text>
-                        <pre
-                            style={{
-                                whiteSpace: 'pre-wrap',
-                                overflowWrap: 'anywhere',
-                                margin: 0,
-                                fontSize: 'var(--mantine-font-size-xs)',
-                            }}
-                        >
-                            {JSON.stringify(state, null, 2)}
-                        </pre>
+                        <Text size="sm">実走営業キロ: {formatDistance(result.actualDistanceTenths)}</Text>
+                        <Text size="sm">運賃計算用最短営業キロ: {formatDistance(result.shortestDistanceTenths)}</Text>
+                        {result.fareCheckpoints.map((checkpoint, index) => (
+                            <Text size="sm" key={checkpoint.stationId}>
+                                改札外乗換 {index + 1} ({STATION_NAMES[checkpoint.stationId]}) :{' '}
+                                {formatDistance(checkpoint.shortestDistanceTenths)} / IC {yen(checkpoint.fare.ic)} /
+                                きっぷ {yen(checkpoint.fare.ticket)}
+                            </Text>
+                        ))}
                     </Stack>
                 </Accordion.Panel>
             </Accordion.Item>
@@ -244,7 +225,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
                 <div aria-live="polite">
                     {result ? <PlannerResult result={result} /> : <Text c="dimmed">経路を入力してください</Text>}
                 </div>
-                <DebugDetails state={state} result={result} />
+                {result && <DebugDetails result={result} />}
             </Stack>
             <Modal
                 opened={confirmReverse}
