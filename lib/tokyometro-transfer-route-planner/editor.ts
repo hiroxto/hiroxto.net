@@ -36,8 +36,43 @@ export const createPlannerState = (
     toStationId: StationId | null = null,
 ): PlannerState => prepareNextRow({ fromStationId, toStationId, rows: [] });
 
+/** 入力済み経路を保持できる発着変更だけを返す。nullなら元の入力を残して破棄確認する。 */
+export const tryChangePlannerStations = (
+    state: PlannerState,
+    fromStationId: StationId | null,
+    toStationId: StationId | null,
+): PlannerState | null => {
+    if (fromStationId === state.fromStationId && toStationId === state.toStationId) return state;
+    if (!state.rows.some((row) => row.lineId != null || row.stationId != null)) {
+        return createPlannerState(fromStationId, toStationId);
+    }
+    const rows = [...state.rows];
+    while (rows.length > 0 && rows.at(-1)?.lineId == null && rows.at(-1)?.stationId == null) rows.pop();
+    const candidate: PlannerState = { ...state, fromStationId, toStationId, rows };
+    if (getPlannerStationError(candidate)) return null;
+    if (buildPlannerResult(state)) {
+        const lastIndex = candidate.rows.length - 1;
+        candidate.rows[lastIndex] = { ...candidate.rows[lastIndex], stationId: toStationId };
+        return buildPlannerResult(candidate) ? candidate : null;
+    }
+    const prepared = prepareNextRow(candidate);
+    if (buildPlannerResult(prepared)) return prepared;
+    const index = prepared.rows.length - 1;
+    const last = prepared.rows[index];
+    if (!last || last.stationId != null) return null;
+    const lineIds = last.lineId
+        ? [last.lineId]
+        : getPlannerLineOptions(prepared, index).map((option) => option.value as LineId);
+    const canComplete = lineIds.some((lineId) => {
+        const withLine = { ...prepared, rows: [...prepared.rows.slice(0, index), { ...last, lineId }] };
+        return getPlannerStationOptions(withLine, index).some((option) => !option.disabled);
+    });
+    return canComplete ? prepared : null;
+};
+
 export const updatePlanner = (state: PlannerState, action: PlannerAction): PlannerState => {
-    if (action.type === 'stations') return createPlannerState(action.fromStationId, action.toStationId);
+    if (action.type === 'stations')
+        return tryChangePlannerStations(state, action.fromStationId, action.toStationId) ?? state;
     const row = state.rows[action.index];
     if (!row) return state;
     if (action.type === 'line') {

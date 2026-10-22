@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createPlannerState, reversePlanner, updatePlanner } from './editor';
+import { sakuradamonToAsakusaState } from '@/test/fixtures/tokyometro-transfer-route-planner';
+import { createPlannerState, reversePlanner, tryChangePlannerStations, updatePlanner } from './editor';
 import { buildPlannerResult, type PlannerState } from './planner';
 
 const crossRoute: PlannerState = {
@@ -35,9 +36,73 @@ describe('経路入力の状態遷移', () => {
             stationId: null,
         });
     });
-    it('発着駅変更で全経路を消去し新しい路線候補を適用する', () => {
+    it('構成できない発着変更は経路と元の発着駅を保持する', () => {
         const changed = updatePlanner(crossRoute, { type: 'stations', fromStationId: 'asakusa', toStationId: 'iriya' });
-        expect(changed.rows).toEqual([{ lineId: 'ginza', stationId: null }]);
+        expect(changed).toEqual(crossRoute);
+    });
+    it('浅草から田原町への変更では最後の区間だけを調整して提示経路を保持する', () => {
+        const changed = tryChangePlannerStations(sakuradamonToAsakusaState, 'sakuradamon', 'tawaramachi');
+        expect(changed?.rows).toHaveLength(19);
+        expect(changed?.rows.slice(0, -1)).toEqual(sakuradamonToAsakusaState.rows.slice(0, -1));
+        expect(changed?.rows.at(-1)).toEqual({ lineId: 'ginza', stationId: 'tawaramachi' });
+        if (!changed) throw new Error('経路を保持できませんでした');
+        expect(buildPlannerResult(changed)).toMatchObject({ outsideTransferCount: 14, insideTransferCount: 4 });
+        expect(sakuradamonToAsakusaState.rows.at(-1)?.stationId).toBe('asakusa');
+    });
+    it('既に通った三越前を新しい降車駅にすると破棄確認を必要とする', () => {
+        expect(tryChangePlannerStations(sakuradamonToAsakusaState, 'sakuradamon', 'mitsukoshimae')).toBeNull();
+        expect(sakuradamonToAsakusaState.toStationId).toBe('asakusa');
+    });
+    it('乗車駅を最初の路線上の別駅へ変更しても経路を保持する', () => {
+        const changed = tryChangePlannerStations(crossRoute, 'shimbashi', 'shintomicho');
+        expect(changed?.rows).toEqual(crossRoute.rows);
+        if (!changed) throw new Error('経路を保持できませんでした');
+        expect(buildPlannerResult(changed)?.legs[0]).toMatchObject({
+            fromStationId: 'shimbashi',
+            toStationId: 'ginza',
+        });
+    });
+    it('最初の路線で乗れない駅への乗車駅変更は破棄確認を必要とする', () => {
+        expect(tryChangePlannerStations(crossRoute, 'iriya', 'shintomicho')).toBeNull();
+    });
+    it('未完成でも選択済み路線で新しい降車駅へ続けられれば入力を保持する', () => {
+        const state = updatePlanner(createPlannerState('inaricho', 'iriya'), {
+            type: 'station',
+            index: 0,
+            stationId: 'ueno',
+        });
+        const changed = tryChangePlannerStations(state, 'inaricho', 'minowa');
+        expect(changed?.rows).toEqual([
+            { lineId: 'ginza', stationId: 'ueno' },
+            { lineId: 'hibiya', stationId: null },
+        ]);
+    });
+    it('新しい降車駅が最後の入力済み接続駅なら末尾の完全な空行を除いて完成させる', () => {
+        const state = updatePlanner(createPlannerState('shimbashi', 'iriya'), {
+            type: 'station',
+            index: 0,
+            stationId: 'ginza',
+        });
+        expect(state.rows.at(-1)).toEqual({ lineId: null, stationId: null });
+        const changed = tryChangePlannerStations(state, 'shimbashi', 'ginza');
+        expect(changed?.rows).toEqual([{ lineId: 'ginza', stationId: 'ginza' }]);
+        if (!changed) throw new Error('経路を保持できませんでした');
+        expect(buildPlannerResult(changed)).toMatchObject({ outsideTransferCount: 0, insideTransferCount: 0 });
+    });
+    it('未完成経路の先で新降車駅へ到達できない場合は破棄確認を必要とする', () => {
+        const state = updatePlanner(createPlannerState('inaricho', 'iriya'), {
+            type: 'station',
+            index: 0,
+            stationId: 'ueno',
+        });
+        expect(tryChangePlannerStations(state, 'inaricho', 'asakusa')).toBeNull();
+    });
+    it('入力済み経路がなければ発着変更の破棄確認は不要', () => {
+        expect(tryChangePlannerStations(createPlannerState(), 'inaricho', 'iriya')).toMatchObject({
+            fromStationId: 'inaricho',
+            toStationId: 'iriya',
+            rows: [{ lineId: 'ginza', stationId: null }],
+        });
     });
     it('途中の接続駅変更で後続入力を消去する', () => {
         const changed = updatePlanner(crossRoute, { type: 'station', index: 0, stationId: 'ueno' });

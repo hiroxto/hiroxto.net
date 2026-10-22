@@ -22,6 +22,7 @@ import {
     createPlannerState,
     type PlannerAction,
     reversePlanner,
+    tryChangePlannerStations,
     updatePlanner,
 } from '@/lib/tokyometro-transfer-route-planner/editor';
 import {
@@ -112,6 +113,9 @@ export function TokyoMetroTransferRoutePlannerPage() {
     const [state, setState] = useState(createPlannerState);
     const [searches, setSearches] = useState({ fromStationId: '', toStationId: '' });
     const [confirmReverse, setConfirmReverse] = useState(false);
+    const [pendingStations, setPendingStations] = useState<Pick<PlannerState, 'fromStationId' | 'toStationId'> | null>(
+        null,
+    );
     const result = buildPlannerResult(state);
     const stationError = state.fromStationId && state.toStationId ? getPlannerStationError(state) : null;
     function apply(action: PlannerAction) {
@@ -120,28 +124,23 @@ export function TokyoMetroTransferRoutePlannerPage() {
     function changeEndpoint(field: 'fromStationId' | 'toStationId', value: string | null) {
         const parsed = stationIdSchema.safeParse(value);
         const id = parsed.success ? parsed.data : null;
-        setSearches((previous) => ({ ...previous, [field]: stationLabel(id) }));
-        setState((previous) =>
-            updatePlanner(previous, {
-                type: 'stations',
-                fromStationId: previous.fromStationId,
-                toStationId: previous.toStationId,
-                [field]: id,
-            }),
-        );
+        const stations = { fromStationId: state.fromStationId, toStationId: state.toStationId, [field]: id };
+        const next = tryChangePlannerStations(state, stations.fromStationId, stations.toStationId);
+        if (next) replaceState(next);
+        else {
+            setPendingStations(stations);
+            setSearches({
+                fromStationId: stationLabel(state.fromStationId),
+                toStationId: stationLabel(state.toStationId),
+            });
+        }
     }
     function searchEndpoint(field: 'fromStationId' | 'toStationId', value: string) {
         setSearches((previous) => ({ ...previous, [field]: value }));
-        if (state[field] && value !== stationLabel(state[field])) {
-            setState((previous) =>
-                updatePlanner(previous, {
-                    type: 'stations',
-                    fromStationId: previous.fromStationId,
-                    toStationId: previous.toStationId,
-                    [field]: null,
-                }),
-            );
-        }
+    }
+    function cancelStationChange() {
+        setPendingStations(null);
+        replaceState(state);
     }
     function replaceState(next: PlannerState) {
         setState(next);
@@ -169,6 +168,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
                                     placeholder="駅を選択"
                                     radius="sm"
                                     searchable
+                                    allowDeselect={false}
                                     clearable={state[field] != null}
                                     // nullではSelectが検索文字を消すため、未選択は空文字で表す。
                                     value={state[field] ?? ''}
@@ -247,6 +247,37 @@ export function TokyoMetroTransferRoutePlannerPage() {
                         }}
                     >
                         経路を破棄して逆転
+                    </Button>
+                </Group>
+            </Modal>
+            <Modal
+                opened={pendingStations != null}
+                onClose={cancelStationChange}
+                title="発着駅変更の確認"
+                radius="sm"
+                centered
+            >
+                <Text>変更後の発着駅では入力済みの経路を構成できません。経路を破棄して発着駅を変更しますか？</Text>
+                <Text size="sm" mt="sm">
+                    {pendingStations?.fromStationId ? STATION_NAMES[pendingStations.fromStationId] : '未指定'} →{' '}
+                    {pendingStations?.toStationId ? STATION_NAMES[pendingStations.toStationId] : '未指定'}
+                </Text>
+                <Group justify="flex-end" mt="lg">
+                    <Button variant="default" radius="sm" onClick={cancelStationChange}>
+                        キャンセル
+                    </Button>
+                    <Button
+                        radius="sm"
+                        onClick={() => {
+                            if (pendingStations) {
+                                replaceState(
+                                    createPlannerState(pendingStations.fromStationId, pendingStations.toStationId),
+                                );
+                                setPendingStations(null);
+                            }
+                        }}
+                    >
+                        経路を破棄して変更
                     </Button>
                 </Group>
             </Modal>

@@ -23,7 +23,7 @@ const endpoints = async (user: User, from: string, to: string) => {
 };
 
 describe('改札外乗換経路作成の画面', () => {
-    it('選択済み発駅を不正な駅名で置換した場合もエラーを表示して経路を消去する', async () => {
+    it('選択済み発駅の検索文字を変更しても確定済みの発着駅と経路を保持する', async () => {
         const user = userEvent.setup();
         render(
             <MantineProvider env="test">
@@ -39,7 +39,8 @@ describe('改札外乗換経路作成の画面', () => {
         await user.paste('存在しない駅');
         expect(input).toHaveValue('存在しない駅');
         expect(screen.getByText('選択肢から駅を指定してください')).toBeInTheDocument();
-        expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: '作成結果' })).toBeInTheDocument();
+        expect(screen.getByRole('combobox', { name: '経路1の接続駅' })).toHaveValue('浅草');
     });
     it('接続駅の選択後に路線を自動入力し、完成結果と逆転後の結果を表示する', async () => {
         const user = userEvent.setup();
@@ -125,6 +126,74 @@ describe('改札外乗換経路作成の画面', () => {
         expect(screen.queryByRole('combobox', { name: '経路2の乗換種別' })).not.toBeInTheDocument();
         expect(screen.getByRole('combobox', { name: '経路2の接続駅' })).toHaveValue('竹橋');
         expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札内乗換 0回');
+    });
+    it('新しい降車駅まで同じ経路を構成できれば入力を保持して最終駅だけ変更する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <TokyoMetroTransferRoutePlannerPage />
+            </MantineProvider>,
+        );
+        await endpoints(user, '稲荷町', '入谷');
+        await choose(user, '経路1の接続駅', /^上野$/);
+        await choose(user, '経路2の接続駅', /^入谷$/);
+        await station(user, '降車駅', '三ノ輪');
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.getByRole('combobox', { name: '経路1の接続駅' })).toHaveValue('上野');
+        expect(screen.getByRole('combobox', { name: '経路2の接続駅' })).toHaveValue('三ノ輪');
+        expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札外乗換 1回');
+    });
+    it('検索して確定済みの駅を選び直しても選択解除や経路破棄を行わない', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <TokyoMetroTransferRoutePlannerPage />
+            </MantineProvider>,
+        );
+        await endpoints(user, '稲荷町', '入谷');
+        await choose(user, '経路1の接続駅', /^上野$/);
+        await choose(user, '経路2の接続駅', /^入谷$/);
+        await station(user, '降車駅', '入谷');
+        await user.tab();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.getByRole('combobox', { name: '降車駅' })).toHaveValue('入谷｜日比谷線');
+        expect(screen.getByRole('combobox', { name: '経路2の接続駅' })).toHaveValue('入谷');
+        expect(screen.getByRole('region', { name: '作成結果' })).toBeInTheDocument();
+    });
+    it('経路を構成できない発着変更をキャンセルすると発着駅と経路を保持する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <TokyoMetroTransferRoutePlannerPage />
+            </MantineProvider>,
+        );
+        await endpoints(user, '稲荷町', '入谷');
+        await choose(user, '経路1の接続駅', /^上野$/);
+        await choose(user, '経路2の接続駅', /^入谷$/);
+        await station(user, '降車駅', '浅草');
+        expect(screen.getByRole('dialog')).toHaveTextContent('入力済みの経路を構成できません');
+        await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+        expect(screen.getByRole('combobox', { name: '乗車駅' })).toHaveValue('稲荷町｜銀座線');
+        expect(screen.getByRole('combobox', { name: '降車駅' })).toHaveValue('入谷｜日比谷線');
+        expect(screen.getByRole('combobox', { name: '経路2の接続駅' })).toHaveValue('入谷');
+        expect(screen.getByRole('region', { name: '作成結果' })).toBeInTheDocument();
+    });
+    it('経路破棄を承諾した場合だけ新しい発着駅を適用して経路を初期化する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <TokyoMetroTransferRoutePlannerPage />
+            </MantineProvider>,
+        );
+        await endpoints(user, '稲荷町', '入谷');
+        await choose(user, '経路1の接続駅', /^上野$/);
+        await choose(user, '経路2の接続駅', /^入谷$/);
+        await station(user, '降車駅', '浅草');
+        await user.click(screen.getByRole('button', { name: '経路を破棄して変更' }));
+        expect(screen.getByRole('combobox', { name: '降車駅' })).toHaveValue('浅草｜銀座線');
+        expect(screen.getByRole('combobox', { name: '経路1の接続駅' })).toHaveValue('');
+        expect(screen.queryByRole('combobox', { name: '経路2の接続駅' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
     });
     it('存在しない駅の入力にはエラーを表示し経路を入力できない', async () => {
         const user = userEvent.setup();

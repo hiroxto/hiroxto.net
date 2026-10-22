@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { sakuradamonToAsakusaState } from '@/test/fixtures/tokyometro-transfer-route-planner';
 import { buildPlannerResult, getPlannerLineOptions, getPlannerStationOptions, type PlannerState } from './planner';
 
 describe('経路作成の候補と完成判定', () => {
@@ -83,31 +84,7 @@ describe('経路作成の候補と完成判定', () => {
     });
 
     it('提示された長い経路では大手町も改札外に含めて14回と集計する', () => {
-        const result = buildPlannerResult({
-            fromStationId: 'sakuradamon',
-            toStationId: 'asakusa',
-            rows: [
-                { lineId: 'yurakucho', stationId: 'yurakucho' },
-                { lineId: 'hibiya', stationId: 'toranomon-hills' },
-                { lineId: 'ginza', stationId: 'tameike-sanno' },
-                { lineId: 'chiyoda', stationId: 'omote-sando' },
-                { lineId: 'ginza', stationId: 'shibuya' },
-                { lineId: 'fukutoshin', stationId: 'shinjuku-sanchome' },
-                { lineId: 'marunouchi', stationId: 'akasaka-mitsuke' },
-                { lineId: 'hanzomon', stationId: 'kudanshita' },
-                { lineId: 'tozai', stationId: 'iidabashi' },
-                { lineId: 'yurakucho', stationId: 'ikebukuro' },
-                { lineId: 'marunouchi', stationId: 'awajicho' },
-                { lineId: 'chiyoda', stationId: 'otemachi' },
-                { lineId: 'marunouchi', stationId: 'ginza' },
-                { lineId: 'yurakucho', stationId: 'shintomicho' },
-                { lineId: 'hibiya', stationId: 'ningyocho' },
-                { lineId: 'hanzomon', stationId: 'mitsukoshimae' },
-                { lineId: 'ginza', stationId: 'ueno-hirokoji' },
-                { lineId: 'hibiya', stationId: 'ueno' },
-                { lineId: 'ginza', stationId: 'asakusa' },
-            ],
-        });
+        const result = buildPlannerResult(sakuradamonToAsakusaState);
         expect(result).toMatchObject({
             outsideTransferCount: 14,
             insideTransferCount: 4,
