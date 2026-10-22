@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { sakuradamonToAsakusaState } from '@/test/fixtures/tokyometro-transfer-route-planner';
-import { buildPlannerResult, getPlannerLineOptions, getPlannerStationOptions, type PlannerState } from './planner';
+import {
+    buildPlannerPreview,
+    buildPlannerResult,
+    getPlannerLineOptions,
+    getPlannerStationOptions,
+    type PlannerState,
+} from './planner';
 
 describe('経路作成の候補と完成判定', () => {
     it('降車駅への徒歩到達しか残らない接続駅を無効化し、直接乗車できる降車駅は選択可能にする', () => {
@@ -190,5 +196,55 @@ describe('経路作成の候補と完成判定', () => {
                 ],
             }),
         ).toBeNull();
+    });
+});
+
+describe('入力済み区間の計算', () => {
+    const state: PlannerState = {
+        fromStationId: 'asakusa',
+        toStationId: 'akabane-iwabuchi',
+        rows: [
+            { lineId: 'ginza', stationId: 'toranomon' },
+            { lineId: 'hibiya', stationId: 'hibiya' },
+            { lineId: 'yurakucho', stationId: 'ikebukuro' },
+            { lineId: 'marunouchi', stationId: null },
+        ],
+    };
+    it('降車駅に未到達でも最後の入力済み接続駅までを計算する', () => {
+        const preview = buildPlannerPreview(state);
+        expect(preview).toMatchObject({
+            fromStationId: 'asakusa',
+            toStationId: 'ikebukuro',
+            complete: false,
+            result: { outsideTransferCount: 2, insideTransferCount: 0 },
+        });
+        expect(preview?.result.legs.map((leg) => leg.toStationId)).toEqual(['toranomon', 'hibiya', 'ikebukuro']);
+        expect(preview?.result.fareCheckpoints.map((checkpoint) => checkpoint.stationId)).toEqual([
+            'toranomon',
+            'hibiya',
+        ]);
+        expect(buildPlannerResult(state)).toBeNull();
+    });
+    it('末尾の異駅名乗換で路線だけ選択されても乗換前の日比谷で計算を止める', () => {
+        const preview = buildPlannerPreview({
+            ...state,
+            rows: [...state.rows.slice(0, 2), { lineId: 'yurakucho', stationId: null }],
+        });
+        expect(preview).toMatchObject({ toStationId: 'hibiya', complete: false, result: { outsideTransferCount: 1 } });
+        expect(preview?.result.transfers.map((transfer) => transfer.fromStationId)).toEqual(['toranomon']);
+        expect(preview?.result.legs.at(-1)?.toStationId).toBe('hibiya');
+    });
+    it('完成した経路は完成状態と計算区間を返す', () => {
+        expect(
+            buildPlannerPreview({
+                fromStationId: 'inaricho',
+                toStationId: 'asakusa',
+                rows: [{ lineId: 'ginza', stationId: 'asakusa' }],
+            }),
+        ).toMatchObject({ fromStationId: 'inaricho', toStationId: 'asakusa', complete: true });
+    });
+    it('乗車区間が未入力または入力済み区間が不正なら計算しない', () => {
+        expect(buildPlannerPreview({ ...state, rows: [{ lineId: 'ginza', stationId: null }] })).toBeNull();
+        expect(buildPlannerPreview({ ...state, rows: [{ lineId: 'hibiya', stationId: 'hibiya' }] })).toBeNull();
     });
 });

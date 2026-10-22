@@ -53,9 +53,12 @@ describe('改札外乗換経路作成の画面', () => {
         expect(screen.getByRole('combobox', { name: '経路1の路線' })).toHaveValue('銀座線');
         await choose(user, '経路1の接続駅', /^上野$/);
         expect(screen.getByRole('combobox', { name: '経路2の路線' })).toHaveValue('日比谷線');
-        expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: '作成結果 (入力途中)' })).toBeInTheDocument();
+        expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('稲荷町 → 上野');
         await choose(user, '経路2の接続駅', /^入谷$/);
         const result = screen.getByRole('region', { name: '作成結果' });
+        expect(within(result).getByText('稲荷町 → 入谷')).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: '作成結果 (入力途中)' })).not.toBeInTheDocument();
         expect(within(result).getByText('改札外乗換 1回')).toBeInTheDocument();
         expect(within(result).getByText('178円')).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '発着逆転' }));
@@ -78,7 +81,8 @@ describe('改札外乗換経路作成の画面', () => {
         expect(screen.getByRole('region', { name: '作成結果' })).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '経路1のこの先を削除' }));
         expect(screen.getByRole('combobox', { name: '経路1の接続駅' })).toHaveValue('銀座');
-        expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('京橋 → 銀座');
+        expect(screen.getByRole('heading', { name: '作成結果 (入力途中)' })).toBeInTheDocument();
     });
     it('利用不可能な接続駅は既定で非表示とし、設定解除後も無効なまま表示する', async () => {
         const user = userEvent.setup();

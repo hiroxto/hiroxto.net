@@ -27,7 +27,7 @@ import {
     updatePlanner,
 } from '@/lib/tokyometro-transfer-route-planner/editor';
 import {
-    buildPlannerResult,
+    buildPlannerPreview,
     getPlannerStationError,
     type PlannerState,
 } from '@/lib/tokyometro-transfer-route-planner/planner';
@@ -53,13 +53,27 @@ const stationLabel = (id: StationId | null): string =>
     stationOptions.find((option) => option.value === id)?.label ?? '';
 const yen = (value: number): string => `${value.toLocaleString('ja-JP')}円`;
 
-function PlannerResult({ result }: { result: RouteResult }) {
+function PlannerResult({ preview }: { preview: NonNullable<ReturnType<typeof buildPlannerPreview>> }) {
+    const { result, complete, fromStationId, toStationId } = preview;
     return (
         <Paper component="section" aria-label="作成結果" withBorder p="lg" radius="sm">
             <Stack gap="md">
                 <Title order={2} size="h3">
                     作成結果
+                    {!complete && (
+                        <>
+                            {' '}
+                            (
+                            <Text component="span" c="red" inherit>
+                                入力途中
+                            </Text>
+                            )
+                        </>
+                    )}
                 </Title>
+                <Text>
+                    {STATION_NAMES[fromStationId]} → {STATION_NAMES[toStationId]}
+                </Text>
                 <Group gap="lg">
                     <Text fw={700}>改札外乗換 {result.outsideTransferCount}回</Text>
                     <Text fw={700}>改札内乗換 {result.insideTransferCount}回</Text>
@@ -118,7 +132,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
     const [pendingStations, setPendingStations] = useState<Pick<PlannerState, 'fromStationId' | 'toStationId'> | null>(
         null,
     );
-    const result = buildPlannerResult(state);
+    const preview = buildPlannerPreview(state);
     const stationError = state.fromStationId && state.toStationId ? getPlannerStationError(state) : null;
     function apply(action: PlannerAction) {
         setState((previous) => updatePlanner(previous, action));
@@ -238,9 +252,9 @@ export function TokyoMetroTransferRoutePlannerPage() {
                     </Stack>
                 </section>
                 <div aria-live="polite">
-                    {result ? <PlannerResult result={result} /> : <Text c="dimmed">経路を入力してください</Text>}
+                    {preview ? <PlannerResult preview={preview} /> : <Text c="dimmed">経路を入力してください</Text>}
                 </div>
-                {result && <DebugDetails result={result} />}
+                {preview && <DebugDetails result={preview.result} />}
             </Stack>
             <Modal
                 opened={confirmReverse}

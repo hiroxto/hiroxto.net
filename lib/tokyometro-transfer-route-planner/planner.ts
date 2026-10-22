@@ -32,11 +32,14 @@
  * 「経路が完成していないため逆転できません。経路を破棄して乗車駅と降車駅を入れ替えますか？」
  * と確認し、承諾時だけ破棄・交換する。経路入力がなければ確認なしで交換する。
  *
- * 完成時だけ改札外・改札内乗換回数とIC・きっぷ運賃を表示する。
- * 運賃は既存の駅間運賃計算を使い、発駅から降車駅と各改札外出場駅への運賃の最大値を
+ * 接続駅まで入力済みの連続した乗車区間が1つ以上あれば、その末端までの乗換回数とIC・きっぷ運賃を表示する。
+ * 末尾の未入力行と路線のみ選択された行は、その直前の乗換も含めて計算対象外とする。
+ * 計算した区間を「浅草 → 日比谷」のように完成時も表示する。未完成時の見出しは「作成結果 (入力途中)」とし、
+ * 「入力途中」を赤文字で強調する。降車駅に到達したら見出しを「作成結果」にする。
+ * 運賃は既存の駅間運賃計算を使い、発駅から計算区間の末端と各改札外出場駅への運賃の最大値を
  * IC・きっぷ別に採用する。異駅名乗換は出場側の駅を使う。実乗車距離とは区別する。
- * 未完成時は「経路を入力してください」と表示する。デバッグ情報は閉じたアコーディオンに置き、
- * 完成時の実乗車距離・最短運賃計算距離・各改札外出場駅の運賃だけを表示する。入力状態やJSONは表示しない。
+ * 計算可能な乗車区間がなければ「経路を入力してください」と表示する。デバッグ情報は閉じたアコーディオンに置き、
+ * 表示した計算区間の実乗車距離・最短運賃計算距離・各改札外出場駅の運賃だけを表示する。入力状態やJSONは表示しない。
  * 出場駅は「改札外乗換 1 (有楽町) : 1.0km / IC 178円 / きっぷ 180円」の書式で表示する。
  * 利用日・個別行削除・保存・URL共有・再読込による復元は設けない。
  */
@@ -244,6 +247,34 @@ export const buildPlannerResult = (state: PlannerState): RouteResult | null => {
     if (!from || !to || state.rows.length === 0) return null;
     const prefix = readPrefix(state, state.rows.length);
     if (!prefix || prefix.stationId !== to) return null;
+    return calculatePrefixResult(state, prefix);
+};
+
+/** 完成判定とは独立して、入力済みの乗車区間だけを計算する。 */
+export const buildPlannerPreview = (
+    state: PlannerState,
+): {
+    result: RouteResult;
+    fromStationId: StationId;
+    toStationId: StationId;
+    complete: boolean;
+} | null => {
+    const incompleteIndex = state.rows.findIndex((row) => row.lineId == null || row.stationId == null);
+    const count = incompleteIndex < 0 ? state.rows.length : incompleteIndex;
+    if (count === 0 || !state.fromStationId) return null;
+    const prefix = readPrefix(state, count);
+    if (!prefix) return null;
+    return {
+        result: calculatePrefixResult({ ...state, rows: state.rows.slice(0, count) }, prefix),
+        fromStationId: state.fromStationId,
+        toStationId: prefix.stationId,
+        complete: count === state.rows.length && prefix.stationId === state.toStationId,
+    };
+};
+
+const calculatePrefixResult = (state: PlannerState, prefix: Prefix): RouteResult => {
+    const from = prefix.legs[0].fromStationId;
+    const to = prefix.stationId;
     const base = calculateFareBetweenStations(from, to);
     const outside = prefix.transfers.filter((transfer) => transfer.type === 'outside');
     const fareCheckpoints = outside.map((transfer) => {
