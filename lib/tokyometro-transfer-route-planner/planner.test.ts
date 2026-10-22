@@ -2,6 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { buildPlannerResult, getPlannerLineOptions, getPlannerStationOptions, type PlannerState } from './planner';
 
 describe('経路作成の候補と完成判定', () => {
+    it('降車駅への徒歩到達しか残らない接続駅を無効化し、直接乗車できる降車駅は選択可能にする', () => {
+        const options = getPlannerStationOptions(
+            {
+                fromStationId: 'kyobashi',
+                toStationId: 'shintomicho',
+                rows: [
+                    { lineId: 'ginza', stationId: 'ginza', transferType: null },
+                    { lineId: 'yurakucho', stationId: null, transferType: 'outside' },
+                ],
+            },
+            1,
+        );
+        expect(options.find((option) => option.value === 'yurakucho')).toMatchObject({ disabled: true });
+        expect(options.find((option) => option.value === 'shintomicho')).toMatchObject({ disabled: false });
+    });
     it('降車駅までの運賃より途中の改札外出場駅への運賃が高ければ高い方を採用する', () => {
         // 虎ノ門→赤坂は初乗り運賃。虎ノ門→上野は6.6kmで209円/210円。
         const result = buildPlannerResult({

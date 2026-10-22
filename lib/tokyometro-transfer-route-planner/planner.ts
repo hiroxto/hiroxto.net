@@ -33,9 +33,7 @@
  * 利用日・個別行削除・保存・URL共有・再読込による復元は設けない。
  */
 import {
-    CROSS_STATION_TRANSFERS,
     LINE_DEFINITIONS,
-    LINE_PATHS,
     type LineId,
     STATION_NAMES,
     type StationId,
@@ -147,27 +145,28 @@ export const getPlannerIncomingTransfer = (state: PlannerState, index: number): 
     );
 };
 
-// 到達不能の必要条件を安価に判定するための、路線・乗換制約を緩めた駅間接続。
-const neighbors = new Map<StationId, Set<StationId>>(stations.map(({ id }) => [id, new Set<StationId>()]));
-const connect = (a: StationId, b: StationId): void => {
-    neighbors.get(a)?.add(b);
-    neighbors.get(b)?.add(a);
-};
-for (const path of LINE_PATHS) {
-    for (let i = 1; i < path.stations.length; i++) connect(path.stations[i - 1][0], path.stations[i][0]);
-}
-for (const transfer of CROSS_STATION_TRANSFERS) connect(transfer.fromStationId, transfer.toStationId);
-
-/** 訪問済み駅を除いた接続で到達できなければ、厳密な経路も存在しない。 */
-const isConnected = (from: StationId, destination: StationId, visited: Set<StationId>): boolean => {
-    const queue = [from];
-    const seen = new Set<StationId>([from]);
+/**
+ * 入力済み駅を除き、乗車・乗換を交互に接続して到達できるかを幅優先で調べる。
+ * 未入力の区間同士の駅の重複だけは許す緩い判定なので、到達不能の除外にのみ使う。
+ * 徒歩終着や徒歩乗換の連続も除外し、厳密な探索での不要な迂回列挙を防ぐ。
+ */
+const isConnected = (from: StationId, lineId: LineId, destination: StationId, visited: Set<StationId>): boolean => {
+    const queue = [{ stationId: from, lineId }];
+    const seen = new Set<string>([`${from}:${lineId}`]);
     for (let i = 0; i < queue.length; i++) {
-        if (queue[i] === destination) return true;
-        for (const next of neighbors.get(queue[i]) ?? []) {
-            if (!visited.has(next) && !seen.has(next)) {
-                seen.add(next);
-                queue.push(next);
+        const current = queue[i];
+        if (current.stationId === destination) return true;
+        for (const transfer of getRoutePlannerTransfers(current.stationId, current.lineId)) {
+            if (!canTransfer(transfer, visited, destination)) continue;
+            const used = new Set([...visited, transfer.toStationId]);
+            for (const segment of getRoutePlannerSegments(transfer.toStationId, transfer.toLineId, destination)) {
+                if (!canRide(segment, used, destination)) continue;
+                if (segment.toStationId === destination) return true;
+                const key = `${segment.toStationId}:${segment.lineId}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    queue.push({ stationId: segment.toStationId, lineId: segment.lineId });
+                }
             }
         }
     }
@@ -182,7 +181,7 @@ const canFinish = (stationId: StationId, lineId: LineId, visited: Set<StationId>
     const failed = new Set<string>();
     const visit = (current: StationId, line: LineId, used: Set<StationId>): boolean => {
         if (current === destination) return true;
-        if (!isConnected(current, destination, used)) return false;
+        if (!isConnected(current, line, destination, used)) return false;
         const key = `${current}:${line}:${[...used].sort().join(',')}`;
         if (failed.has(key)) return false;
         for (const transfer of getRoutePlannerTransfers(current, line)) {
