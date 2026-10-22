@@ -100,7 +100,7 @@ function DebugDetails({ state, result }: { state: PlannerState; result: RouteRes
                                 </Text>
                                 {result.fareCheckpoints.map((checkpoint, index) => (
                                     <Text size="sm" key={checkpoint.stationId}>
-                                        改札外乗換 {index + 1}（{STATION_NAMES[checkpoint.stationId]}）:{' '}
+                                        改札外乗換 {index + 1} ({STATION_NAMES[checkpoint.stationId]}) :{' '}
                                         {formatDistance(checkpoint.shortestDistanceTenths)} / IC{' '}
                                         {yen(checkpoint.fare.ic)} / きっぷ {yen(checkpoint.fare.ticket)}
                                     </Text>
