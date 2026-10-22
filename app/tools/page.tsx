@@ -15,6 +15,10 @@ const tools = [
         title: '東京メトロ 改札外乗換検索',
     },
     {
+        href: '/tools/tokyometro-transfer-route-planner',
+        title: '東京メトロ 改札外乗換経路作成',
+    },
+    {
         href: '/tools/fare-ticket-route-planner',
         title: '乗車券の経路作成',
     },
