@@ -23,6 +23,24 @@ const endpoints = async (user: User, from: string, to: string) => {
 };
 
 describe('改札外乗換経路作成の画面', () => {
+    it('選択済み発駅を不正な駅名で置換した場合もエラーを表示して経路を消去する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <TokyoMetroTransferRoutePlannerPage />
+            </MantineProvider>,
+        );
+        await endpoints(user, '稲荷町', '浅草');
+        await choose(user, '経路1の接続駅', /^浅草$/);
+        expect(screen.getByRole('region', { name: '作成結果' })).toBeInTheDocument();
+        const input = screen.getByRole('combobox', { name: '乗車駅' }) as HTMLInputElement;
+        await user.click(input);
+        input.setSelectionRange(0, input.value.length);
+        await user.paste('存在しない駅');
+        expect(input).toHaveValue('存在しない駅');
+        expect(screen.getByText('選択肢から駅を指定してください')).toBeInTheDocument();
+        expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
+    });
     it('接続駅の選択後に路線を自動入力し、完成結果と逆転後の結果を表示する', async () => {
         const user = userEvent.setup();
         render(

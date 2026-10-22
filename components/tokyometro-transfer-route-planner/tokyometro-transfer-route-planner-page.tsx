@@ -188,8 +188,9 @@ export function TokyoMetroTransferRoutePlannerPage() {
                                     placeholder="駅を選択"
                                     radius="sm"
                                     searchable
-                                    clearable
-                                    value={state[field]}
+                                    clearable={state[field] != null}
+                                    // nullではSelectが検索文字を消すため、未選択は空文字で表す。
+                                    value={state[field] ?? ''}
                                     data={stationOptions}
                                     filter={filterStations}
                                     searchValue={searches[field]}
