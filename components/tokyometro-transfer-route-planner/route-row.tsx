@@ -4,18 +4,11 @@ import { Alert, Badge, Button, Group, Paper, Select, SimpleGrid, Stack, Text } f
 import type { PlannerAction } from '@/lib/tokyometro-transfer-route-planner/editor';
 import {
     getPlannerIncomingTransfer,
-    getPlannerIncomingTransfers,
     getPlannerLineOptions,
     getPlannerStationOptions,
     type PlannerState,
 } from '@/lib/tokyometro-transfer-route-planner/planner';
-import {
-    LINE_DEFINITIONS,
-    type LineId,
-    STATION_NAMES,
-    type StationId,
-    type TransferType,
-} from '@/lib/tokyometro-transfer-search/data';
+import { LINE_DEFINITIONS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-transfer-search/data';
 
 export function RouteRow({
     state,
@@ -30,13 +23,6 @@ export function RouteRow({
     const lines = getPlannerLineOptions(state, index);
     const stationOptions = getPlannerStationOptions(state, index);
     const transfer = getPlannerIncomingTransfer(state, index);
-    const transferTypes = [
-        ...new Set(
-            getPlannerIncomingTransfers(state, index)
-                .filter((candidate) => candidate.toLineId === row.lineId)
-                .map((candidate) => candidate.type),
-        ),
-    ];
     const transferName = transfer?.type === 'outside' ? '改札外乗換' : '改札内乗換';
     const line = row.lineId ? LINE_DEFINITIONS[row.lineId] : null;
     const hasLaterInput = state.rows.slice(index + 1).some((next) => next.lineId != null || next.stationId != null);
@@ -48,26 +34,9 @@ export function RouteRow({
                         {STATION_NAMES[transfer.fromStationId]}
                         {transfer.fromStationId !== transfer.toStationId && ` → ${STATION_NAMES[transfer.toStationId]}`}
                     </Text>
-                    {transferTypes.length > 1 ? (
-                        <Select
-                            aria-label={`経路${index + 1}の乗換種別`}
-                            value={transfer.type}
-                            data={transferTypes.map((value) => ({
-                                value,
-                                label: value === 'outside' ? '改札外乗換' : '改札内乗換',
-                            }))}
-                            allowDeselect={false}
-                            onChange={(value) =>
-                                value && onChange({ type: 'transfer', index, transferType: value as TransferType })
-                            }
-                            radius="sm"
-                            w={160}
-                        />
-                    ) : (
-                        <Badge variant="outline" color={transfer.type === 'outside' ? 'orange' : 'gray'} radius="sm">
-                            {transferName}
-                        </Badge>
-                    )}
+                    <Badge variant="outline" color={transfer.type === 'outside' ? 'orange' : 'gray'} radius="sm">
+                        {transferName}
+                    </Badge>
                 </Group>
             )}
             <Paper

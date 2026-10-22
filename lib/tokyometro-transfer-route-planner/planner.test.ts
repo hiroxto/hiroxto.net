@@ -8,8 +8,8 @@ describe('経路作成の候補と完成判定', () => {
                 fromStationId: 'kyobashi',
                 toStationId: 'shintomicho',
                 rows: [
-                    { lineId: 'ginza', stationId: 'ginza', transferType: null },
-                    { lineId: 'yurakucho', stationId: null, transferType: 'outside' },
+                    { lineId: 'ginza', stationId: 'ginza' },
+                    { lineId: 'yurakucho', stationId: null },
                 ],
             },
             1,
@@ -23,9 +23,9 @@ describe('経路作成の候補と完成判定', () => {
             fromStationId: 'toranomon',
             toStationId: 'akasaka',
             rows: [
-                { lineId: 'ginza', stationId: 'ueno', transferType: null },
-                { lineId: 'hibiya', stationId: 'kita-senju', transferType: 'outside' },
-                { lineId: 'chiyoda', stationId: 'akasaka', transferType: 'inside' },
+                { lineId: 'ginza', stationId: 'ueno' },
+                { lineId: 'hibiya', stationId: 'kita-senju' },
+                { lineId: 'chiyoda', stationId: 'akasaka' },
             ],
         });
         expect(result).toMatchObject({ fare: { ic: 209, ticket: 210 }, outsideTransferCount: 1 });
@@ -38,7 +38,7 @@ describe('経路作成の候補と完成判定', () => {
         const result = buildPlannerResult({
             fromStationId: 'inaricho',
             toStationId: 'asakusa',
-            rows: [{ lineId: 'ginza', stationId: 'asakusa', transferType: null }],
+            rows: [{ lineId: 'ginza', stationId: 'asakusa' }],
         });
         expect(result).toMatchObject({
             outsideTransferCount: 0,
@@ -52,8 +52,8 @@ describe('経路作成の候補と完成判定', () => {
             fromStationId: 'kyobashi',
             toStationId: 'shintomicho',
             rows: [
-                { lineId: 'ginza', stationId: 'ginza', transferType: null },
-                { lineId: 'yurakucho', stationId: 'shintomicho', transferType: 'outside' },
+                { lineId: 'ginza', stationId: 'ginza' },
+                { lineId: 'yurakucho', stationId: 'shintomicho' },
             ],
         });
         expect(result).toMatchObject({ outsideTransferCount: 1, insideTransferCount: 0 });
@@ -69,17 +69,60 @@ describe('経路作成の候補と完成判定', () => {
         expect(result?.fareCheckpoints[0].stationId).toBe('ginza');
     });
 
-    it('大手町で改札内を指定すれば改札内乗換として集計する', () => {
+    it('両種別が利用できる大手町では改札外乗換として自動集計する', () => {
         expect(
             buildPlannerResult({
                 fromStationId: 'tokyo',
                 toStationId: 'takebashi',
                 rows: [
-                    { lineId: 'marunouchi', stationId: 'otemachi', transferType: null },
-                    { lineId: 'tozai', stationId: 'takebashi', transferType: 'inside' },
+                    { lineId: 'marunouchi', stationId: 'otemachi' },
+                    { lineId: 'tozai', stationId: 'takebashi' },
                 ],
             }),
-        ).toMatchObject({ outsideTransferCount: 0, insideTransferCount: 1 });
+        ).toMatchObject({ outsideTransferCount: 1, insideTransferCount: 0 });
+    });
+
+    it('提示された長い経路では大手町も改札外に含めて14回と集計する', () => {
+        const result = buildPlannerResult({
+            fromStationId: 'sakuradamon',
+            toStationId: 'asakusa',
+            rows: [
+                { lineId: 'yurakucho', stationId: 'yurakucho' },
+                { lineId: 'hibiya', stationId: 'toranomon-hills' },
+                { lineId: 'ginza', stationId: 'tameike-sanno' },
+                { lineId: 'chiyoda', stationId: 'omote-sando' },
+                { lineId: 'ginza', stationId: 'shibuya' },
+                { lineId: 'fukutoshin', stationId: 'shinjuku-sanchome' },
+                { lineId: 'marunouchi', stationId: 'akasaka-mitsuke' },
+                { lineId: 'hanzomon', stationId: 'kudanshita' },
+                { lineId: 'tozai', stationId: 'iidabashi' },
+                { lineId: 'yurakucho', stationId: 'ikebukuro' },
+                { lineId: 'marunouchi', stationId: 'awajicho' },
+                { lineId: 'chiyoda', stationId: 'otemachi' },
+                { lineId: 'marunouchi', stationId: 'ginza' },
+                { lineId: 'yurakucho', stationId: 'shintomicho' },
+                { lineId: 'hibiya', stationId: 'ningyocho' },
+                { lineId: 'hanzomon', stationId: 'mitsukoshimae' },
+                { lineId: 'ginza', stationId: 'ueno-hirokoji' },
+                { lineId: 'hibiya', stationId: 'ueno' },
+                { lineId: 'ginza', stationId: 'asakusa' },
+            ],
+        });
+        expect(result).toMatchObject({
+            outsideTransferCount: 14,
+            insideTransferCount: 4,
+            actualDistanceTenths: 437,
+            shortestDistanceTenths: 82,
+            fare: { ic: 209, ticket: 210 },
+        });
+        expect(result?.transfers).toContainEqual({
+            fromStationId: 'otemachi',
+            toStationId: 'otemachi',
+            fromLineId: 'chiyoda',
+            toLineId: 'marunouchi',
+            type: 'outside',
+        });
+        expect(result?.fareCheckpoints.map(({ stationId }) => stationId)).toContain('otemachi');
     });
 
     it('乗車済みの駅を通る接続駅は候補に残して無効にする', () => {
@@ -87,9 +130,9 @@ describe('経路作成の候補と完成判定', () => {
             fromStationId: 'kyobashi',
             toStationId: 'asakusa',
             rows: [
-                { lineId: 'ginza', stationId: 'ginza', transferType: null },
-                { lineId: 'marunouchi', stationId: 'akasaka-mitsuke', transferType: 'inside' },
-                { lineId: 'ginza', stationId: null, transferType: 'inside' },
+                { lineId: 'ginza', stationId: 'ginza' },
+                { lineId: 'marunouchi', stationId: 'akasaka-mitsuke' },
+                { lineId: 'ginza', stationId: null },
             ],
         };
         expect(getPlannerStationOptions(state, 2).find((option) => option.value === 'nihombashi')).toMatchObject({
@@ -101,7 +144,7 @@ describe('経路作成の候補と完成判定', () => {
         const state: PlannerState = {
             fromStationId: 'inaricho',
             toStationId: 'ueno',
-            rows: [{ lineId: 'ginza', stationId: null, transferType: null }],
+            rows: [{ lineId: 'ginza', stationId: null }],
         };
         expect(getPlannerStationOptions(state, 0).find((option) => option.value === 'ginza')).toMatchObject({
             disabled: true,
@@ -116,7 +159,7 @@ describe('経路作成の候補と完成判定', () => {
         const state: PlannerState = {
             fromStationId: 'ayase',
             toStationId: 'kita-ayase',
-            rows: [{ lineId: 'chiyoda', stationId: null, transferType: null }],
+            rows: [{ lineId: 'chiyoda', stationId: null }],
         };
         expect(getPlannerStationOptions(state, 0).find((option) => option.value === 'kita-senju')).toMatchObject({
             disabled: true,
@@ -131,8 +174,8 @@ describe('経路作成の候補と完成判定', () => {
             fromStationId: 'ayase',
             toStationId: 'kita-ayase',
             rows: [
-                { lineId: 'chiyoda', stationId: 'kita-senju', transferType: null },
-                { lineId: null, stationId: null, transferType: null },
+                { lineId: 'chiyoda', stationId: 'kita-senju' },
+                { lineId: null, stationId: null },
             ],
         };
         expect(getPlannerLineOptions(state, 1)).toContainEqual(
@@ -145,7 +188,7 @@ describe('経路作成の候補と完成判定', () => {
             buildPlannerResult({
                 fromStationId: 'honancho',
                 toStationId: 'shinjuku',
-                rows: [{ lineId: 'marunouchi', stationId: 'shinjuku', transferType: null }],
+                rows: [{ lineId: 'marunouchi', stationId: 'shinjuku' }],
             }),
         ).toMatchObject({ outsideTransferCount: 0, insideTransferCount: 0, actualDistanceTenths: 51 });
     });
@@ -165,8 +208,8 @@ describe('経路作成の候補と完成判定', () => {
                 fromStationId: 'kyobashi',
                 toStationId: 'ginza-itchome',
                 rows: [
-                    { lineId: 'ginza', stationId: 'ginza', transferType: null },
-                    { lineId: 'yurakucho', stationId: 'ginza-itchome', transferType: 'outside' },
+                    { lineId: 'ginza', stationId: 'ginza' },
+                    { lineId: 'yurakucho', stationId: 'ginza-itchome' },
                 ],
             }),
         ).toBeNull();

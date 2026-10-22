@@ -15,10 +15,10 @@
  * 路線候補が1つなら自動入力し、複数なら選択する。接続駅は自動入力しない。
  * 接続駅の入力後は次の行を追加し、降車駅なら追加しない。
  * 行間に乗換前後の駅名と改札内・外を表示する。同駅は駅名を1つ表示する。
- * 両種別が利用できる場合だけ選択欄を設け、初期値は改札外。それ以外は自動決定する。
+ * 乗換種別は入力せず、駅・路線から自動決定する。両種別が利用できる場合は改札外として扱う。
  *
  * 発着駅の変更は全経路を、路線の変更はその行の接続駅と後続行を、接続駅の変更は後続行を
- * 確認なしで消去する。乗換種別だけの変更は後続行を保持する。
+ * 確認なしで消去する。乗換種別を変更する操作は設けない。
  * 「この先を削除」は指定行を保持し、後続行を削除する。入力再開用の空行は表示してよい。
  * 完成経路の発着逆転は乗車・乗換も逆転し、運賃を再計算する。
  * 未完成で路線または接続駅の入力がある場合（自動入力も含む）は、
@@ -33,13 +33,7 @@
  * 出場駅は「改札外乗換 1 (有楽町) : 1.0km / IC 178円 / きっぷ 180円」の書式で表示する。
  * 利用日・個別行削除・保存・URL共有・再読込による復元は設けない。
  */
-import {
-    LINE_DEFINITIONS,
-    type LineId,
-    STATION_NAMES,
-    type StationId,
-    type TransferType,
-} from '@/lib/tokyometro-transfer-search/data';
+import { LINE_DEFINITIONS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-transfer-search/data';
 import {
     calculateFareBetweenStations,
     getRoutePlannerSegments,
@@ -51,7 +45,7 @@ import {
 } from '@/lib/tokyometro-transfer-search/search';
 import { stationIdSchema } from '@/lib/tokyometro-transfer-search/validation';
 
-export type PlannerRow = { lineId: LineId | null; stationId: StationId | null; transferType: TransferType | null };
+export type PlannerRow = { lineId: LineId | null; stationId: StationId | null };
 export type PlannerState = { fromStationId: StationId | null; toStationId: StationId | null; rows: PlannerRow[] };
 export type PlannerOption = { value: string; label: string; disabled: boolean; reason?: string };
 type Prefix = { stationId: StationId; visited: Set<StationId>; legs: PlannerRideSegment[]; transfers: RouteTransfer[] };
@@ -101,9 +95,7 @@ const readPrefix = (state: PlannerState, index: number): Prefix | null => {
             const previousLine = state.rows[i - 1].lineId;
             if (previousLine == null) return null;
             const transfer = getRoutePlannerTransfers(prefix.stationId, previousLine).find(
-                (candidate) =>
-                    candidate.toLineId === row.lineId &&
-                    (row.transferType == null || candidate.type === row.transferType),
+                (candidate) => candidate.toLineId === row.lineId,
             );
             if (!transfer || !canTransfer(transfer, prefix.visited, state.toStationId)) return null;
             prefix = addTransfer(prefix, transfer);
@@ -135,15 +127,10 @@ export const getPlannerLineOptions = (state: PlannerState, index: number): Plann
             : [...new Set(getPlannerIncomingTransfers(state, index).map((transfer) => transfer.toLineId))];
     return lineIds.map((value) => ({ value, label: LINE_DEFINITIONS[value].name, disabled: false }));
 };
-/** 種別未指定の場合は既存定義の改札外優先順を使う。 */
+/** 駅と路線から乗換を自動決定する。両種別が使える場合は既存定義の改札外優先順を使う。 */
 export const getPlannerIncomingTransfer = (state: PlannerState, index: number): RouteTransfer | null => {
     const row = state.rows[index];
-    return (
-        getPlannerIncomingTransfers(state, index).find(
-            (transfer) =>
-                transfer.toLineId === row?.lineId && (row.transferType == null || transfer.type === row.transferType),
-        ) ?? null
-    );
+    return getPlannerIncomingTransfers(state, index).find((transfer) => transfer.toLineId === row?.lineId) ?? null;
 };
 
 /**
@@ -264,7 +251,7 @@ export const buildPlannerResult = (state: PlannerState): RouteResult | null => {
         { ic: base.ic, ticket: base.ticket },
     );
     return {
-        key: state.rows.map((row) => `${row.lineId}:${row.stationId}:${row.transferType}`).join('|'),
+        key: state.rows.map((row) => `${row.lineId}:${row.stationId}`).join('|'),
         legs: prefix.legs.map(({ stationIds: _stationIds, ...leg }) => leg),
         transfers: prefix.transfers,
         outsideTransferCount: outside.length,

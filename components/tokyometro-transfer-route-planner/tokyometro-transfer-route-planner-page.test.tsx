@@ -110,7 +110,7 @@ describe('改札外乗換経路作成の画面', () => {
         expect(screen.getByRole('combobox', { name: '乗車駅' })).toHaveValue('入谷｜日比谷線');
         expect(screen.getByRole('combobox', { name: '経路1の路線' })).toHaveValue('日比谷線');
     });
-    it('大手町の乗換種別を変更しても接続駅を保持し集計を変更する', async () => {
+    it('大手町の乗換種別は選択欄を出さず改札外として自動集計する', async () => {
         const user = userEvent.setup();
         render(
             <MantineProvider env="test">
@@ -122,9 +122,9 @@ describe('改札外乗換経路作成の画面', () => {
         await choose(user, '経路2の路線', /^東西線$/);
         await choose(user, '経路2の接続駅', /^竹橋$/);
         expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札外乗換 1回');
-        await choose(user, '経路2の乗換種別', /^改札内乗換$/);
+        expect(screen.queryByRole('combobox', { name: '経路2の乗換種別' })).not.toBeInTheDocument();
         expect(screen.getByRole('combobox', { name: '経路2の接続駅' })).toHaveValue('竹橋');
-        expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札内乗換 1回');
+        expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札内乗換 0回');
     });
     it('存在しない駅の入力にはエラーを表示し経路を入力できない', async () => {
         const user = userEvent.setup();
