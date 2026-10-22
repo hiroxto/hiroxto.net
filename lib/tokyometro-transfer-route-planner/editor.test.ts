@@ -120,6 +120,30 @@ describe('経路入力の状態遷移', () => {
         expect(changed.rows[1].stationId).toBeNull();
         expect(buildPlannerResult(changed)).toBeNull();
     });
+    it('末尾の完成行だけを削除して前の区間を保持し、追加操作で入力を再開する', () => {
+        const removed = updatePlanner(crossRoute, { type: 'remove-last' });
+        expect(removed.rows).toEqual(crossRoute.rows.slice(0, 1));
+        expect(buildPlannerResult(removed)).toBeNull();
+        const resumed = updatePlanner(removed, { type: 'append' });
+        expect(resumed.rows).toEqual([crossRoute.rows[0], { lineId: null, stationId: null }]);
+        expect(updatePlanner(crossRoute, { type: 'append' })).toEqual(crossRoute);
+    });
+    it('未入力の末尾行も削除でき、最後の1行を削除したら全行を消す', () => {
+        const initial = createPlannerState('inaricho', 'iriya');
+        const removed = updatePlanner(initial, { type: 'remove-last' });
+        expect(removed.rows).toEqual([]);
+        expect(updatePlanner(removed, { type: 'remove-last' })).toEqual(removed);
+        expect(updatePlanner(removed, { type: 'append' })).toEqual(initial);
+        const unfinished = updatePlanner(initial, { type: 'station', index: 0, stationId: 'ueno' });
+        expect(updatePlanner(unfinished, { type: 'remove-last' }).rows).toEqual([
+            { lineId: 'ginza', stationId: 'ueno' },
+        ]);
+    });
+    it('未入力の行が残っている場合と発着が未指定の場合は追加操作で行を増やさない', () => {
+        const initial = createPlannerState('inaricho', 'iriya');
+        expect(updatePlanner(initial, { type: 'append' })).toEqual(initial);
+        expect(updatePlanner(createPlannerState(), { type: 'append' }).rows).toEqual([]);
+    });
     it('無効化された接続駅を直接指定されても採用しない', () => {
         const state = createPlannerState('ayase', 'kita-ayase');
         expect(updatePlanner(state, { type: 'station', index: 0, stationId: 'kita-senju' })).toEqual(state);

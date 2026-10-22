@@ -12,7 +12,9 @@ export type PlannerAction =
     | { type: 'stations'; fromStationId: StationId | null; toStationId: StationId | null }
     | { type: 'line'; index: number; lineId: LineId | null }
     | { type: 'station'; index: number; stationId: StationId | null }
-    | { type: 'truncate'; index: number };
+    | { type: 'truncate'; index: number }
+    | { type: 'remove-last' }
+    | { type: 'append' };
 
 const emptyRow = (): PlannerRow => ({ lineId: null, stationId: null });
 /** 末尾の入力行を用意し、路線候補が単一の場合だけ自動入力する。 */
@@ -73,6 +75,13 @@ export const tryChangePlannerStations = (
 export const updatePlanner = (state: PlannerState, action: PlannerAction): PlannerState => {
     if (action.type === 'stations')
         return tryChangePlannerStations(state, action.fromStationId, action.toStationId) ?? state;
+    if (action.type === 'remove-last') return { ...state, rows: state.rows.slice(0, -1) };
+    if (action.type === 'append') {
+        const last = state.rows.at(-1);
+        if (getPlannerStationError(state) || (last && (last.stationId == null || last.stationId === state.toStationId)))
+            return state;
+        return prepareNextRow(state);
+    }
     const row = state.rows[action.index];
     if (!row) return state;
     if (action.type === 'line') {

@@ -229,6 +229,34 @@ describe('改札外乗換経路作成の画面', () => {
             expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札外乗換 1回');
         }
     });
+    it('末尾の行を単体削除して区間を再計算し、経路追加で入力を再開する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <TokyoMetroTransferRoutePlannerPage />
+            </MantineProvider>,
+        );
+        await endpoints(user, '稲荷町', '入谷');
+        await choose(user, '経路1の接続駅', /^上野$/);
+        await choose(user, '経路2の接続駅', /^入谷$/);
+        expect(screen.getByRole('button', { name: '経路1のこの先を削除' })).toHaveTextContent('この先を削除');
+        expect(screen.getByRole('button', { name: '経路2の削除' })).toHaveTextContent('削除');
+        await user.click(screen.getByRole('button', { name: '経路2の削除' }));
+        expect(screen.queryByRole('combobox', { name: '経路2の接続駅' })).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('稲荷町 → 上野');
+        expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札外乗換 0回');
+        await user.click(screen.getByRole('button', { name: '経路を追加' }));
+        expect(screen.getByRole('combobox', { name: '経路2の路線' })).toHaveValue('日比谷線');
+        expect(screen.getByRole('combobox', { name: '経路2の接続駅' })).toHaveValue('');
+        await user.click(screen.getByRole('button', { name: '経路2の削除' }));
+        await user.click(screen.getByRole('button', { name: '経路1の削除' }));
+        expect(screen.queryByRole('combobox', { name: '経路1の接続駅' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: '経路を追加' }));
+        expect(screen.getByRole('combobox', { name: '経路1の路線' })).toHaveValue('銀座線');
+        expect(screen.getByRole('combobox', { name: '乗車駅' })).toHaveValue('稲荷町｜銀座線');
+        expect(screen.getByRole('combobox', { name: '降車駅' })).toHaveValue('入谷｜日比谷線');
+    });
     it('存在しない駅の入力にはエラーを表示し経路を入力できない', async () => {
         const user = userEvent.setup();
         render(

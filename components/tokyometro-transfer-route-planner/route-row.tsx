@@ -27,6 +27,7 @@ export function RouteRow({
     const transfer = getPlannerIncomingTransfer(state, index);
     const transferName = transfer?.type === 'outside' ? '改札外乗換' : '改札内乗換';
     const line = row.lineId ? LINE_DEFINITIONS[row.lineId] : null;
+    const isLast = index === state.rows.length - 1;
     const hasLaterInput = state.rows.slice(index + 1).some((next) => next.lineId != null || next.stationId != null);
     return (
         <Stack gap="sm">
@@ -55,11 +56,11 @@ export function RouteRow({
                             variant="subtle"
                             color="gray"
                             radius="sm"
-                            aria-label={`経路${index + 1}のこの先を削除`}
-                            disabled={!hasLaterInput}
-                            onClick={() => onChange({ type: 'truncate', index })}
+                            aria-label={`経路${index + 1}の${isLast ? '削除' : 'この先を削除'}`}
+                            disabled={!isLast && !hasLaterInput}
+                            onClick={() => onChange(isLast ? { type: 'remove-last' } : { type: 'truncate', index })}
                         >
-                            この先を削除
+                            {isLast ? '削除' : 'この先を削除'}
                         </Button>
                     </Group>
                     <SimpleGrid cols={{ base: 1, sm: 2 }}>

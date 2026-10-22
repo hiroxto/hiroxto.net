@@ -133,6 +133,10 @@ export function TokyoMetroTransferRoutePlannerPage() {
         null,
     );
     const preview = buildPlannerPreview(state);
+    const lastRow = state.rows.at(-1);
+    const canAppend =
+        !getPlannerStationError(state) &&
+        (!lastRow || (lastRow.stationId != null && lastRow.stationId !== state.toStationId));
     const stationError = state.fromStationId && state.toStationId ? getPlannerStationError(state) : null;
     function apply(action: PlannerAction) {
         setState((previous) => updatePlanner(previous, action));
@@ -249,6 +253,11 @@ export function TokyoMetroTransferRoutePlannerPage() {
                                 hideUnavailableStations={hideUnavailableStations}
                             />
                         ))}
+                        {canAppend && (
+                            <Button variant="light" radius="sm" onClick={() => apply({ type: 'append' })}>
+                                経路を追加
+                            </Button>
+                        )}
                     </Stack>
                 </section>
                 <div aria-live="polite">
