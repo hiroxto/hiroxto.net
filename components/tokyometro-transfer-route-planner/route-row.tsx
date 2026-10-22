@@ -14,10 +14,12 @@ export function RouteRow({
     state,
     index,
     onChange,
+    hideUnavailableStations,
 }: {
     state: PlannerState;
     index: number;
     onChange: (action: PlannerAction) => void;
+    hideUnavailableStations: boolean;
 }) {
     const row = state.rows[index];
     const lines = getPlannerLineOptions(state, index);
@@ -77,7 +79,7 @@ export function RouteRow({
                             placeholder="接続駅を選択"
                             radius="sm"
                             searchable
-                            data={stationOptions}
+                            data={stationOptions.filter((option) => !hideUnavailableStations || !option.disabled)}
                             value={row.stationId}
                             disabled={!row.lineId}
                             allowDeselect={false}

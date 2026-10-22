@@ -11,6 +11,7 @@ import {
     Select,
     SimpleGrid,
     Stack,
+    Switch,
     Text,
     Title,
 } from '@mantine/core';
@@ -111,6 +112,7 @@ function DebugDetails({ result }: { result: RouteResult }) {
 
 export function TokyoMetroTransferRoutePlannerPage() {
     const [state, setState] = useState(createPlannerState);
+    const [hideUnavailableStations, setHideUnavailableStations] = useState(true);
     const [searches, setSearches] = useState({ fromStationId: '', toStationId: '' });
     const [confirmReverse, setConfirmReverse] = useState(false);
     const [pendingStations, setPendingStations] = useState<Pick<PlannerState, 'fromStationId' | 'toStationId'> | null>(
@@ -197,6 +199,18 @@ export function TokyoMetroTransferRoutePlannerPage() {
                                 発着逆転
                             </Button>
                         </Group>
+                        <Accordion variant="contained" radius="sm">
+                            <Accordion.Item value="options">
+                                <Accordion.Control>詳細指定</Accordion.Control>
+                                <Accordion.Panel>
+                                    <Switch
+                                        label="利用不可能な駅を非表示にする"
+                                        checked={hideUnavailableStations}
+                                        onChange={(event) => setHideUnavailableStations(event.currentTarget.checked)}
+                                    />
+                                </Accordion.Panel>
+                            </Accordion.Item>
+                        </Accordion>
                         {stationError && (
                             <Alert color="red" radius="sm">
                                 {stationError}
@@ -210,7 +224,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
                             経路
                         </Title>
                         <Text size="sm" c="dimmed">
-                            路線と接続駅を順に選択してください。選択できない接続駅には理由を表示します。
+                            路線と接続駅を順に選択してください。利用不可能な接続駅の表示は詳細指定で変更できます。
                         </Text>
                         {state.rows.map((row, index) => (
                             <RouteRow
@@ -218,6 +232,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
                                 state={state}
                                 index={index}
                                 onChange={apply}
+                                hideUnavailableStations={hideUnavailableStations}
                             />
                         ))}
                     </Stack>

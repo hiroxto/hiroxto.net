@@ -80,7 +80,7 @@ describe('改札外乗換経路作成の画面', () => {
         expect(screen.getByRole('combobox', { name: '経路1の接続駅' })).toHaveValue('銀座');
         expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
     });
-    it('到達できない接続駅を無効にし、選択操作でも入力を進めない', async () => {
+    it('利用不可能な接続駅は既定で非表示とし、設定解除後も無効なまま表示する', async () => {
         const user = userEvent.setup();
         render(
             <MantineProvider env="test">
@@ -88,6 +88,15 @@ describe('改札外乗換経路作成の画面', () => {
             </MantineProvider>,
         );
         await endpoints(user, '綾瀬', '北綾瀬');
+        await user.click(screen.getByRole('combobox', { name: '経路1の接続駅' }));
+        expect(screen.queryByRole('option', { name: /^北千住/ })).not.toBeInTheDocument();
+        expect(screen.getByRole('option', { name: '北綾瀬' })).toBeInTheDocument();
+        await user.keyboard('{Escape}');
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const toggle = await screen.findByRole('switch', { name: '利用不可能な駅を非表示にする' });
+        expect(toggle).toBeChecked();
+        await user.click(toggle);
+        expect(toggle).not.toBeChecked();
         await user.click(screen.getByRole('combobox', { name: '経路1の接続駅' }));
         const disabled = screen.getByRole('option', { name: /^北千住/ });
         expect(disabled).toHaveAttribute('data-combobox-disabled', 'true');
@@ -194,6 +203,27 @@ describe('改札外乗換経路作成の画面', () => {
         expect(screen.getByRole('combobox', { name: '経路1の接続駅' })).toHaveValue('');
         expect(screen.queryByRole('combobox', { name: '経路2の接続駅' })).not.toBeInTheDocument();
         expect(screen.queryByRole('region', { name: '作成結果' })).not.toBeInTheDocument();
+    });
+    it('利用不可能な駅の表示設定を切り替えても完成済みの経路と発着駅を保持する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <TokyoMetroTransferRoutePlannerPage />
+            </MantineProvider>,
+        );
+        await endpoints(user, '稲荷町', '入谷');
+        await choose(user, '経路1の接続駅', /^上野$/);
+        await choose(user, '経路2の接続駅', /^入谷$/);
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const toggle = await screen.findByRole('switch', { name: '利用不可能な駅を非表示にする' });
+        for (let index = 0; index < 2; index++) {
+            await user.click(toggle);
+            expect(screen.getByRole('combobox', { name: '乗車駅' })).toHaveValue('稲荷町｜銀座線');
+            expect(screen.getByRole('combobox', { name: '降車駅' })).toHaveValue('入谷｜日比谷線');
+            expect(screen.getByRole('combobox', { name: '経路1の接続駅' })).toHaveValue('上野');
+            expect(screen.getByRole('combobox', { name: '経路2の接続駅' })).toHaveValue('入谷');
+            expect(screen.getByRole('region', { name: '作成結果' })).toHaveTextContent('改札外乗換 1回');
+        }
     });
     it('存在しない駅の入力にはエラーを表示し経路を入力できない', async () => {
         const user = userEvent.setup();
