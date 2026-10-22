@@ -1,0 +1,277 @@
+/**
+ * 東京メトロ 改札外乗換経路作成の仕様。
+ *
+ * 対象の駅・路線・乗換接続は既存の改札外乗換検索と同じ。異なる発着駅を指定する。
+ * 通過駅を含め駅の再訪は禁止。同駅乗換は再訪と数えず、異駅名乗換は両駅を訪問済みにする。
+ * 乗車と乗換を交互に接続し、最初と最後は乗車する。徒歩乗換の連続は認めない。
+ * 同一路線の再利用は認める。降車駅で終了し、改札外乗換0回・乗換なしでも完成とする。
+ *
+ * 各行は路線と接続駅を持つ。接続駅は乗車区間の終点で、候補は乗換可能駅と降車駅。
+ * 路線は発駅の所属路線、または前行の接続駅から乗換可能な路線を表示する。
+ * 路線では完成可能性を検証しない。接続駅は入力済みの通過駅・乗換を考慮し、降車駅まで
+ * 完成できない候補も表示したまま無効化する。探索打ち切りを到達不能と判定してはならない。
+ * 乗換直後には1駅以上乗車するため、異駅名乗換で降車駅へ歩いて到達するだけでは完成しない。
+ *
+ * 路線候補が1つなら自動入力し、複数なら選択する。接続駅は自動入力しない。
+ * 接続駅の入力後は次の行を追加し、降車駅なら追加しない。
+ * 行間に乗換前後の駅名と改札内・外を表示する。同駅は駅名を1つ表示する。
+ * 両種別が利用できる場合だけ選択欄を設け、初期値は改札外。それ以外は自動決定する。
+ *
+ * 発着駅の変更は全経路を、路線の変更はその行の接続駅と後続行を、接続駅の変更は後続行を
+ * 確認なしで消去する。乗換種別だけの変更は後続行を保持する。
+ * 「この先を削除」は指定行を保持し、後続行を削除する。入力再開用の空行は表示してよい。
+ * 完成経路の発着逆転は乗車・乗換も逆転し、運賃を再計算する。
+ * 未完成で路線または接続駅の入力がある場合（自動入力も含む）は、
+ * 「経路が完成していないため逆転できません。経路を破棄して乗車駅と降車駅を入れ替えますか？」
+ * と確認し、承諾時だけ破棄・交換する。経路入力がなければ確認なしで交換する。
+ *
+ * 完成時だけ改札外・改札内乗換回数とIC・きっぷ運賃を表示する。
+ * 運賃は既存の駅間運賃計算を使い、発駅から降車駅と各改札外出場駅への運賃の最大値を
+ * IC・きっぷ別に採用する。異駅名乗換は出場側の駅を使う。実乗車距離とは区別する。
+ * 未完成時は「経路を入力してください」と表示する。デバッグ情報は閉じたアコーディオンに置き、
+ * 入力途中の状態、完成時の実乗車距離・最短運賃計算距離・各改札外出場駅の運賃を表示する。
+ * 利用日・個別行削除・保存・URL共有・再読込による復元は設けない。
+ */
+import {
+    CROSS_STATION_TRANSFERS,
+    LINE_DEFINITIONS,
+    LINE_PATHS,
+    type LineId,
+    STATION_NAMES,
+    type StationId,
+    type TransferType,
+} from '@/lib/tokyometro-transfer-search/data';
+import {
+    calculateFareBetweenStations,
+    getRoutePlannerSegments,
+    getRoutePlannerTransfers,
+    type PlannerRideSegment,
+    type RouteResult,
+    type RouteTransfer,
+    stations,
+} from '@/lib/tokyometro-transfer-search/search';
+import { stationIdSchema } from '@/lib/tokyometro-transfer-search/validation';
+
+export type PlannerRow = { lineId: LineId | null; stationId: StationId | null; transferType: TransferType | null };
+export type PlannerState = { fromStationId: StationId | null; toStationId: StationId | null; rows: PlannerRow[] };
+export type PlannerOption = { value: string; label: string; disabled: boolean; reason?: string };
+type Prefix = { stationId: StationId; visited: Set<StationId>; legs: PlannerRideSegment[]; transfers: RouteTransfer[] };
+
+/** 画面の選択に加え、経路生成の境界でも発着駅を検証する。 */
+export const getPlannerStationError = (state: PlannerState): string | null => {
+    if (
+        !stationIdSchema.safeParse(state.fromStationId).success ||
+        !stationIdSchema.safeParse(state.toStationId).success
+    ) {
+        return '選択肢から乗車駅と降車駅を指定してください';
+    }
+    return state.fromStationId === state.toStationId ? '乗車駅と降車駅には異なる駅を指定してください' : null;
+};
+
+const canRide = (segment: PlannerRideSegment, visited: Set<StationId>, destination: StationId): boolean =>
+    !segment.stationIds.some((id) => visited.has(id)) && !segment.stationIds.slice(0, -1).includes(destination);
+const canTransfer = (transfer: RouteTransfer, visited: Set<StationId>, destination: StationId): boolean =>
+    transfer.toStationId === transfer.fromStationId ||
+    (!visited.has(transfer.toStationId) && transfer.toStationId !== destination);
+const addTransfer = (prefix: Prefix, transfer: RouteTransfer): Prefix => ({
+    ...prefix,
+    stationId: transfer.toStationId,
+    visited: new Set([...prefix.visited, transfer.toStationId]),
+    transfers: [...prefix.transfers, transfer],
+});
+const addRide = (prefix: Prefix, segment: PlannerRideSegment): Prefix => ({
+    ...prefix,
+    stationId: segment.toStationId,
+    visited: new Set([...prefix.visited, ...segment.stationIds]),
+    legs: [...prefix.legs, segment],
+});
+
+/** indexより前の入力済み乗車区間を検証する。完成可能性はここでは判定しない。 */
+const readPrefix = (state: PlannerState, index: number): Prefix | null => {
+    if (getPlannerStationError(state) || state.fromStationId == null || state.toStationId == null) return null;
+    let prefix: Prefix = {
+        stationId: state.fromStationId,
+        visited: new Set([state.fromStationId]),
+        legs: [],
+        transfers: [],
+    };
+    for (let i = 0; i < index; i++) {
+        const row = state.rows[i];
+        if (row?.lineId == null || row.stationId == null || prefix.stationId === state.toStationId) return null;
+        if (i > 0) {
+            const previousLine = state.rows[i - 1].lineId;
+            if (previousLine == null) return null;
+            const transfer = getRoutePlannerTransfers(prefix.stationId, previousLine).find(
+                (candidate) =>
+                    candidate.toLineId === row.lineId &&
+                    (row.transferType == null || candidate.type === row.transferType),
+            );
+            if (!transfer || !canTransfer(transfer, prefix.visited, state.toStationId)) return null;
+            prefix = addTransfer(prefix, transfer);
+        } else if (!stations.find((station) => station.id === prefix.stationId)?.lineIds.includes(row.lineId)) {
+            return null;
+        }
+        const segment = getRoutePlannerSegments(prefix.stationId, row.lineId, state.toStationId).find(
+            (candidate) => candidate.toStationId === row.stationId,
+        );
+        if (!segment || !canRide(segment, prefix.visited, state.toStationId)) return null;
+        prefix = addRide(prefix, segment);
+    }
+    return prefix;
+};
+
+/** 行の直前の乗換候補。路線の完成可能性を判定せず、利用可能な接続を列挙する。 */
+export const getPlannerIncomingTransfers = (state: PlannerState, index: number): RouteTransfer[] => {
+    if (index <= 0) return [];
+    const prefix = readPrefix(state, index);
+    const lineId = state.rows[index - 1]?.lineId;
+    if (!prefix || !lineId || prefix.stationId === state.toStationId) return [];
+    return getRoutePlannerTransfers(prefix.stationId, lineId);
+};
+export const getPlannerLineOptions = (state: PlannerState, index: number): PlannerOption[] => {
+    if (getPlannerStationError(state)) return [];
+    const lineIds =
+        index === 0
+            ? (stations.find((station) => station.id === state.fromStationId)?.lineIds ?? [])
+            : [...new Set(getPlannerIncomingTransfers(state, index).map((transfer) => transfer.toLineId))];
+    return lineIds.map((value) => ({ value, label: LINE_DEFINITIONS[value].name, disabled: false }));
+};
+/** 種別未指定の場合は既存定義の改札外優先順を使う。 */
+export const getPlannerIncomingTransfer = (state: PlannerState, index: number): RouteTransfer | null => {
+    const row = state.rows[index];
+    return (
+        getPlannerIncomingTransfers(state, index).find(
+            (transfer) =>
+                transfer.toLineId === row?.lineId && (row.transferType == null || transfer.type === row.transferType),
+        ) ?? null
+    );
+};
+
+// 到達不能の必要条件を安価に判定するための、路線・乗換制約を緩めた駅間接続。
+const neighbors = new Map<StationId, Set<StationId>>(stations.map(({ id }) => [id, new Set<StationId>()]));
+const connect = (a: StationId, b: StationId): void => {
+    neighbors.get(a)?.add(b);
+    neighbors.get(b)?.add(a);
+};
+for (const path of LINE_PATHS) {
+    for (let i = 1; i < path.stations.length; i++) connect(path.stations[i - 1][0], path.stations[i][0]);
+}
+for (const transfer of CROSS_STATION_TRANSFERS) connect(transfer.fromStationId, transfer.toStationId);
+
+/** 訪問済み駅を除いた接続で到達できなければ、厳密な経路も存在しない。 */
+const isConnected = (from: StationId, destination: StationId, visited: Set<StationId>): boolean => {
+    const queue = [from];
+    const seen = new Set<StationId>([from]);
+    for (let i = 0; i < queue.length; i++) {
+        if (queue[i] === destination) return true;
+        for (const next of neighbors.get(queue[i]) ?? []) {
+            if (!visited.has(next) && !seen.has(next)) {
+                seen.add(next);
+                queue.push(next);
+            }
+        }
+    }
+    return false;
+};
+
+/**
+ * 乗車直後からの完成経路の存在を調べる。各乗換の後に必ず乗車し、訪問済み集合を枝ごとに保持する。
+ * 緩めたグラフの到達判定は除外だけに使い、完成可能とするには制約を満たす経路を実際に発見する。
+ */
+const canFinish = (stationId: StationId, lineId: LineId, visited: Set<StationId>, destination: StationId): boolean => {
+    const failed = new Set<string>();
+    const visit = (current: StationId, line: LineId, used: Set<StationId>): boolean => {
+        if (current === destination) return true;
+        if (!isConnected(current, destination, used)) return false;
+        const key = `${current}:${line}:${[...used].sort().join(',')}`;
+        if (failed.has(key)) return false;
+        for (const transfer of getRoutePlannerTransfers(current, line)) {
+            if (!canTransfer(transfer, used, destination)) continue;
+            const nextUsed = new Set([...used, transfer.toStationId]);
+            const segments = getRoutePlannerSegments(transfer.toStationId, transfer.toLineId, destination).filter(
+                (segment) => canRide(segment, nextUsed, destination),
+            );
+            if (segments.some((segment) => segment.toStationId === destination)) return true;
+            for (const segment of segments) {
+                if (visit(segment.toStationId, transfer.toLineId, new Set([...nextUsed, ...segment.stationIds])))
+                    return true;
+            }
+        }
+        failed.add(key);
+        return false;
+    };
+    return visit(stationId, lineId, visited);
+};
+
+export const getPlannerStationOptions = (state: PlannerState, index: number): PlannerOption[] => {
+    let prefix = readPrefix(state, index);
+    const row = state.rows[index];
+    const destination = state.toStationId;
+    if (!prefix || !row?.lineId || !destination) return [];
+    if (!getPlannerLineOptions(state, index).some((option) => option.value === row.lineId)) return [];
+    let transferInvalid = false;
+    if (index > 0) {
+        const transfer = getPlannerIncomingTransfer(state, index);
+        if (!transfer) return [];
+        transferInvalid = !canTransfer(transfer, prefix.visited, destination);
+        prefix = addTransfer(prefix, transfer);
+    }
+    const context = prefix;
+    return getRoutePlannerSegments(context.stationId, row.lineId, destination)
+        .map((segment) => {
+            let reason: string | undefined;
+            if (transferInvalid || segment.stationIds.some((id) => context.visited.has(id))) {
+                reason = '訪問済みの駅を通るため選択できません';
+            } else if (segment.stationIds.slice(0, -1).includes(destination)) {
+                reason = '降車駅を通り越すため選択できません';
+            } else if (
+                !canFinish(
+                    segment.toStationId,
+                    segment.lineId,
+                    new Set([...context.visited, ...segment.stationIds]),
+                    destination,
+                )
+            ) {
+                reason = 'この接続駅から降車駅まで経路を構成できません';
+            }
+            return {
+                value: segment.toStationId,
+                label: STATION_NAMES[segment.toStationId],
+                disabled: reason != null,
+                reason,
+            };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label, 'ja'));
+};
+
+export const buildPlannerResult = (state: PlannerState): RouteResult | null => {
+    const from = state.fromStationId;
+    const to = state.toStationId;
+    if (!from || !to || state.rows.length === 0) return null;
+    const prefix = readPrefix(state, state.rows.length);
+    if (!prefix || prefix.stationId !== to) return null;
+    const base = calculateFareBetweenStations(from, to);
+    const outside = prefix.transfers.filter((transfer) => transfer.type === 'outside');
+    const fareCheckpoints = outside.map((transfer) => {
+        const { shortestDistanceTenths, ic, ticket } = calculateFareBetweenStations(from, transfer.fromStationId);
+        return { stationId: transfer.fromStationId, shortestDistanceTenths, fare: { ic, ticket } };
+    });
+    const fare = fareCheckpoints.reduce(
+        (highest, checkpoint) => ({
+            ic: Math.max(highest.ic, checkpoint.fare.ic),
+            ticket: Math.max(highest.ticket, checkpoint.fare.ticket),
+        }),
+        { ic: base.ic, ticket: base.ticket },
+    );
+    return {
+        key: state.rows.map((row) => `${row.lineId}:${row.stationId}:${row.transferType}`).join('|'),
+        legs: prefix.legs.map(({ stationIds: _stationIds, ...leg }) => leg),
+        transfers: prefix.transfers,
+        outsideTransferCount: outside.length,
+        insideTransferCount: prefix.transfers.length - outside.length,
+        actualDistanceTenths: prefix.legs.reduce((distance, leg) => distance + leg.distanceTenths, 0),
+        shortestDistanceTenths: base.shortestDistanceTenths,
+        fare,
+        fareCheckpoints,
+    };
+};

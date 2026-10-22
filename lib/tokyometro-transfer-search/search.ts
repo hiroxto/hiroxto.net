@@ -918,9 +918,10 @@ const getMacroSegments = (
     fromStationId: StationId,
     lineId: LineId,
     destinationStationId: StationId,
+    stopAtDestination = true,
 ): MacroSegment[] => {
     // 計算結果を再利用するための入力条件のキー。
-    const cacheKey = `${fromStationId}:${lineId}:${destinationStationId}`;
+    const cacheKey = `${fromStationId}:${lineId}:${destinationStationId}:${stopAtDestination}`;
     // 同じ条件で計算済みの値。存在すれば再計算を省く。
     const cached = macroSegmentCache.get(cacheKey);
 
@@ -965,7 +966,7 @@ const getMacroSegments = (
             });
         }
 
-        if (stationId === destinationStationId) {
+        if (stationId === destinationStationId && stopAtDestination) {
             return;
         }
 
@@ -1004,6 +1005,30 @@ const getMacroSegments = (
     macroSegmentCache.set(cacheKey, segments);
     return segments;
 };
+
+/** 経路作成用の乗車区間。開始駅を除く通過駅を乗車順に保持する。 */
+export type PlannerRideSegment = RouteLeg & { stationIds: StationId[] };
+
+/**
+ * 接続駅候補を列挙する。降車駅より先も表示して無効化できるよう、そこで打ち切らない。
+ * 呼出側が共有キャッシュを変更しないよう、配列と区間を複製する。
+ */
+export const getRoutePlannerSegments = (
+    fromStationId: StationId,
+    lineId: LineId,
+    destinationStationId: StationId,
+): PlannerRideSegment[] =>
+    getMacroSegments(fromStationId, lineId, destinationStationId, false).map((segment) => ({
+        fromStationId: segment.fromStationId,
+        toStationId: segment.toStationId,
+        lineId: segment.lineId,
+        distanceTenths: segment.distanceTenths,
+        stationIds: segment.rideSteps.map((step) => step.toStationId),
+    }));
+
+/** 改札外を先にし、乗換前後の駅・路線・種別を方向付きで返す。 */
+export const getRoutePlannerTransfers = (stationId: StationId, lineId: LineId): RouteTransfer[] =>
+    getMacroTransfers(stationId, lineId).map(({ step: { kind: _kind, ...transfer } }) => transfer);
 
 /** 改札外乗換数の降順、改札内乗換数・実乗車距離の昇順、経路キーの順で比較する。 */
 const compareRoutes = (first: RouteResult, second: RouteResult): number =>
