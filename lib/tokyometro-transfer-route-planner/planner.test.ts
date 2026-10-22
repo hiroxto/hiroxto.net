@@ -4,6 +4,7 @@ import {
     buildPlannerPreview,
     buildPlannerResult,
     getPlannerLineOptions,
+    getPlannerStationError,
     getPlannerStationOptions,
     type PlannerState,
 } from './planner';
@@ -67,9 +68,18 @@ describe('経路作成の候補と完成判定', () => {
             0,
         );
         const values = options.map((option) => option.value);
-        expect(values[0]).toBe('shinjuku-sanchome');
-        expect(values.slice(-2)).toEqual(['ikebukuro', 'honancho']);
-        expect(values.filter((value) => value === 'honancho')).toHaveLength(1);
+        expect(values).toEqual([
+            'shinjuku-sanchome',
+            'yotsuya',
+            'akasaka-mitsuke',
+            'kokkai-gijidomae',
+            'kasumigaseki',
+            'otemachi',
+            'awajicho',
+            'korakuen',
+            'ikebukuro',
+            'honancho',
+        ]);
     });
     it('本線と支線に属する中野坂上を降車駅にしても本線上の位置に1回だけ表示する', () => {
         const options = getPlannerStationOptions(
@@ -81,8 +91,18 @@ describe('経路作成の候補と完成判定', () => {
             0,
         );
         const values = options.map((option) => option.value);
-        expect(values[0]).toBe('nakano-sakaue');
-        expect(values.filter((value) => value === 'nakano-sakaue')).toHaveLength(1);
+        expect(values).toEqual([
+            'nakano-sakaue',
+            'shinjuku-sanchome',
+            'yotsuya',
+            'akasaka-mitsuke',
+            'kokkai-gijidomae',
+            'kasumigaseki',
+            'otemachi',
+            'awajicho',
+            'korakuen',
+            'ikebukuro',
+        ]);
     });
     it('降車駅への徒歩到達しか残らない接続駅を無効化し、直接乗車できる降車駅は選択可能にする', () => {
         const options = getPlannerStationOptions(
@@ -151,17 +171,25 @@ describe('経路作成の候補と完成判定', () => {
         expect(result?.fareCheckpoints[0].stationId).toBe('ginza');
     });
 
-    it('両種別が利用できる大手町では改札外乗換として自動集計する', () => {
-        expect(
-            buildPlannerResult({
-                fromStationId: 'tokyo',
-                toStationId: 'takebashi',
-                rows: [
-                    { lineId: 'marunouchi', stationId: 'otemachi' },
-                    { lineId: 'tozai', stationId: 'takebashi' },
-                ],
-            }),
-        ).toMatchObject({ outsideTransferCount: 1, insideTransferCount: 0 });
+    it.each([
+        {
+            fromStationId: 'tokyo',
+            toStationId: 'takebashi',
+            rows: [
+                { lineId: 'marunouchi', stationId: 'otemachi' },
+                { lineId: 'tozai', stationId: 'takebashi' },
+            ],
+        },
+        {
+            fromStationId: 'takebashi',
+            toStationId: 'tokyo',
+            rows: [
+                { lineId: 'tozai', stationId: 'otemachi' },
+                { lineId: 'marunouchi', stationId: 'tokyo' },
+            ],
+        },
+    ] satisfies PlannerState[])('$fromStationId → $toStationId: 大手町で改札外乗換として集計する', (state) => {
+        expect(buildPlannerResult(state)).toMatchObject({ outsideTransferCount: 1, insideTransferCount: 0 });
     });
 
     it('提示された長い経路では大手町も改札外に含めて14回と集計する', () => {
@@ -251,16 +279,34 @@ describe('経路作成の候補と完成判定', () => {
         ).toMatchObject({ outsideTransferCount: 0, insideTransferCount: 0, actualDistanceTenths: 51 });
     });
 
-    it('未完成・不正な駅・同一発着・徒歩だけの終着を完成にしない', () => {
-        expect(buildPlannerResult({ fromStationId: null, toStationId: 'asakusa', rows: [] })).toBeNull();
-        expect(buildPlannerResult({ fromStationId: 'asakusa', toStationId: 'asakusa', rows: [] })).toBeNull();
+    it.each([
+        { name: '乗車駅が未指定', fromStationId: null, toStationId: 'asakusa' },
+        { name: '降車駅が未指定', fromStationId: 'inaricho', toStationId: null },
+        { name: '乗車駅が存在しない', fromStationId: 'unknown', toStationId: 'asakusa' },
+        { name: '降車駅が存在しない', fromStationId: 'inaricho', toStationId: 'unknown' },
+        { name: '発着駅が同じ', fromStationId: 'asakusa', toStationId: 'asakusa' },
+    ])('$name: 発着駅の検証で拒否する', ({ fromStationId, toStationId }) => {
+        const state = {
+            fromStationId,
+            toStationId,
+            rows: [{ lineId: 'ginza', stationId: 'asakusa' }],
+        } as unknown as PlannerState;
+        // 空行や乗車不能による拒否で、発着駅の検証漏れを見逃さないよう直接確認する。
+        expect(getPlannerStationError(state)).not.toBeNull();
+        expect(buildPlannerResult(state)).toBeNull();
+    });
+
+    it('発着駅が有効でも接続駅が未入力なら完成にしない', () => {
         expect(
             buildPlannerResult({
-                fromStationId: 'unknown',
+                fromStationId: 'inaricho',
                 toStationId: 'asakusa',
-                rows: [],
-            } as unknown as PlannerState),
+                rows: [{ lineId: 'ginza', stationId: null }],
+            }),
         ).toBeNull();
+    });
+
+    it('異駅名乗換で降車駅へ歩いて到達するだけでは完成にしない', () => {
         expect(
             buildPlannerResult({
                 fromStationId: 'kyobashi',
@@ -318,8 +364,10 @@ describe('入力済み区間の計算', () => {
             }),
         ).toMatchObject({ fromStationId: 'inaricho', toStationId: 'asakusa', complete: true });
     });
-    it('乗車区間が未入力または入力済み区間が不正なら計算しない', () => {
+    it('接続駅まで入力済みの乗車区間がなければ計算しない', () => {
         expect(buildPlannerPreview({ ...state, rows: [{ lineId: 'ginza', stationId: null }] })).toBeNull();
+    });
+    it('乗車駅に所属しない路線を指定した区間は計算しない', () => {
         expect(buildPlannerPreview({ ...state, rows: [{ lineId: 'hibiya', stationId: 'hibiya' }] })).toBeNull();
     });
 });
