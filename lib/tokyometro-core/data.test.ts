@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LINE_PATHS, type LineId, type StationId } from './data';
+import { LINE_PATHS, type LineId, type StationId } from '@/lib/tokyometro-core/data';
 
 type ExpectedLinePath = {
     lineId: LineId;

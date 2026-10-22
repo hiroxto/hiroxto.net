@@ -1,7 +1,7 @@
 /**
  * 東京メトロ 改札外乗換経路作成の仕様。
  *
- * 対象の駅・路線・乗換接続は既存の改札外乗換検索と同じ。異なる発着駅を指定する。
+ * 対象の駅・路線・乗換接続はlib/tokyometro-coreの共通データを使う。異なる発着駅を指定する。
  * 通過駅を含め駅の再訪は禁止。同駅乗換は再訪と数えず、異駅名乗換は両駅を訪問済みにする。
  * 乗車と乗換を交互に接続し、最初と最後は乗車する。徒歩乗換の連続は認めない。
  * 同一路線の再利用は認める。降車駅で終了し、改札外乗換0回・乗換なしでも完成とする。
@@ -41,30 +41,42 @@
  * 末尾の未入力行と路線のみ選択された行は、その直前の乗換も含めて計算対象外とする。
  * 計算した区間を「浅草 → 日比谷」のように完成時も表示する。未完成時の見出しは「作成結果 (入力途中)」とし、
  * 「入力途中」を赤文字で強調する。降車駅に到達したら見出しを「作成結果」にする。
- * 運賃は既存の駅間運賃計算を使い、発駅から計算区間の末端と各改札外出場駅への運賃の最大値を
+ * 運賃はlib/tokyometro-coreの共通運賃計算を使い、発駅から計算区間の末端と各改札外出場駅への運賃の最大値を
  * IC・きっぷ別に採用する。異駅名乗換は出場側の駅を使う。実乗車距離とは区別する。
  * 計算可能な乗車区間がなければ「経路を入力してください」と表示する。デバッグ情報は閉じたアコーディオンに置き、
  * 表示した計算区間の実乗車距離・最短運賃計算距離・各改札外出場駅の運賃だけを表示する。入力状態やJSONは表示しない。
  * 出場駅は「改札外乗換 1 (有楽町) : 1.0km / IC 178円 / きっぷ 180円」の書式で表示する。
  * 利用日・途中行の単体削除・保存・URL共有・再読込による復元は設けない。
  */
-import {
-    LINE_DEFINITIONS,
-    LINE_PATHS,
-    type LineId,
-    STATION_NAMES,
-    type StationId,
-} from '@/lib/tokyometro-transfer-search/data';
-import {
-    calculateFareBetweenStations,
-    getRoutePlannerSegments,
-    getRoutePlannerTransfers,
-    type PlannerRideSegment,
-    type RouteResult,
-    type RouteTransfer,
-    stations,
-} from '@/lib/tokyometro-transfer-search/search';
-import { stationIdSchema } from '@/lib/tokyometro-transfer-search/validation';
+import { LINE_DEFINITIONS, LINE_PATHS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-core/data';
+import { calculateRouteFare } from '@/lib/tokyometro-core/fare';
+import { getRideSegments, getTransfers } from '@/lib/tokyometro-core/routing';
+import { stationIdSchema, stations } from '@/lib/tokyometro-core/stations';
+import type { RouteLeg, RouteResult, RouteTransfer } from '@/lib/tokyometro-core/types';
+
+/** 経路作成用の乗車区間。開始駅を除く通過駅を乗車順に保持する。 */
+export type PlannerRideSegment = RouteLeg & { stationIds: StationId[] };
+
+/**
+ * 接続駅候補を列挙する。降車駅より先も表示して無効化できるよう、そこで打ち切らない。
+ * 呼出側が共有キャッシュを変更しないよう、配列と区間を複製する。
+ */
+export const getRoutePlannerSegments = (
+    fromStationId: StationId,
+    lineId: LineId,
+    destinationStationId: StationId,
+): PlannerRideSegment[] =>
+    getRideSegments(fromStationId, lineId, destinationStationId, false).map((segment) => ({
+        fromStationId: segment.fromStationId,
+        toStationId: segment.toStationId,
+        lineId: segment.lineId,
+        distanceTenths: segment.distanceTenths,
+        stationIds: segment.rideSteps.map((step) => step.toStationId),
+    }));
+
+/** 改札外を先にし、乗換前後の駅・路線・種別を方向付きで返す。 */
+export const getRoutePlannerTransfers = (stationId: StationId, lineId: LineId): RouteTransfer[] =>
+    getTransfers(stationId, lineId).map(({ kind: _kind, ...transfer }) => transfer);
 
 export type PlannerRow = { lineId: LineId | null; stationId: StationId | null };
 export type PlannerState = { fromStationId: StationId | null; toStationId: StationId | null; rows: PlannerRow[] };
@@ -289,19 +301,7 @@ export const buildPlannerPreview = (
 const calculatePrefixResult = (state: PlannerState, prefix: Prefix): RouteResult => {
     const from = prefix.legs[0].fromStationId;
     const to = prefix.stationId;
-    const base = calculateFareBetweenStations(from, to);
     const outside = prefix.transfers.filter((transfer) => transfer.type === 'outside');
-    const fareCheckpoints = outside.map((transfer) => {
-        const { shortestDistanceTenths, ic, ticket } = calculateFareBetweenStations(from, transfer.fromStationId);
-        return { stationId: transfer.fromStationId, shortestDistanceTenths, fare: { ic, ticket } };
-    });
-    const fare = fareCheckpoints.reduce(
-        (highest, checkpoint) => ({
-            ic: Math.max(highest.ic, checkpoint.fare.ic),
-            ticket: Math.max(highest.ticket, checkpoint.fare.ticket),
-        }),
-        { ic: base.ic, ticket: base.ticket },
-    );
     return {
         key: state.rows.map((row) => `${row.lineId}:${row.stationId}`).join('|'),
         legs: prefix.legs.map(({ stationIds: _stationIds, ...leg }) => leg),
@@ -309,8 +309,6 @@ const calculatePrefixResult = (state: PlannerState, prefix: Prefix): RouteResult
         outsideTransferCount: outside.length,
         insideTransferCount: prefix.transfers.length - outside.length,
         actualDistanceTenths: prefix.legs.reduce((distance, leg) => distance + leg.distanceTenths, 0),
-        shortestDistanceTenths: base.shortestDistanceTenths,
-        fare,
-        fareCheckpoints,
+        ...calculateRouteFare(from, to, prefix.transfers),
     };
 };

@@ -1,3 +1,4 @@
+import type { LineId, StationId } from '@/lib/tokyometro-core/data';
 import {
     buildPlannerResult,
     getPlannerLineOptions,
@@ -6,7 +7,6 @@ import {
     type PlannerRow,
     type PlannerState,
 } from '@/lib/tokyometro-transfer-route-planner/planner';
-import type { LineId, StationId } from '@/lib/tokyometro-transfer-search/data';
 
 export type PlannerAction =
     | { type: 'stations'; fromStationId: StationId | null; toStationId: StationId | null }

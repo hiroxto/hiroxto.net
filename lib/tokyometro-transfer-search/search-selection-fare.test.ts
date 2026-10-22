@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 // 実際の路線網とは異なる検証用グラフ。距離は0.1km単位。
 // M: A--6--B--30--D / Z: B--7--C--20--D / G: A--20--C--5--D
 // A=東京、B=大手町、C=三越前、D=浅草。BとCで改札外乗換が可能。
-vi.mock('./data', () => ({
+vi.mock('@/lib/tokyometro-core/data', () => ({
     STATION_NAMES: { tokyo: 'A', otemachi: 'B', mitsukoshimae: 'C', asakusa: 'D' },
     LINE_DEFINITIONS: { marunouchi: { name: 'M' }, hanzomon: { name: 'Z' }, ginza: { name: 'G' } },
     LINE_PATHS: [

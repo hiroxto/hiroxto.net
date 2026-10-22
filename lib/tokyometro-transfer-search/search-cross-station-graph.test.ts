@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 // M: A--2--B--4--C--5--D、C--7--X / G: E--3--F--6--H
 // 改札外乗換: B↔E、C↔F。A=東京、B=大手町、C=三越前、D=浅草、
 // E=上野、F=銀座、H=渋谷、X=新宿。
-vi.mock('./data', () => ({
+vi.mock('@/lib/tokyometro-core/data', () => ({
     STATION_NAMES: {
         tokyo: 'A',
         otemachi: 'B',

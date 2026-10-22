@@ -1,8 +1,8 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { RouteResult } from '@/lib/tokyometro-core/types';
 import { allOutsideTransferIds } from '@/lib/tokyometro-transfer-search/outside-transfers';
-import type { RouteResult } from '@/lib/tokyometro-transfer-search/search';
 import type { RouteSearchRequest, RouteSearchResponse } from '@/lib/tokyometro-transfer-search/search-worker-protocol';
 import { renderWithMantine } from '@/test/test-utils';
 import { TokyoMetroTransferSearchPage } from './tokyometro-transfer-search-page';

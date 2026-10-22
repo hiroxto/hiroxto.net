@@ -1,3 +1,15 @@
+/**
+ * 東京メトロの検索・経路作成で共用するマスターデータの仕様。
+ * 駅・路線のIDは各辞書のキーで定義し、路線網と乗換接続から同じIDを参照する。
+ * 距離はすべて0.1km単位の整数。営業キロと運賃計算キロ程は別データとして保持する。
+ * 接続は往復で利用する。乗換のない同一路線の本線・支線は同じ路線IDで表す。
+ * 検索の探索条件や経路作成の入力制約はここでは定義せず、それぞれの機能で扱う。
+ */
+
+/**
+ * 路線IDをキーとする路線表示情報。codeは路線記号、nameは路線名、colorは表示用の16進数カラーコード。
+ * キーはLineIdの定義元であり、路線網・乗換接続から参照する。
+ */
 export const LINE_DEFINITIONS = {
     ginza: { code: 'G', name: '銀座線', color: '#f39700' },
     marunouchi: { code: 'M', name: '丸ノ内線', color: '#e60012' },
@@ -12,7 +24,10 @@ export const LINE_DEFINITIONS = {
 
 export type LineId = keyof typeof LINE_DEFINITIONS;
 
-// 東京メトロ公式の50音順を保つため、このオブジェクトは表示順で定義する。
+/**
+ * 駅IDをキー、表示する日本語駅名を値とする全駅の辞書。キーはStationIdの定義元。
+ * 東京メトロ公式の50音順で定義し、駅選択肢もこの順序を維持する。
+ */
 export const STATION_NAMES = {
     'aoyama-itchome': '青山一丁目',
     akasaka: '赤坂',
@@ -162,7 +177,10 @@ export const STATION_NAMES = {
 
 export type StationId = keyof typeof STATION_NAMES;
 
-// 東京メトロ公式の駅名の読み: https://www.tokyometro.jp/station/index03.html
+/**
+ * 駅IDをキー、駅名のひらがな読みを値とする辞書。STATION_NAMESの全駅に対応し、駅名検索に使う。
+ * 東京メトロ公式の駅名の読み: https://www.tokyometro.jp/station/index03.html
+ */
 export const STATION_READINGS = {
     'aoyama-itchome': 'あおやまいっちょうめ',
     akasaka: 'あかさか',
@@ -310,7 +328,11 @@ export const STATION_READINGS = {
     waseda: 'わせだ',
 } as const satisfies Record<StationId, string>;
 
-/** 旅客営業規程第13条に定められた、隣接駅間の運賃計算キロ程（0.1km単位）。 */
+/**
+ * 旅客営業規程第13条の運賃計算キロ程が、LINE_PATHSの営業キロと異なる隣接駅間の補正表。
+ * 各要素は[駅ID1, 駅ID2, 運賃計算距離]で、距離は0.1km単位。駅ペアは方向を区別しない。
+ * この表にない乗車接続の運賃計算距離には営業キロを使い、実乗車距離にはこの表を適用しない。
+ */
 export const FARE_CALCULATION_DISTANCE_OVERRIDES = [
     ['ayase', 'kita-senju', 25],
     ['hibiya', 'kasumigaseki', 12],
@@ -325,12 +347,20 @@ export const FARE_CALCULATION_DISTANCE_OVERRIDES = [
     ['shibuya', 'omote-sando', 13],
 ] as const satisfies ReadonlyArray<readonly [StationId, StationId, number]>;
 
+/** 本線または支線一つの路線IDと、隣接駅順の駅・営業キロ。 */
 type LinePathDefinition = {
+    /** この経路が属する路線。本線・支線は同じ路線IDを使う。 */
     lineId: LineId;
     /** 各タプルの数値は直前駅からの営業キロを0.1km単位で表す。 */
     stations: ReadonlyArray<readonly [StationId, number]>;
 };
 
+/**
+ * 路線網を構成する本線・支線の一覧。各要素は{lineId, stations}。
+ * stationsは駅順の[駅ID, 直前駅からの営業キロ]で、距離は0.1km単位、先頭駅の距離は0。
+ * 隣接する要素を双方向に接続する。同じlineIdの経路は分岐駅を共有する一つの路線として扱う。
+ * 配列内の駅順は接続駅の表示順にも使う。丸ノ内線は本線を先、支線を後に定義する。
+ */
 export const LINE_PATHS = [
     {
         lineId: 'ginza',
@@ -570,15 +600,27 @@ export const LINE_PATHS = [
     },
 ] satisfies ReadonlyArray<LinePathDefinition>;
 
+/** 改札内の乗換はinside、改札外へ出場する乗換はoutside。 */
 export type TransferType = 'inside' | 'outside';
 
+/** 異なる駅名の駅間で利用できる徒歩乗換の定義。接続は双方向に適用する。 */
 export type CrossStationTransfer = {
+    /** 定義上の始点駅。改札外乗換の地点選択ではこの駅IDを接続の識別子に使う。 */
     fromStationId: StationId;
+    /** 定義上の終点駅。逆方向では乗換の始点になる。 */
     toStationId: StationId;
+    /** [始点駅の路線ID, 終点駅の路線ID]の一覧。逆方向では路線の役割も入れ替える。 */
     linePairs: ReadonlyArray<readonly [LineId, LineId]>;
+    /** 徒歩接続が改札内か改札外かを示す種別。 */
     type: TransferType;
 };
 
+/**
+ * 同じ駅で改札外乗換ができる路線ペアの一覧。各要素は[駅ID, 路線ID1, 路線ID2]で、方向を区別しない。
+ * SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERSにもあるペアは改札内も利用可能、それ以外は改札外のみ。
+ * この表にない同駅の異なる所属路線間の乗換は改札内として扱う。
+ * 検索の地点選択では、同じ駅の複数ペアを駅ID一つにまとめる。
+ */
 export const SAME_STATION_OUTSIDE_TRANSFERS = [
     ['ueno', 'ginza', 'hibiya'],
     ['mitsukoshimae', 'ginza', 'hanzomon'],
@@ -597,7 +639,10 @@ export const SAME_STATION_OUTSIDE_TRANSFERS = [
     ['shinjuku-sanchome', 'marunouchi', 'fukutoshin'],
 ] as const satisfies ReadonlyArray<readonly [StationId, LineId, LineId]>;
 
-/** 改札外に加えて改札内の通路も利用できる乗換。大手町駅の公式設備案内に基づく。
+/**
+ * 同じ駅で改札内・改札外の両方を利用できる路線ペア。各要素は[駅ID, 路線ID1, 路線ID2]。
+ * 方向を区別せず、SAME_STATION_OUTSIDE_TRANSFERSの該当ペアに改札内乗換を追加する。
+ * 候補列挙は改札外を優先する。大手町駅の公式設備案内に基づく。
  * https://www.tokyometro.jp/station/otemachi/accessibility/index.html
  */
 export const SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS = [
@@ -609,6 +654,12 @@ export const SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS = [
     ['otemachi', 'chiyoda', 'hanzomon'],
 ] as const satisfies ReadonlyArray<readonly [StationId, LineId, LineId]>;
 
+/**
+ * 異駅名間の徒歩乗換接続の一覧。各要素は{fromStationId, toStationId, linePairs, type}。
+ * linePairsの各[始点側路線ID, 終点側路線ID]を双方向に接続し、徒歩距離は乗車距離に加算しない。
+ * 改札外の接続はfromStationIdを選択用IDとし、両方向を一つの地点として選択する。
+ * 同駅乗換と異なり、駅の再訪判定では両端の駅を訪問済みとして扱う。
+ */
 export const CROSS_STATION_TRANSFERS = [
     {
         fromStationId: 'akasaka-mitsuke',
