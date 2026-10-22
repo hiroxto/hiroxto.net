@@ -3,7 +3,6 @@ import {
     maximumOutsideTransferCountSchema,
     parseTokyoMetroTransferSearchForm,
     searchBudgetSchema,
-    stationIdSchema,
 } from '@/lib/tokyometro-transfer-search/validation';
 
 const validForm = {
@@ -18,9 +17,6 @@ describe('検索条件の検証', () => {
     });
     it.each([0, 15, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])('最大改札外乗換回数 %s は拒否する', (value) => {
         expect(maximumOutsideTransferCountSchema.safeParse(value).success).toBe(false);
-    });
-    it.each(['constructor', '__proto__', 'unknown'])('存在しない駅ID %s は拒否する', (value) => {
-        expect(stationIdSchema.safeParse(value).success).toBe(false);
     });
     it('探索予算は訪問数0と時間0を受け付ける', () => {
         expect(searchBudgetSchema.safeParse({ visitLimit: 0, durationLimitMs: 0 }).success).toBe(true);

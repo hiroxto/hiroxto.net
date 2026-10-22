@@ -13,7 +13,7 @@
  * その駅の通過や、includeInsideTransfersがtrueの場合の改札内乗換は認める。
  * 距離はすべて0.1km単位の整数で扱い、徒歩乗換の距離は加算しない。
  *
- * 1. 路線データから駅間のグラフと路線別のグラフを作る。
+ * 1. 共通路線網・区間列挙（lib/tokyometro-core）を使い、探索用の集合を作る。
  *    訪問済みの駅はbigintのビットマスク（各ビットが1駅を表す集合）で管理する。
  *    改札外乗換地点は同駅なら駅ごと、異駅名なら接続定義ごとに1ビットを割り当てる。
  *    こちらはnumberのビット演算を使うため、地点数を30以下に制限する。
@@ -45,7 +45,7 @@
  *    候補の回数がこの上限に一致すれば最大回数は確定するが、順位は未確定の場合がある。
  *    候補が空でもtruncatedがtrueなら、経路が存在しないとは確定していない。
  *
- * グラフと各キャッシュはモジュール内で共有する。同じモジュールでの次回検索にも計算結果を使う。
+ * 探索用キャッシュは検索モジュール内、路線網・距離・区間のキャッシュは共通モジュール内で共有する。
  *
  * 運賃は経路探索と分けて求める。ダイクストラ法で発駅から各駅への最短運賃計算距離を計算し、
  * 距離帯別運賃と特定区間の運賃を適用する。経路の運賃は、着駅と各改札外出場駅までの
@@ -53,153 +53,25 @@
  * outsideTransferIdsとincludeInsideTransfersは、運賃計算用の最短距離に適用しない。
  */
 
-import { createMinHeap } from '@/lib/tokyometro-transfer-search/min-heap';
 import {
     CROSS_STATION_TRANSFERS,
-    FARE_CALCULATION_DISTANCE_OVERRIDES,
-    LINE_DEFINITIONS,
-    LINE_PATHS,
     type LineId,
-    SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS,
     SAME_STATION_OUTSIDE_TRANSFERS,
-    STATION_NAMES,
     type StationId,
-    type TransferType,
-} from './data';
-import { allOutsideTransferIds, outsideTransferIdsSchema } from './outside-transfers';
+} from '@/lib/tokyometro-core/data';
+import { getShortestActualDistances, getShortestFareDistances } from '@/lib/tokyometro-core/distances';
+import { calculateRouteFare } from '@/lib/tokyometro-core/fare';
+import { graph, stationIds, stationLineIds } from '@/lib/tokyometro-core/network';
+import { getRideSegments, getTransfers, type RideSegment } from '@/lib/tokyometro-core/routing';
+import type { RouteLeg, RouteResult, TransferStep, TraversalStep } from '@/lib/tokyometro-core/types';
+import { allOutsideTransferIds, outsideTransferIdsSchema } from '@/lib/tokyometro-transfer-search/outside-transfers';
 import {
     MAX_OUTSIDE_TRANSFER_COUNT,
     maximumOutsideTransferCountSchema,
     searchBudgetSchema,
-    stationIdSchema,
-} from './validation';
+} from '@/lib/tokyometro-transfer-search/validation';
 
-export { MAX_OUTSIDE_TRANSFER_COUNT } from './validation';
-
-/** 全路線のグラフに登録する、隣接駅への乗車接続。 */
-type RideEdge = {
-    /** 乗車と乗換を区別する処理種別。 */
-    kind: 'ride';
-    /** 移動先の駅ID。 */
-    stationId: StationId;
-    /** 乗車する路線。 */
-    lineId: LineId;
-    /** 乗車距離。単位は0.1km。 */
-    distanceTenths: number;
-};
-
-/** 全路線のグラフに登録する、異駅名間の徒歩乗換接続。 */
-type CrossTransferEdge = {
-    /** 乗車と乗換を区別する処理種別。 */
-    kind: 'transfer';
-    /** 移動先の駅ID。 */
-    stationId: StationId;
-    /** 乗換前の路線。 */
-    fromLineId: LineId;
-    /** 乗換後の路線。 */
-    toLineId: LineId;
-    /** 改札内・改札外の乗換種別。 */
-    type: TransferType;
-};
-
-/** 駅間の接続。同駅の乗換は駅を移動しないため、このグラフには含めない。 */
-type GraphEdge = RideEdge | CrossTransferEdge;
-
-/** 路線別のグラフで使う隣接駅と実乗車距離。 */
-type LineRideEdge = {
-    /** 移動先の駅ID。 */
-    stationId: StationId;
-    /** 乗車距離。単位は0.1km。 */
-    distanceTenths: number;
-};
-
-/** 経路を構成する、隣接駅間の1回の乗車。 */
-type RideStep = {
-    /** 乗車と乗換を区別する処理種別。 */
-    kind: 'ride';
-    /** 区間または乗換の開始駅。 */
-    fromStationId: StationId;
-    /** 区間または乗換の終了駅。 */
-    toStationId: StationId;
-    /** 乗車する路線。 */
-    lineId: LineId;
-    /** 乗車距離。単位は0.1km。 */
-    distanceTenths: number;
-};
-
-/** 経路を構成する、同駅または異駅名間の1回の乗換。 */
-type TransferStep = {
-    /** 乗車と乗換を区別する処理種別。 */
-    kind: 'transfer';
-    /** 区間または乗換の開始駅。 */
-    fromStationId: StationId;
-    /** 区間または乗換の終了駅。 */
-    toStationId: StationId;
-    /** 乗換前の路線。 */
-    fromLineId: LineId;
-    /** 乗換後の路線。 */
-    toLineId: LineId;
-    /** 改札内・改札外の乗換種別。 */
-    type: TransferType;
-};
-
-/** 経路順に並べる乗車または乗換の記録。 */
-type TraversalStep = RideStep | TransferStep;
-
-/** 乗換までの連続した乗車をまとめた表示用区間。 */
-export type RouteLeg = {
-    /** 区間または乗換の開始駅。 */
-    fromStationId: StationId;
-    /** 区間または乗換の終了駅。 */
-    toStationId: StationId;
-    /** 乗車する路線。 */
-    lineId: LineId;
-    /** 乗車距離。単位は0.1km。 */
-    distanceTenths: number;
-};
-
-/** 表示用の乗換情報。処理種別のkindを除いた乗換記録。 */
-export type RouteTransfer = Omit<TransferStep, 'kind'>;
-
-/** ICカードときっぷの運賃。単位は円。 */
-export type Fare = {
-    /** ICカードの運賃。単位は円。 */
-    ic: number;
-    /** きっぷの運賃。単位は円。 */
-    ticket: number;
-};
-
-/** 改札外に出場する駅までの最短運賃計算距離と運賃。 */
-export type FareCheckpoint = {
-    /** 改札外に出場する駅のID。 */
-    stationId: StationId;
-    /** 発駅から対象駅までの最短運賃計算距離。単位は0.1km。 */
-    shortestDistanceTenths: number;
-    /** IC・きっぷ別の運賃。 */
-    fare: Fare;
-};
-
-/** 1経路の表示情報、乗換回数、距離、運賃。 */
-export type RouteResult = {
-    /** 乗車・乗換の順序と方向を含む経路識別子。同順位の比較にも使う。 */
-    key: string;
-    /** 乗換で区切った、経路順の乗車区間。 */
-    legs: RouteLeg[];
-    /** 経路順の乗換一覧。 */
-    transfers: RouteTransfer[];
-    /** 改札外乗換の回数。 */
-    outsideTransferCount: number;
-    /** 改札内乗換の回数。 */
-    insideTransferCount: number;
-    /** 経路全体の実乗車距離。徒歩距離を除く0.1km単位。 */
-    actualDistanceTenths: number;
-    /** 発駅から対象駅までの最短運賃計算距離。単位は0.1km。 */
-    shortestDistanceTenths: number;
-    /** IC・きっぷ別の運賃。 */
-    fare: Fare;
-    /** 改札外出場ごとの運賃確認結果。 */
-    fareCheckpoints: FareCheckpoint[];
-};
+export { MAX_OUTSIDE_TRANSFER_COUNT } from '@/lib/tokyometro-transfer-search/validation';
 
 /** 検索候補と、探索の完了状況および最大回数の上限。 */
 export type RouteSearchResult = {
@@ -209,107 +81,6 @@ export type RouteSearchResult = {
     truncated: boolean;
     /** 未探索部分を含む改札外乗換回数の上限。候補の回数と一致すれば最大回数は確定。 */
     outsideTransferUpperBound: number;
-};
-
-/** 駅選択に使う駅ID、表示名、利用可能な路線。 */
-export type StationOption = {
-    /** 駅選択の値に使う駅ID。 */
-    id: StationId;
-    /** 駅の表示名。 */
-    name: string;
-    /** 駅で利用できる路線ID。 */
-    lineIds: LineId[];
-};
-
-/** 駅データの定義順に並べた全駅ID。 */
-const stationIds = Object.keys(STATION_NAMES) as StationId[];
-
-/** 全路線の乗車接続と異駅名の乗換接続。距離計算と到達判定に使う。 */
-const graph = new Map<StationId, GraphEdge[]>(stationIds.map((stationId) => [stationId, []]));
-/** 駅ごとの所属路線。発駅で選べる路線と同駅の乗換先を求める。 */
-const stationLineIds = new Map<StationId, Set<LineId>>(stationIds.map((stationId) => [stationId, new Set<LineId>()]));
-/** 路線ごとの乗車専用グラフ。分岐を含む同一路線の区間を列挙する。 */
-const lineGraphs = new Map<LineId, Map<StationId, LineRideEdge[]>>();
-
-for (const path of LINE_PATHS) {
-    // 処理対象の路線に属する乗車接続。
-    let lineGraph = lineGraphs.get(path.lineId);
-
-    if (lineGraph == null) {
-        lineGraph = new Map<StationId, LineRideEdge[]>();
-        lineGraphs.set(path.lineId, lineGraph);
-    }
-
-    for (const [stationId] of path.stations) {
-        stationLineIds.get(stationId)?.add(path.lineId);
-
-        if (!lineGraph.has(stationId)) {
-            lineGraph.set(stationId, []);
-        }
-    }
-
-    for (let index = 1; index < path.stations.length; index += 1) {
-        // 隣接区間の開始駅。
-        const [fromStationId] = path.stations[index - 1];
-        // 隣接区間の終了駅と、直前の駅からの実乗車距離（0.1km単位）。
-        const [toStationId, distanceTenths] = path.stations[index];
-
-        graph.get(fromStationId)?.push({
-            kind: 'ride',
-            stationId: toStationId,
-            lineId: path.lineId,
-            distanceTenths,
-        });
-        graph.get(toStationId)?.push({
-            kind: 'ride',
-            stationId: fromStationId,
-            lineId: path.lineId,
-            distanceTenths,
-        });
-        lineGraph.get(fromStationId)?.push({ stationId: toStationId, distanceTenths });
-        lineGraph.get(toStationId)?.push({ stationId: fromStationId, distanceTenths });
-    }
-}
-
-for (const connection of CROSS_STATION_TRANSFERS) {
-    for (const [fromLineId, toLineId] of connection.linePairs) {
-        graph.get(connection.fromStationId)?.push({
-            kind: 'transfer',
-            stationId: connection.toStationId,
-            fromLineId,
-            toLineId,
-            type: connection.type,
-        });
-        graph.get(connection.toStationId)?.push({
-            kind: 'transfer',
-            stationId: connection.fromStationId,
-            fromLineId: toLineId,
-            toLineId: fromLineId,
-            type: connection.type,
-        });
-    }
-}
-
-/** 改札外乗換が可能な同駅の路線ペア。路線IDを整列して方向を区別しない。 */
-const outsideTransferKeys = new Set(
-    SAME_STATION_OUTSIDE_TRANSFERS.map(([stationId, firstLineId, secondLineId]) =>
-        [stationId, ...[firstLineId, secondLineId].sort()].join(':'),
-    ),
-);
-
-/** 改札内・改札外の両方を選択できる同駅の路線ペア。 */
-const insideAndOutsideTransferKeys = new Set(
-    SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS.map(([stationId, firstLineId, secondLineId]) =>
-        [stationId, ...[firstLineId, secondLineId].sort()].join(':'),
-    ),
-);
-
-/** 同駅の路線ペアに許可する乗換種別を返す。両方使える場合は改札外を先にする。 */
-const getSameStationTransferTypes = (stationId: StationId, fromLineId: LineId, toLineId: LineId): TransferType[] => {
-    // 方向を区別しない駅・路線ペアの照合キー。
-    const key = [stationId, ...[fromLineId, toLineId].sort()].join(':');
-    if (insideAndOutsideTransferKeys.has(key)) return ['outside', 'inside'];
-    return outsideTransferKeys.has(key) ? ['outside'] : ['inside'];
 };
 
 /** 各駅に割り当てたbigintの1ビット。駅数が32以上でも訪問履歴を保持する。 */
@@ -356,10 +127,10 @@ for (const [stationId, firstLineId, secondLineId] of SAME_STATION_OUTSIDE_TRANSF
     );
 }
 
-/** 異駅名の接続定義の添字から、改札外乗換地点のビットを引く対応表。 */
-const crossOutsideOpportunityBits = new Map<number, number>();
+/** 「出場駅ID:出場路線ID:入場駅ID:入場路線ID」から改札外乗換地点のビットを引く対応表。往復を登録する。 */
+const crossOutsideOpportunityBits = new Map<string, number>();
 
-for (const [connectionIndex, connection] of CROSS_STATION_TRANSFERS.entries()) {
+for (const connection of CROSS_STATION_TRANSFERS) {
     if (connection.type !== 'outside') {
         continue;
     }
@@ -367,7 +138,16 @@ for (const [connectionIndex, connection] of CROSS_STATION_TRANSFERS.entries()) {
     // 改札外乗換地点の添字。ビット位置として使う。
     const opportunityId = outsideOpportunities.length;
     outsideOpportunities.push({ stationIds: [connection.fromStationId, connection.toStationId] });
-    crossOutsideOpportunityBits.set(connectionIndex, 1 << opportunityId);
+    for (const [fromLineId, toLineId] of connection.linePairs) {
+        crossOutsideOpportunityBits.set(
+            `${connection.fromStationId}:${fromLineId}:${connection.toStationId}:${toLineId}`,
+            1 << opportunityId,
+        );
+        crossOutsideOpportunityBits.set(
+            `${connection.toStationId}:${toLineId}:${connection.fromStationId}:${fromLineId}`,
+            1 << opportunityId,
+        );
+    }
 }
 
 if (outsideOpportunities.length > 30) {
@@ -387,12 +167,6 @@ for (const [opportunityId, opportunity] of outsideOpportunities.entries()) {
         );
     }
 }
-
-/** 複数路線が所属する駅と異駅名乗換の両端駅。乗車区間の終点候補に使う。 */
-const transferStationIds = new Set<StationId>([
-    ...[...stationLineIds].filter(([, lineIds]) => lineIds.size > 1).map(([stationId]) => stationId),
-    ...CROSS_STATION_TRANSFERS.flatMap(({ fromStationId, toStationId }) => [fromStationId, toStationId]),
-]);
 
 /** 路線と距離を区別せず、駅間で移動可能かだけを表す隣接関係。 */
 const physicalStationGraph = new Map<StationId, Set<StationId>>(
@@ -507,185 +281,6 @@ const canReachRequiredStations = (
     return requiredStationMask === BigInt(0);
 };
 
-/** 駅選択用の公開一覧。表示順は駅データの定義順を維持する。 */
-export const stations: StationOption[] = stationIds.map((id) => ({
-    id,
-    name: STATION_NAMES[id],
-    lineIds: [...(stationLineIds.get(id) ?? [])],
-}));
-
-/** 文字列が登録済みの駅IDかを判定し、型を絞り込む。 */
-export const isStationId = (value: string): value is StationId => stationIdSchema.safeParse(value).success;
-
-/** 駅IDを辞書順に並べ、往復で共通の駅間キーを作る。 */
-const getStationPairKey = (firstStationId: StationId, secondStationId: StationId): string =>
-    firstStationId < secondStationId ? `${firstStationId}:${secondStationId}` : `${secondStationId}:${firstStationId}`;
-
-/** 実乗車距離と運賃計算距離が異なる駅間の補正値。単位は0.1km。 */
-const fareCalculationDistanceOverrides = new Map(
-    FARE_CALCULATION_DISTANCE_OVERRIDES.map(([firstStationId, secondStationId, distanceTenths]) => [
-        getStationPairKey(firstStationId, secondStationId),
-        distanceTenths,
-    ]),
-);
-
-/** 起点ごとの最短実距離を保存する。主探索の距離下限に使う。 */
-const actualShortestDistanceCache = new Map<StationId, Map<StationId, number>>();
-/** 起点ごとの最短運賃計算距離を保存する。運賃表示に使う。 */
-const fareShortestDistanceCache = new Map<StationId, Map<StationId, number>>();
-
-/**
- * ダイクストラ法で起点から全駅への最短距離を求める。最小ヒープを使い、計算量はO(V + E log(E + 1))。
- * Vは駅数、Eは接続数。距離更新ごとに追加し、古い候補は取り出し時に捨てる。
- * 乗車距離はgetRideDistanceで指定し、異駅名の徒歩乗換は距離0として扱う。
- * excludedTransferDestinationを指定すると、起点からその駅への直接の徒歩乗換を除外する。
- * 路線の接続制約や駅の再訪制限は適用しない。到達不能な駅の距離はInfinityのまま返す。
- */
-const calculateShortestDistances = (
-    originStationId: StationId,
-    getRideDistance: (fromStationId: StationId, edge: RideEdge) => number,
-    excludedTransferDestination?: StationId,
-): Map<StationId, number> => {
-    // 起点から各駅までの最短距離。単位は0.1km。
-    const distances = new Map<StationId, number>(stationIds.map((stationId) => [stationId, Number.POSITIVE_INFINITY]));
-    const queue = createMinHeap<{ stationId: StationId; distance: number }>(
-        (first, second) => first.distance - second.distance,
-    );
-    distances.set(originStationId, 0);
-    queue.push({ stationId: originStationId, distance: 0 });
-
-    for (let current = queue.pop(); current != null; current = queue.pop()) {
-        const { stationId: currentStationId, distance: currentDistance } = current;
-        // より短い距離で登録し直した駅の古い候補は展開しない。
-        if (currentDistance !== distances.get(currentStationId)) continue;
-
-        for (const edge of graph.get(currentStationId) ?? []) {
-            if (
-                edge.kind === 'transfer' &&
-                currentStationId === originStationId &&
-                edge.stationId === excludedTransferDestination
-            ) {
-                continue;
-            }
-            // 現在駅を経由して隣接駅へ進む場合の距離。
-            const nextDistance = currentDistance + (edge.kind === 'ride' ? getRideDistance(currentStationId, edge) : 0);
-
-            if (nextDistance < (distances.get(edge.stationId) ?? Number.POSITIVE_INFINITY)) {
-                distances.set(edge.stationId, nextDistance);
-                queue.push({ stationId: edge.stationId, distance: nextDistance });
-            }
-        }
-    }
-
-    return distances;
-};
-
-/** 実乗車距離で求めた最短距離を返し、起点ごとに再利用する。徒歩距離は0。 */
-const getShortestActualDistances = (originStationId: StationId): Map<StationId, number> => {
-    // 同じ条件で計算済みの値。存在すれば再計算を省く。
-    const cached = actualShortestDistanceCache.get(originStationId);
-    if (cached != null) return cached;
-
-    // 起点から各駅までの最短距離。単位は0.1km。
-    const distances = calculateShortestDistances(originStationId, (_fromStationId, edge) => edge.distanceTenths);
-    actualShortestDistanceCache.set(originStationId, distances);
-    return distances;
-};
-
-/**
- * 運賃計算用の駅間補正を適用して最短距離を求め、起点ごとに再利用する。
- * 別の駅への距離が徒歩だけで0になる場合は、その駅への起点からの直接徒歩接続を除いて再計算する。
- */
-const getShortestFareDistances = (originStationId: StationId): Map<StationId, number> => {
-    // 同じ条件で計算済みの値。存在すれば再計算を省く。
-    const cached = fareShortestDistanceCache.get(originStationId);
-    if (cached != null) return cached;
-
-    /** 駅間に運賃計算距離の補正があれば適用し、それ以外は実乗車距離を使う。 */
-    const getRideDistance = (fromStationId: StationId, edge: RideEdge): number =>
-        fareCalculationDistanceOverrides.get(getStationPairKey(fromStationId, edge.stationId)) ?? edge.distanceTenths;
-    // 起点から各駅までの最短距離。単位は0.1km。
-    const distances = calculateShortestDistances(originStationId, getRideDistance);
-
-    for (const [destinationStationId, distance] of distances) {
-        if (destinationStationId === originStationId || distance !== 0) continue;
-
-        // 発着駅間の徒歩接続だけでは乗車にならないため、この接続を除いて再計算する。
-        // 他の発着区間の最短距離には、従来どおり徒歩乗換を含める。
-        // 距離0となる相手駅への直接徒歩接続を除いて求めた距離。
-        const ridingDistances = calculateShortestDistances(originStationId, getRideDistance, destinationStationId);
-        distances.set(destinationStationId, ridingDistances.get(destinationStationId) ?? Number.POSITIVE_INFINITY);
-    }
-
-    fareShortestDistanceCache.set(originStationId, distances);
-    return distances;
-};
-
-/** 0.1km単位の距離をkm単位に切り上げ、最低1kmとして距離帯別の運賃を返す。 */
-const getRegularFare = (distanceTenths: number): Fare => {
-    // 端数を切り上げ、最低1kmにした運賃判定用距離。
-    const roundedKilometers = Math.max(1, Math.ceil(distanceTenths / 10));
-
-    if (roundedKilometers <= 6) {
-        return { ic: 178, ticket: 180 };
-    }
-
-    if (roundedKilometers <= 11) {
-        return { ic: 209, ticket: 210 };
-    }
-
-    if (roundedKilometers <= 19) {
-        return { ic: 252, ticket: 260 };
-    }
-
-    if (roundedKilometers <= 27) {
-        return { ic: 293, ticket: 300 };
-    }
-
-    return { ic: 324, ticket: 330 };
-};
-
-/** 二つの駅が指定した駅ペアと一致するかを、方向を区別せず判定する。 */
-const isSamePair = (first: StationId, second: StationId, pair: readonly [StationId, StationId]): boolean =>
-    (first === pair[0] && second === pair[1]) || (first === pair[1] && second === pair[0]);
-
-/** 綾瀬・北千住と南北線共用区間の特定運賃を先に判定し、それ以外は距離帯別運賃を返す。 */
-const getFare = (originStationId: StationId, destinationStationId: StationId, distanceTenths: number): Fare => {
-    if (isSamePair(originStationId, destinationStationId, ['ayase', 'kita-senju'])) {
-        return { ic: 155, ticket: 160 };
-    }
-
-    // 相互発着に共用区間の運賃を適用する南北線の駅。
-    const sharedNambokuSection = new Set<StationId>(['meguro', 'shirokanedai', 'shirokane-takanawa']);
-
-    if (sharedNambokuSection.has(originStationId) && sharedNambokuSection.has(destinationStationId)) {
-        return { ic: 178, ticket: 180 };
-    }
-
-    return getRegularFare(distanceTenths);
-};
-
-/**
- * 発着駅間の最短運賃計算距離と運賃を返す。到達可能な経路がない場合はエラーにする。
- * 途中の改札外出場駅は考慮しない。経路ごとの運賃はbuildRouteResultで求める。
- */
-export const calculateFareBetweenStations = (
-    originStationId: StationId,
-    destinationStationId: StationId,
-): Fare & { shortestDistanceTenths: number } => {
-    // 発駅から着駅までの最短運賃計算距離。単位は0.1km。
-    const shortestDistanceTenths = getShortestFareDistances(originStationId).get(destinationStationId);
-
-    if (shortestDistanceTenths == null || !Number.isFinite(shortestDistanceTenths)) {
-        throw new Error('駅間の経路を構成できません');
-    }
-
-    return {
-        ...getFare(originStationId, destinationStationId, shortestDistanceTenths),
-        shortestDistanceTenths,
-    };
-};
-
 /** 乗車記録を乗換の位置で区切り、連続する乗車の距離を合算して表示用の区間を作る。 */
 const buildLegs = (originStationId: StationId, steps: TraversalStep[]): RouteLeg[] => {
     // 乗換ごとに確定した表示用乗車区間。
@@ -751,30 +346,6 @@ const buildRouteResult = (
         return null;
     }
 
-    // 発駅から着駅までの最短運賃計算距離。単位は0.1km。
-    const shortestDistanceTenths = shortestDistances.get(destinationStationId) ?? Number.POSITIVE_INFINITY;
-    // 途中出場を考慮する前の、発着駅間の運賃。
-    const baseFare = getFare(originStationId, destinationStationId, shortestDistanceTenths);
-    // 各改札外出場駅までの運賃確認結果。
-    const fareCheckpoints = outsideTransfers.map((transfer) => {
-        // 発駅から今回の出場駅までの最短運賃計算距離。
-        const checkpointDistance = shortestDistances.get(transfer.fromStationId) ?? Number.POSITIVE_INFINITY;
-
-        return {
-            stationId: transfer.fromStationId,
-            shortestDistanceTenths: checkpointDistance,
-            fare: getFare(originStationId, transfer.fromStationId, checkpointDistance),
-        };
-    });
-    // 着駅と各出場駅までの運賃の最大値。IC・きっぷ別に求める。
-    const fare = fareCheckpoints.reduce(
-        (highestFare, checkpoint) => ({
-            ic: Math.max(highestFare.ic, checkpoint.fare.ic),
-            ticket: Math.max(highestFare.ticket, checkpoint.fare.ticket),
-        }),
-        baseFare,
-    );
-
     return {
         key: steps
             .map((step) =>
@@ -788,28 +359,16 @@ const buildRouteResult = (
         outsideTransferCount: outsideTransfers.length,
         insideTransferCount: transfers.length - outsideTransfers.length,
         actualDistanceTenths,
-        shortestDistanceTenths,
-        fare,
-        fareCheckpoints,
+        ...calculateRouteFare(originStationId, destinationStationId, transfers, shortestDistances),
     };
 };
 
 /** 同一路線で乗車し続け、乗換駅または着駅で終わる探索用区間。 */
-type MacroSegment = {
-    /** 区間または乗換の開始駅。 */
-    fromStationId: StationId;
-    /** 区間または乗換の終了駅。 */
-    toStationId: StationId;
-    /** 乗車する路線。 */
-    lineId: LineId;
-    /** 区間内の隣接駅間の乗車記録。経路結果の復元に使う。 */
-    rideSteps: RideStep[];
+type MacroSegment = RideSegment & {
     /** 開始駅を除き、終点を含む区間内の通過駅の集合。 */
     stationMask: bigint;
     /** 開始駅を除く通過駅に関係する改札外乗換地点の集合。 */
     outsideOpportunityMask: number;
-    /** 乗車距離。単位は0.1km。 */
-    distanceTenths: number;
 };
 
 /** 区間間の乗換と、それによって使用する改札外乗換地点のビット。 */
@@ -820,215 +379,55 @@ type MacroTransfer = {
     outsideOpportunityBit: number;
 };
 
-/** 現在駅と乗車中の路線をキーに、利用可能な乗換を保存する。 */
+/** 「現在駅ID:乗車中の路線ID」から、検索用の乗換と地点ビットを引くキャッシュ。 */
 const macroTransferCache = new Map<string, MacroTransfer[]>();
 
-/**
- * 現在駅・路線からの同駅乗換と異駅名乗換を列挙する。
- * 改札外を優先し、同種なら乗換先路線ID、乗換先駅IDの順に整列して保存する。
- */
+/** 共通の乗換候補に、検索で使用済み地点を管理するためのビットを付ける。 */
 const getMacroTransfers = (stationId: StationId, fromLineId: LineId): MacroTransfer[] => {
-    // 計算結果を再利用するための入力条件のキー。
     const cacheKey = `${stationId}:${fromLineId}`;
-    // 同じ条件で計算済みの値。存在すれば再計算を省く。
     const cached = macroTransferCache.get(cacheKey);
-
-    if (cached != null) {
-        return cached;
-    }
-
-    // 現在駅・路線から利用可能な乗換候補。
-    const transfers: MacroTransfer[] = [];
-
-    for (const toLineId of stationLineIds.get(stationId) ?? []) {
-        if (toLineId === fromLineId) {
-            continue;
+    if (cached != null) return cached;
+    const transfers = getTransfers(stationId, fromLineId).map((step) => {
+        let outsideOpportunityBit = 0;
+        if (step.type === 'outside') {
+            outsideOpportunityBit =
+                step.fromStationId === step.toStationId
+                    ? (sameStationOutsideOpportunityBits.get(
+                          [stationId, ...[fromLineId, step.toLineId].sort()].join(':'),
+                      ) ?? 0)
+                    : (crossOutsideOpportunityBits.get(
+                          `${step.fromStationId}:${step.fromLineId}:${step.toStationId}:${step.toLineId}`,
+                      ) ?? 0);
         }
-
-        for (const transferType of getSameStationTransferTypes(stationId, fromLineId, toLineId)) {
-            transfers.push({
-                step: {
-                    kind: 'transfer',
-                    fromStationId: stationId,
-                    toStationId: stationId,
-                    fromLineId,
-                    toLineId,
-                    type: transferType,
-                },
-                outsideOpportunityBit:
-                    transferType === 'outside'
-                        ? (sameStationOutsideOpportunityBits.get(
-                              [stationId, ...[fromLineId, toLineId].sort()].join(':'),
-                          ) ?? 0)
-                        : 0,
-            });
-        }
-    }
-
-    for (const [connectionIndex, connection] of CROSS_STATION_TRANSFERS.entries()) {
-        // 接続定義の出発側が現在駅か。
-        const isForward = connection.fromStationId === stationId;
-        // 接続定義の到着側が現在駅か。
-        const isBackward = connection.toStationId === stationId;
-
-        if (!isForward && !isBackward) {
-            continue;
-        }
-
-        for (const [firstLineId, secondLineId] of connection.linePairs) {
-            // 移動方向に対応する乗換前の路線。
-            const expectedFromLineId = isForward ? firstLineId : secondLineId;
-
-            if (expectedFromLineId !== fromLineId) {
-                continue;
-            }
-
-            transfers.push({
-                step: {
-                    kind: 'transfer',
-                    fromStationId: stationId,
-                    toStationId: isForward ? connection.toStationId : connection.fromStationId,
-                    fromLineId,
-                    toLineId: isForward ? secondLineId : firstLineId,
-                    type: connection.type,
-                },
-                outsideOpportunityBit: crossOutsideOpportunityBits.get(connectionIndex) ?? 0,
-            });
-        }
-    }
-
-    transfers.sort(
-        (first, second) =>
-            Number(second.step.type === 'outside') - Number(first.step.type === 'outside') ||
-            first.step.toLineId.localeCompare(second.step.toLineId) ||
-            first.step.toStationId.localeCompare(second.step.toStationId),
-    );
+        return { step, outsideOpportunityBit };
+    });
     macroTransferCache.set(cacheKey, transfers);
     return transfers;
 };
 
-/** 開始駅・路線・着駅をキーに乗車区間を保存する。訪問履歴による除外は主探索で行う。 */
+/** 「開始駅ID:路線ID:着駅ID」から、検索用の駅・乗換地点の集合付き区間を引くキャッシュ。 */
 const macroSegmentCache = new Map<string, MacroSegment[]>();
 
-/**
- * 同一路線のグラフを深さ優先でたどり、乗換駅または着駅までの乗車区間を列挙する。
- * 途中の乗換駅は通過も認めるが、着駅に達したら延長しない。区間内での駅の再訪は禁止する。
- */
+/** 着駅で打ち切った共通乗車区間に、駅の再訪・必須乗換地点の通過の判定用集合を付ける。 */
 const getMacroSegments = (
     fromStationId: StationId,
     lineId: LineId,
     destinationStationId: StationId,
-    stopAtDestination = true,
 ): MacroSegment[] => {
-    // 計算結果を再利用するための入力条件のキー。
-    const cacheKey = `${fromStationId}:${lineId}:${destinationStationId}:${stopAtDestination}`;
-    // 同じ条件で計算済みの値。存在すれば再計算を省く。
+    const cacheKey = `${fromStationId}:${lineId}:${destinationStationId}`;
     const cached = macroSegmentCache.get(cacheKey);
-
-    if (cached != null) {
-        return cached;
-    }
-
-    // 処理対象の路線に属する乗車接続。
-    const lineGraph = lineGraphs.get(lineId);
-
-    if (lineGraph == null) {
-        return [];
-    }
-
-    // 同一路線を乗り続けて到達する乗車区間の一覧。
-    const segments: MacroSegment[] = [];
-    // 現在組み立てている乗車区間内の訪問済み駅。戻る際に取り消す。
-    const visitedStations = new Set<StationId>([fromStationId]);
-    // 現在組み立てている区間の隣接駅間の乗車記録。
-    const rideSteps: RideStep[] = [];
-
-    /**
-     * 同一路線の乗車区間を再帰的に延長する。候補に保存するときは乗車記録を複製する。
-     * stationMaskは開始駅を除く通過駅、outsideOpportunityMaskはその駅に関係する乗換地点。
-     * distanceTenthsは開始駅から現在駅までの累積実乗車距離。再帰後に訪問履歴と記録を戻す。
-     */
-    const visit = (
-        stationId: StationId,
-        stationMask: bigint,
-        outsideOpportunityMask: number,
-        distanceTenths: number,
-    ): void => {
-        if (stationId !== fromStationId && (stationId === destinationStationId || transferStationIds.has(stationId))) {
-            segments.push({
-                fromStationId,
-                toStationId: stationId,
-                lineId,
-                rideSteps: [...rideSteps],
-                stationMask,
-                outsideOpportunityMask,
-                distanceTenths,
-            });
-        }
-
-        if (stationId === destinationStationId && stopAtDestination) {
-            return;
-        }
-
-        for (const edge of lineGraph.get(stationId) ?? []) {
-            if (visitedStations.has(edge.stationId)) {
-                continue;
-            }
-
-            // 今回追加する隣接駅への乗車記録。
-            const rideStep: RideStep = {
-                kind: 'ride',
-                fromStationId: stationId,
-                toStationId: edge.stationId,
-                lineId,
-                distanceTenths: edge.distanceTenths,
-            };
-            visitedStations.add(edge.stationId);
-            rideSteps.push(rideStep);
-            visit(
-                edge.stationId,
-                stationMask | getStationBit(edge.stationId),
-                outsideOpportunityMask | (outsideOpportunityMaskByStation.get(edge.stationId) ?? 0),
-                distanceTenths + edge.distanceTenths,
-            );
-            rideSteps.pop();
-            visitedStations.delete(edge.stationId);
-        }
-    };
-
-    visit(fromStationId, BigInt(0), 0, 0);
-    // 距離・駅IDの順序は訪問履歴や必須乗換地点に依存しない。
-    segments.sort(
-        (first, second) =>
-            first.distanceTenths - second.distanceTenths || first.toStationId.localeCompare(second.toStationId),
-    );
+    if (cached != null) return cached;
+    const segments = getRideSegments(fromStationId, lineId, destinationStationId).map((segment) => ({
+        ...segment,
+        stationMask: segment.rideSteps.reduce((mask, step) => mask | getStationBit(step.toStationId), BigInt(0)),
+        outsideOpportunityMask: segment.rideSteps.reduce(
+            (mask, step) => mask | (outsideOpportunityMaskByStation.get(step.toStationId) ?? 0),
+            0,
+        ),
+    }));
     macroSegmentCache.set(cacheKey, segments);
     return segments;
 };
-
-/** 経路作成用の乗車区間。開始駅を除く通過駅を乗車順に保持する。 */
-export type PlannerRideSegment = RouteLeg & { stationIds: StationId[] };
-
-/**
- * 接続駅候補を列挙する。降車駅より先も表示して無効化できるよう、そこで打ち切らない。
- * 呼出側が共有キャッシュを変更しないよう、配列と区間を複製する。
- */
-export const getRoutePlannerSegments = (
-    fromStationId: StationId,
-    lineId: LineId,
-    destinationStationId: StationId,
-): PlannerRideSegment[] =>
-    getMacroSegments(fromStationId, lineId, destinationStationId, false).map((segment) => ({
-        fromStationId: segment.fromStationId,
-        toStationId: segment.toStationId,
-        lineId: segment.lineId,
-        distanceTenths: segment.distanceTenths,
-        stationIds: segment.rideSteps.map((step) => step.toStationId),
-    }));
-
-/** 改札外を先にし、乗換前後の駅・路線・種別を方向付きで返す。 */
-export const getRoutePlannerTransfers = (stationId: StationId, lineId: LineId): RouteTransfer[] =>
-    getMacroTransfers(stationId, lineId).map(({ step: { kind: _kind, ...transfer } }) => transfer);
 
 /** 改札外乗換数の降順、改札内乗換数・実乗車距離の昇順、経路キーの順で比較する。 */
 const compareRoutes = (first: RouteResult, second: RouteResult): number =>
@@ -1433,9 +832,3 @@ export const searchRoutes = (
         outsideTransferUpperBound: Math.max(truncatedUpperBound, bestOutsideCount),
     };
 };
-
-/** 0.1km単位の整数を、小数点以下1桁のkm表記へ変換する。 */
-export const formatDistance = (distanceTenths: number): string => `${(distanceTenths / 10).toFixed(1)}km`;
-
-/** 路線IDに対応する表示名を返す。 */
-export const getLineLabel = (lineId: LineId): string => LINE_DEFINITIONS[lineId].name;

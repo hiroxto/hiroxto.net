@@ -1,6 +1,7 @@
 'use client';
 
 import { Alert, Badge, Button, Group, Paper, Select, SimpleGrid, Stack, Text } from '@mantine/core';
+import { LINE_DEFINITIONS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-core/data';
 import type { PlannerAction } from '@/lib/tokyometro-transfer-route-planner/editor';
 import {
     getPlannerIncomingTransfer,
@@ -8,7 +9,6 @@ import {
     getPlannerStationOptions,
     type PlannerState,
 } from '@/lib/tokyometro-transfer-route-planner/planner';
-import { LINE_DEFINITIONS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-transfer-search/data';
 
 export function RouteRow({
     state,

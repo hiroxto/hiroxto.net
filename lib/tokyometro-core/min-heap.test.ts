@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createMinHeap } from '@/lib/tokyometro-transfer-search/min-heap';
+import { createMinHeap } from '@/lib/tokyometro-core/min-heap';
 
 describe('createMinHeap', () => {
     it('空の状態と最後の要素を取り出した後はundefinedを返す', () => {

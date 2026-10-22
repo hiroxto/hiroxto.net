@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 // A=東京、B=大手町、C=三越前、D=浅草、E=上野、F=銀座。
 // M: A--6--B--30--D / Z: B--7--C--20--D / G: A--4--E--8--C--5--F--10--D
 // Bでは改札内・外の両方、Cでは改札外だけで乗換可能。
-vi.mock('./data', () => ({
+vi.mock('@/lib/tokyometro-core/data', () => ({
     STATION_NAMES: { tokyo: 'A', otemachi: 'B', mitsukoshimae: 'C', asakusa: 'D', ueno: 'E', ginza: 'F' },
     LINE_DEFINITIONS: { marunouchi: { name: 'M' }, hanzomon: { name: 'Z' }, ginza: { name: 'G' } },
     LINE_PATHS: [

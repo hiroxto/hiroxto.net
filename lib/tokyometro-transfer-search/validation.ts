@@ -1,13 +1,9 @@
 import { z } from 'zod';
-import { STATION_NAMES, type StationId } from '@/lib/tokyometro-transfer-search/data';
+import { stationIdSchema } from '@/lib/tokyometro-core/stations';
 import { outsideTransferIdsSchema } from '@/lib/tokyometro-transfer-search/outside-transfers';
 
 /** 利用者が指定できる改札外乗換回数の上限。 */
 export const MAX_OUTSIDE_TRANSFER_COUNT = 14;
-
-export const stationIdSchema = z.enum(Object.keys(STATION_NAMES) as StationId[], {
-    error: '指定された駅が見つかりません',
-});
 
 const invalidMaximumOutsideTransferCountMessage = `最大改札外乗換回数は1〜${MAX_OUTSIDE_TRANSFER_COUNT}回で指定してください`;
 export const maximumOutsideTransferCountSchema = z

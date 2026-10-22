@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import type { StationId } from './data';
+import type { StationId } from '@/lib/tokyometro-core/data';
+import { stationIdSchema } from '@/lib/tokyometro-core/stations';
 import { allOutsideTransferIds, outsideTransferIdsSchema } from './outside-transfers';
 import { SEARCH_DURATION_LIMIT_MS } from './search';
-import { maximumOutsideTransferCountSchema, searchFormDurationSchema, stationIdSchema } from './validation';
+import { maximumOutsideTransferCountSchema, searchFormDurationSchema } from './validation';
 
 export type TokyoMetroTransferSearchParams = Record<string, string | string[] | undefined>;
 

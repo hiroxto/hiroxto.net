@@ -1,4 +1,4 @@
-import type { StationId } from './data';
+import type { StationId } from '@/lib/tokyometro-core/data';
 import type { RouteSearchResult } from './search';
 
 export type RouteSearchRequest = {
