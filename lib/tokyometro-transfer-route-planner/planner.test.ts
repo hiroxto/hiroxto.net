@@ -371,3 +371,38 @@ describe('入力済み区間の計算', () => {
         expect(buildPlannerPreview({ ...state, rows: [{ lineId: 'hibiya', stationId: 'hibiya' }] })).toBeNull();
     });
 });
+
+describe('異駅名の同一駅を発着に指定した場合', () => {
+    it.each([
+        ['ueno-hirokoji', 'naka-okachimachi'],
+        ['naka-okachimachi', 'ueno-hirokoji'],
+        ['akasaka-mitsuke', 'nagatacho'],
+        ['nagatacho', 'akasaka-mitsuke'],
+    ] as const)('%sから%sは同駅発着として拒否する', (from, to) => {
+        const state: PlannerState = {
+            fromStationId: from,
+            toStationId: to,
+            rows: [
+                { lineId: 'ginza', stationId: 'ueno' },
+                { lineId: 'hibiya', stationId: to },
+            ],
+        };
+        expect(getPlannerStationError(state)).toBe('乗車駅と降車駅には異なる駅を指定してください');
+        expect(buildPlannerResult(state)).toBeNull();
+        expect(buildPlannerPreview(state)).toBeNull();
+    });
+});
+
+it('入力途中の末端が発駅と同一扱いの異駅名駅なら運賃を表示しない', () => {
+    expect(
+        buildPlannerPreview({
+            fromStationId: 'ueno-hirokoji',
+            toStationId: 'akihabara',
+            rows: [
+                { lineId: 'ginza', stationId: 'ueno' },
+                { lineId: 'hibiya', stationId: 'naka-okachimachi' },
+                { lineId: null, stationId: null },
+            ],
+        }),
+    ).toBeNull();
+});

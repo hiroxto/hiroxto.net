@@ -1,20 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { calculateFareBetweenStations } from '@/lib/tokyometro-core/fare';
+import { getShortestFareDistances } from '@/lib/tokyometro-core/distances';
+import { calculateFareBetweenStations, calculateRouteFare } from '@/lib/tokyometro-core/fare';
 
 describe('calculateFareBetweenStations', () => {
     it.each([
-        ['ueno-hirokoji', 'naka-okachimachi', 10],
-        ['naka-okachimachi', 'ueno-hirokoji', 10],
-        ['ginza', 'ginza-itchome', 9],
-        ['ginza-itchome', 'ginza', 9],
-    ] as const)('%sから%sは徒歩接続だけでなく列車経由の最短距離で計算する', (origin, destination, distance) => {
-        // 上野経由は銀座線0.5 + 日比谷線0.5 = 1.0km。
-        // 日比谷・有楽町経由は日比谷線0.4 + 有楽町線0.5 = 0.9km。
-        expect(calculateFareBetweenStations(origin, destination)).toEqual({
-            shortestDistanceTenths: distance,
-            ic: 178,
-            ticket: 180,
-        });
+        ['ueno-hirokoji', 'naka-okachimachi'],
+        ['naka-okachimachi', 'ueno-hirokoji'],
+        ['akasaka-mitsuke', 'nagatacho'],
+        ['ginza', 'ginza-itchome'],
+        ['tokyo', 'tokyo'],
+    ] as const)('%sから%sは同一駅のため運賃計算を拒否する', (origin, destination) => {
+        expect(() => calculateFareBetweenStations(origin, destination)).toThrow(
+            '乗車駅と降車駅には異なる駅を指定してください',
+        );
+        expect(() => calculateRouteFare(origin, destination, [])).toThrow(
+            '乗車駅と降車駅には異なる駅を指定してください',
+        );
+        expect(getShortestFareDistances(origin).get(destination)).toBe(0);
     });
 
     it('上野広小路から秋葉原は仲御徒町への徒歩乗換を含む1.0kmで計算する', () => {

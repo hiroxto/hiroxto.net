@@ -3,6 +3,7 @@
  *
  * 対象は、異なる発着駅を結び、改札外乗換を1回以上含む駅の再訪がない経路。
  * 乗車区間と乗換を交互に接続し、最初と最後は必ず乗車する。乗換だけの連続移動は扱わない。
+ * 同じ駅IDまたは異駅名乗換駅同士の発着は同一駅として扱い、経路なしを返す。
  * 同駅での乗換は駅の再訪に数えず、異駅名の乗換では両方の駅を訪問済みにする。
  * 同じ路線の再利用は認める。指定する回数上限は改札外乗換だけに適用する。
  * 改札内乗換は既定で候補に含む。includeInsideTransfersがfalseなら、探索時に改札内乗換を除外する。
@@ -63,6 +64,7 @@ import { getShortestActualDistances, getShortestFareDistances } from '@/lib/toky
 import { calculateRouteFare } from '@/lib/tokyometro-core/fare';
 import { graph, stationIds, stationLineIds } from '@/lib/tokyometro-core/network';
 import { getRideSegments, getTransfers, type RideSegment } from '@/lib/tokyometro-core/routing';
+import { isSameStation } from '@/lib/tokyometro-core/stations';
 import type { RouteLeg, RouteResult, TransferStep, TraversalStep } from '@/lib/tokyometro-core/types';
 import { allOutsideTransferIds, outsideTransferIdsSchema } from '@/lib/tokyometro-transfer-search/outside-transfers';
 import {
@@ -519,7 +521,7 @@ export const searchRoutes = (
     }
     // 検索全体の終了期限。performance.nowと同じ時刻基準。
     const searchDeadline = performance.now() + durationLimitMs;
-    if (originStationId === destinationStationId) {
+    if (isSameStation(originStationId, destinationStationId)) {
         return { routes: [], truncated: false, outsideTransferUpperBound: 0 };
     }
 

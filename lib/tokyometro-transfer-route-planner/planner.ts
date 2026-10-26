@@ -2,6 +2,7 @@
  * 東京メトロ 改札外乗換経路作成の仕様。
  *
  * 対象の駅・路線・乗換接続はlib/tokyometro-coreの共通データを使う。異なる発着駅を指定する。
+ * 同じ駅IDと異駅名乗換駅同士の発着は同一駅として検証エラーにする。
  * 通過駅を含め駅の再訪は禁止。同駅乗換は再訪と数えず、異駅名乗換は両駅を訪問済みにする。
  * 乗車と乗換を交互に接続し、最初と最後は乗車する。徒歩乗換の連続は認めない。
  * 同一路線の再利用は認める。降車駅で終了し、改札外乗換0回・乗換なしでも完成とする。
@@ -38,6 +39,7 @@
  * と確認し、承諾時だけ破棄・交換する。経路入力がなければ確認なしで交換する。
  *
  * 接続駅まで入力済みの連続した乗車区間が1つ以上あれば、その末端までの乗換回数とIC・きっぷ運賃を表示する。
+ * 計算区間の末端が発駅と同一駅の場合は、運賃を計算・表示しない。
  * 末尾の未入力行と路線のみ選択された行は、その直前の乗換も含めて計算対象外とする。
  * 計算した区間を「浅草 → 日比谷」のように完成時も表示する。未完成時の見出しは「作成結果 (入力途中)」とし、
  * 「入力途中」を赤文字で強調する。降車駅に到達したら見出しを「作成結果」にする。
@@ -51,7 +53,7 @@
 import { LINE_DEFINITIONS, LINE_PATHS, type LineId, STATION_NAMES, type StationId } from '@/lib/tokyometro-core/data';
 import { calculateRouteFare } from '@/lib/tokyometro-core/fare';
 import { getRideSegments, getTransfers } from '@/lib/tokyometro-core/routing';
-import { stationIdSchema, stations } from '@/lib/tokyometro-core/stations';
+import { isSameStation, stationIdSchema, stations } from '@/lib/tokyometro-core/stations';
 import type { RouteLeg, RouteResult, RouteTransfer } from '@/lib/tokyometro-core/types';
 
 /** 経路作成用の乗車区間。開始駅を除く通過駅を乗車順に保持する。 */
@@ -91,7 +93,9 @@ export const getPlannerStationError = (state: PlannerState): string | null => {
     ) {
         return '選択肢から乗車駅と降車駅を指定してください';
     }
-    return state.fromStationId === state.toStationId ? '乗車駅と降車駅には異なる駅を指定してください' : null;
+    return isSameStation(state.fromStationId, state.toStationId)
+        ? '乗車駅と降車駅には異なる駅を指定してください'
+        : null;
 };
 
 const canRide = (segment: PlannerRideSegment, visited: Set<StationId>, destination: StationId): boolean =>
@@ -289,7 +293,7 @@ export const buildPlannerPreview = (
     const count = incompleteIndex < 0 ? state.rows.length : incompleteIndex;
     if (count === 0 || !state.fromStationId) return null;
     const prefix = readPrefix(state, count);
-    if (!prefix) return null;
+    if (!prefix || isSameStation(state.fromStationId, prefix.stationId)) return null;
     return {
         result: calculatePrefixResult({ ...state, rows: state.rows.slice(0, count) }, prefix),
         fromStationId: state.fromStationId,

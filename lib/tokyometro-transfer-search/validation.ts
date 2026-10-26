@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { stationIdSchema } from '@/lib/tokyometro-core/stations';
+import { isSameStation, stationIdSchema } from '@/lib/tokyometro-core/stations';
 import { outsideTransferIdsSchema } from '@/lib/tokyometro-transfer-search/outside-transfers';
 
 /** 利用者が指定できる改札外乗換回数の上限。 */
@@ -29,7 +29,7 @@ const stationPairSchema = z
         toStationId: z.string({ error: '乗車駅と降車駅を指定してください' }).pipe(stationIdSchema),
     })
     .refine(
-        ({ fromStationId, toStationId }) => fromStationId !== toStationId,
+        ({ fromStationId, toStationId }) => !isSameStation(fromStationId, toStationId),
         '乗車駅と降車駅には異なる駅を指定してください',
     );
 
@@ -39,7 +39,10 @@ const searchFormSchema = z.object({
     outsideTransferIds: outsideTransferIdsSchema,
 });
 
-/** 探索時間、発着駅、改札外乗換駅の順に検証し、成功時は検索条件を返す。 */
+/**
+ * 探索時間、発着駅、改札外乗換駅の順に検証し、成功時は検索条件を返す。
+ * 同じ駅IDと異駅名乗換駅同士の発着は同一駅として検証エラーにする。
+ */
 export const parseTokyoMetroTransferSearchForm = (input: {
     durationLimitMs: number;
     stations: { fromStationId: string | null; toStationId: string | null };

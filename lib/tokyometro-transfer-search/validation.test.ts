@@ -88,3 +88,17 @@ describe('parseTokyoMetroTransferSearchForm', () => {
         ).toBe('探索時間は正の整数で指定してください');
     });
 });
+
+describe('異駅名の同一駅を発着に指定した場合', () => {
+    it.each([
+        ['ueno-hirokoji', 'naka-okachimachi'],
+        ['naka-okachimachi', 'ueno-hirokoji'],
+        ['akasaka-mitsuke', 'nagatacho'],
+        ['nagatacho', 'akasaka-mitsuke'],
+    ] as const)('%sから%sは同駅発着として拒否する', (from, to) => {
+        expect(
+            parseTokyoMetroTransferSearchForm({ ...validForm, stations: { fromStationId: from, toStationId: to } })
+                .error,
+        ).toBe('乗車駅と降車駅には異なる駅を指定してください');
+    });
+});
