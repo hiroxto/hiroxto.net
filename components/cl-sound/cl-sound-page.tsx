@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Group, Stack, Text, Title } from '@mantine/core';
+import { ContactlessPaymentIcon } from '@phosphor-icons/react/dist/csr/ContactlessPayment';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 
 interface TonePlanItem {
@@ -63,10 +64,20 @@ export function ClSoundPage() {
             <Stack gap="xl">
                 <section>
                     <Group>
-                        <Button radius="sm" color="green" onClick={() => clSoundActions.playSuccessTone()}>
+                        <Button
+                            radius="sm"
+                            color="green"
+                            leftSection={<ContactlessPaymentIcon size={18} />}
+                            onClick={() => clSoundActions.playSuccessTone()}
+                        >
                             Play Success Tone
                         </Button>
-                        <Button radius="sm" color="red" onClick={() => clSoundActions.playAlertTone()}>
+                        <Button
+                            radius="sm"
+                            color="red"
+                            leftSection={<ContactlessPaymentIcon size={18} />}
+                            onClick={() => clSoundActions.playAlertTone()}
+                        >
                             Play Alert Tone
                         </Button>
                     </Group>
