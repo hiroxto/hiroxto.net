@@ -3,10 +3,12 @@
  * 最短運賃計算距離をkm単位へ切り上げ、最低1kmとして距離帯運賃を適用する。
  * 綾瀬―北千住の相互発着と南北線共用区間内の相互発着には特定運賃を優先する。
  * 経路全体の運賃は、着駅と各改札外出場駅への運賃の最大値をIC・きっぷ別に採用する。
+ * 同じ駅IDまたは異駅名乗換駅同士の発着は同一駅として計算を拒否する。
  * 実際に乗車する距離や経路の完成状態とは独立して計算する。
  */
 import type { StationId } from '@/lib/tokyometro-core/data';
 import { getShortestFareDistances } from '@/lib/tokyometro-core/distances';
+import { isSameStation } from '@/lib/tokyometro-core/stations';
 import type { Fare, RouteResult, RouteTransfer } from '@/lib/tokyometro-core/types';
 
 /** 0.1km単位の距離をkm単位に切り上げ、最低1kmとして距離帯別の運賃を返す。 */
@@ -61,6 +63,9 @@ export const calculateFareBetweenStations = (
     originStationId: StationId,
     destinationStationId: StationId,
 ): Fare & { shortestDistanceTenths: number } => {
+    if (isSameStation(originStationId, destinationStationId)) {
+        throw new Error('乗車駅と降車駅には異なる駅を指定してください');
+    }
     // 発駅から着駅までの最短運賃計算距離。単位は0.1km。
     const shortestDistanceTenths = getShortestFareDistances(originStationId).get(destinationStationId);
 
@@ -86,6 +91,9 @@ export const calculateRouteFare = (
     transfers: RouteTransfer[],
     shortestDistances = getShortestFareDistances(originStationId),
 ): Pick<RouteResult, 'shortestDistanceTenths' | 'fare' | 'fareCheckpoints'> => {
+    if (isSameStation(originStationId, destinationStationId)) {
+        throw new Error('乗車駅と降車駅には異なる駅を指定してください');
+    }
     // 発駅から着駅までの最短運賃計算距離。単位は0.1km。
     const shortestDistanceTenths = shortestDistances.get(destinationStationId) ?? Number.POSITIVE_INFINITY;
     // 途中出場を考慮する前の、発着駅間の運賃。

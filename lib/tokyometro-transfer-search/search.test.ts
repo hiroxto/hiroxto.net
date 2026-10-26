@@ -191,19 +191,6 @@ describe('searchRoutes', () => {
         expect(route?.fare).toEqual({ ic: 178, ticket: 180 });
     });
 
-    it('上野広小路から仲御徒町を最大1回で検索すると上野乗換の表示距離は1.0kmになる', () => {
-        const { routes } = searchRoutes('ueno-hirokoji', 'naka-okachimachi', 1);
-        const route = routes.find((candidate) =>
-            candidate.transfers.some((transfer) => transfer.fromStationId === 'ueno'),
-        );
-
-        expect(route).toMatchObject({
-            shortestDistanceTenths: 10,
-            actualDistanceTenths: 10,
-            fare: { ic: 178, ticket: 180 },
-        });
-    });
-
     it('表参道から外苑前は途中の改札外出場駅までの運賃を下回らない', () => {
         // 発着間0.7kmは178円だが、池袋8.8km・上野9.6kmまでの収受額は209円。
         const result = searchRoutes('omote-sando', 'gaiemmae');
@@ -334,5 +321,16 @@ describe('searchRoutesの入力検証', () => {
         expect(
             searchRoutes('tokyo', 'tokyo', 14, { outsideTransferIds: ['ueno'], visitLimit: 0, durationLimitMs: 0 }),
         ).toEqual({ routes: [], truncated: false, outsideTransferUpperBound: 0 });
+    });
+});
+
+describe('異駅名の同一駅を発着に指定した場合', () => {
+    it.each([
+        ['ueno-hirokoji', 'naka-okachimachi'],
+        ['naka-okachimachi', 'ueno-hirokoji'],
+        ['akasaka-mitsuke', 'nagatacho'],
+        ['nagatacho', 'akasaka-mitsuke'],
+    ] as const)('%sから%sは同駅発着として拒否する', (from, to) => {
+        expect(searchRoutes(from, to, 1)).toEqual({ routes: [], truncated: false, outsideTransferUpperBound: 0 });
     });
 });

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { StationId } from '@/lib/tokyometro-core/data';
-import { stationIdSchema } from '@/lib/tokyometro-core/stations';
+import { isSameStation, stationIdSchema } from '@/lib/tokyometro-core/stations';
 import { allOutsideTransferIds, outsideTransferIdsSchema } from './outside-transfers';
 import { SEARCH_DURATION_LIMIT_MS } from './search';
 import { maximumOutsideTransferCountSchema, searchFormDurationSchema } from './validation';
@@ -63,7 +63,7 @@ const tokyoMetroTransferSearchParamsSchema = z
                 toStationId: stationIdSchema.nullable(),
             })
             .refine(
-                ({ fromStationId, toStationId }) => fromStationId == null || fromStationId !== toStationId,
+                ({ fromStationId, toStationId }) => fromStationId == null || !isSameStation(fromStationId, toStationId),
                 sameStationMessage,
             ),
     );
@@ -80,6 +80,7 @@ const emptyQuery: TokyoMetroTransferSearchQuery = {
 
 /**
  * 検索ボタン押下時にURLへ保存した条件を復元する。
+ * 同じ駅IDと異駅名乗換駅同士の発着は同一駅として検証エラーにする。
  * durationLimitMsはミリ秒単位の正の整数。未指定は5000、空・不正な値・複数指定はエラーとする。
  * 既定値のURLではdurationLimitMsを省略する。
  * outsideTransfersは乗換IDのカンマ区切り。未指定は全て利用し、空・不正なID・複数指定はエラーとする。
