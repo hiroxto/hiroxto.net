@@ -57,7 +57,7 @@ export const clSoundActions = {
 export function ClSoundPage() {
     return (
         <SiteSubpageFrame
-            items={[{ label: 'Tools', href: '/tools' }, { label: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生' }]}
+            items={['tools', { label: 'EMVコンタクトレスのサウンドをWeb Audio APIで再生' }]}
             title="EMVコンタクトレスのサウンドをWeb Audio APIで再生"
             description="EMVコンタクトレスのサウンドをWeb Audio APIで再生"
         >

@@ -169,7 +169,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
     }
     return (
         <SiteSubpageFrame
-            items={[{ label: 'Tools', href: '/tools' }, { label: '東京メトロ 改札外乗換経路作成' }]}
+            items={['tools', { label: '東京メトロ 改札外乗換経路作成' }]}
             title="東京メトロ 改札外乗換経路作成"
             description="東京メトロの改札外乗換経路を作成する"
         >
