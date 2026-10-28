@@ -374,7 +374,7 @@ export function TokyoMetroTransferSearchPage({
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'ツール一覧', href: '/tools' }, { label: '東京メトロ 改札外乗換検索' }]}
+            items={[{ label: 'Tools', href: '/tools' }, { label: '東京メトロ 改札外乗換検索' }]}
             title="東京メトロ 改札外乗換検索"
             description="東京メトロの改札外乗換を最大化するルートを検索する"
             pageSize="xl"
