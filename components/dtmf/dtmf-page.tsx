@@ -184,7 +184,7 @@ export function DtmfPage() {
 
     return (
         <SiteSubpageFrame
-            items={[{ label: 'Tools', href: '/tools' }, { label: 'DTMF' }]}
+            items={['tools', { label: 'DTMF' }]}
             title="DTMF"
             description="WebAudio APIでDTMFの合成信号音を再生"
         >

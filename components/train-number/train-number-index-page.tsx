@@ -10,7 +10,7 @@ import {
 export function TrainNumberIndexPage() {
     return (
         <SiteSubpageFrame
-            items={[{ label: 'Tools', href: '/tools' }, { label: trainNumberIndexTitle }]}
+            items={['tools', { label: trainNumberIndexTitle }]}
             title={trainNumberIndexTitle}
             description={trainNumberIndexDescription}
         >
