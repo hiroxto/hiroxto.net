@@ -76,31 +76,39 @@
 }
 
 .routeFlow {
+    --rail-column-width: 1.2rem;
+    --route-column-gap: 0.65rem;
+    --route-content-offset: calc(var(--rail-column-width) + var(--route-column-gap));
     display: grid;
     gap: 0;
 }
 
 .stationRow {
     display: grid;
-    grid-template-columns: 1.2rem minmax(0, 1fr);
-    gap: 0.65rem;
+    grid-template-columns: var(--rail-column-width) minmax(0, 1fr);
+    gap: var(--route-column-gap);
     align-items: center;
     min-height: 2rem;
 }
 
-.stationDot {
+.stationDot,
+.intermediateStationList li::before {
+    box-sizing: border-box;
     width: 0.72rem;
     height: 0.72rem;
-    margin-inline: auto;
     border: 2px solid #181b1e;
     border-radius: 50%;
     background: #fff;
 }
 
+.stationDot {
+    margin-inline: auto;
+}
+
 .lineSegment {
     display: grid;
-    grid-template-columns: 1.2rem minmax(0, 1fr);
-    gap: 0.65rem;
+    grid-template-columns: var(--rail-column-width) minmax(0, 1fr);
+    gap: var(--route-column-gap);
     min-height: 2.8rem;
 }
 
@@ -114,8 +122,57 @@
 
 .lineDetails {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.25rem;
     min-width: 0;
+    padding-block: 0.35rem;
+}
+
+.intermediateStations {
+    width: calc(100% + var(--route-content-offset));
+    margin-inline-start: calc(-1 * var(--route-content-offset));
+}
+
+.stationCount {
+    width: fit-content;
+    gap: 0.5rem;
+    margin-inline-start: var(--route-content-offset);
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--mantine-radius-sm);
+    color: var(--mantine-color-gray-7);
+    font-size: 0.8rem;
+}
+
+.stationCount:hover {
+    background: var(--mantine-color-gray-0);
+}
+
+.intermediateStationContent {
+    padding: 0.25rem 0 0.5rem;
+}
+
+.intermediateStationList {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--mantine-color-gray-7);
+    font-size: 0.85rem;
+}
+
+.intermediateStationList li {
+    display: grid;
+    grid-template-columns: var(--rail-column-width) minmax(0, 1fr);
+    gap: var(--route-column-gap);
+    align-items: center;
+}
+
+.intermediateStationList li::before {
+    place-self: center;
+    content: "";
 }
 
 .lineBadge {
