@@ -190,17 +190,9 @@
 }
 
 .lineCode {
-    display: grid;
     width: 1.35rem;
     height: 1.35rem;
-    place-items: center;
     flex: 0 0 auto;
-    border: 2px solid var(--line-color);
-    border-radius: 50%;
-    background: #fff;
-    color: #262a2e;
-    font-size: 0.68rem;
-    line-height: 1;
 }
 
 .outsideTransfer {

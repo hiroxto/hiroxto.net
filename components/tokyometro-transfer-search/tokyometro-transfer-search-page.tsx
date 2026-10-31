@@ -19,6 +19,7 @@ import {
     Title,
 } from '@mantine/core';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRight';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type CSSProperties, type FormEvent, useEffect, useState, useTransition } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
@@ -75,11 +76,16 @@ const formatYen = (value: number): string => `${value.toLocaleString('ja-JP')}å†
 
 function LineBadge({ lineId }: { lineId: LineId }) {
     const line = LINE_DEFINITIONS[lineId];
-    const lineStyle = { '--line-color': line.color } as CSSProperties;
 
     return (
-        <span className={styles.lineBadge} style={lineStyle}>
-            <span className={styles.lineCode}>{line.code}</span>
+        <span className={styles.lineBadge}>
+            <Image
+                className={styles.lineCode}
+                src={`/assets/tools/tokyometro-transfer-search/lines/${lineId}.svg`}
+                alt=""
+                width={24}
+                height={24}
+            />
             {line.name}
         </span>
     );
