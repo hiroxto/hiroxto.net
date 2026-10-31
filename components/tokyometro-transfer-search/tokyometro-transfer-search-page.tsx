@@ -30,6 +30,7 @@ import {
     type StationId,
 } from '@/lib/tokyometro-core/data';
 import { formatDistance } from '@/lib/tokyometro-core/format';
+import { getRideSegments } from '@/lib/tokyometro-core/routing';
 import { stations } from '@/lib/tokyometro-core/stations';
 import type { RouteResult } from '@/lib/tokyometro-core/types';
 import { allOutsideTransferIds, outsideTransferOptions } from '@/lib/tokyometro-transfer-search/outside-transfers';
@@ -97,6 +98,10 @@ function RouteFlow({ route }: { route: RouteResult }) {
             {route.legs.map((leg, index) => {
                 const transfer = route.transfers[index];
                 const lineStyle = { '--line-color': LINE_DEFINITIONS[leg.lineId].color } as CSSProperties;
+                // 乗車順に並ぶ隣接駅間の記録から、区間の両端を除いた途中駅だけを表示する。
+                const intermediateStationIds = getRideSegments(leg.fromStationId, leg.lineId, leg.toStationId)
+                    .filter((segment) => segment.toStationId === leg.toStationId)
+                    .flatMap((segment) => segment.rideSteps.slice(0, -1).map((step) => step.toStationId));
 
                 return (
                     <div key={`${leg.lineId}:${leg.fromStationId}:${leg.toStationId}`}>
@@ -104,6 +109,24 @@ function RouteFlow({ route }: { route: RouteResult }) {
                             <span className={styles.lineRail} />
                             <div className={styles.lineDetails}>
                                 <LineBadge lineId={leg.lineId} />
+                                {intermediateStationIds.length > 0 ? (
+                                    <Accordion variant="unstyled" className={styles.intermediateStations}>
+                                        <Accordion.Item value="stations">
+                                            <Accordion.Control className={styles.stationCount}>
+                                                {intermediateStationIds.length}駅
+                                            </Accordion.Control>
+                                            <Accordion.Panel
+                                                classNames={{ content: styles.intermediateStationContent }}
+                                            >
+                                                <ol className={styles.intermediateStationList}>
+                                                    {intermediateStationIds.map((stationId) => (
+                                                        <li key={stationId}>{STATION_NAMES[stationId]}</li>
+                                                    ))}
+                                                </ol>
+                                            </Accordion.Panel>
+                                        </Accordion.Item>
+                                    </Accordion>
+                                ) : null}
                             </div>
                         </div>
                         <div className={styles.stationRow}>

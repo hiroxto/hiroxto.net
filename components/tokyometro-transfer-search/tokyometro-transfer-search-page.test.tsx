@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RouteResult } from '@/lib/tokyometro-core/types';
@@ -98,6 +98,58 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('TokyoMetroTransferSearchPage', () => {
+    it.each([
+        { from: 'asakusa', to: 'ueno', names: ['田原町', '稲荷町'] },
+        { from: 'ueno', to: 'asakusa', names: ['稲荷町', '田原町'] },
+    ] as const)('途中駅を乗車順で表示し、駅数ボタンで開閉する（$from → $to）', async ({ from, to, names }) => {
+        workerRoute = {
+            ...inarichoToIriyaRoute,
+            legs: [{ fromStationId: from, toStationId: to, lineId: 'ginza', distanceTenths: 22 }],
+            transfers: [],
+        };
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom={from}
+                initialTo={to}
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                initialDurationLimitMs={5000}
+                queryError={null}
+            />,
+        );
+        const button = await screen.findByRole('button', { name: '2駅' });
+        expect(button).toHaveAttribute('aria-expanded', 'false');
+        await user.click(button);
+        const panel = await screen.findByRole('region', { name: '2駅' });
+        expect(
+            within(panel)
+                .getAllByRole('listitem')
+                .map((item) => item.textContent),
+        ).toEqual(names);
+        expect(panel).toBeVisible();
+        await user.click(button);
+        expect(button).toHaveAttribute('aria-expanded', 'false');
+        await waitFor(() => expect(screen.queryByRole('region', { name: '2駅' })).not.toBeInTheDocument());
+    });
+
+    it('全区間が隣接駅間の場合は途中駅のボタンを表示しない', async () => {
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                initialDurationLimitMs={5000}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        expect(screen.queryByRole('button', { name: /^\d+駅$/ })).not.toBeInTheDocument();
+    });
+
     it.each(['', '0', '-1', '1.5'])('探索時間が「%s」の場合は入力エラーを表示して検索しない', async (value) => {
         const user = userEvent.setup();
         renderWithMantine(
