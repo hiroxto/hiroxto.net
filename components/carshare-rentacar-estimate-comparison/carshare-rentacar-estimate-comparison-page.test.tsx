@@ -98,4 +98,49 @@ describe('CarshareRentacarEstimateComparisonPage', () => {
             ),
         ).toBeInTheDocument();
     });
+    it('最安が同額なら両方に表示し、一方を削除して計算済みが1件になると最安表示を消す', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <CarshareRentacarEstimateComparisonPage />
+            </MantineProvider>,
+        );
+        await user.type(screen.getByLabelText('走行距離(km)'), '50');
+        await user.click(screen.getByRole('button', { name: 'トヨタシェアを追加' }));
+        await user.click(screen.getByRole('button', { name: 'トヨタシェアを追加' }));
+        expect(screen.getAllByText('入力済みで最安（同額）')).toHaveLength(2);
+        await user.click(screen.getByRole('button', { name: 'トヨタシェア 1を削除' }));
+        expect(screen.queryByText(/入力済みで最安/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/最安との差額/)).not.toBeInTheDocument();
+        expect(screen.getByText('6,740円')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'トヨタシェア 2を削除' }));
+        expect(
+            screen.getByText('比較したいサービスを追加してください。1つだけでも概算を確認できます。'),
+        ).toBeInTheDocument();
+    });
+
+    it('共通のガソリン単価を空欄にするとレンタカーだけを未計算にし、再入力で料金を復元する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <CarshareRentacarEstimateComparisonPage />
+            </MantineProvider>,
+        );
+        await user.type(screen.getByLabelText('走行距離(km)'), '50');
+        await user.type(screen.getByLabelText('ガソリン単価(円/L)'), '180');
+        await user.type(screen.getByLabelText('燃費(km/L)'), '15');
+        await user.click(screen.getByRole('button', { name: 'レンタカーを追加' }));
+        await user.click(screen.getByRole('button', { name: 'トヨタシェアを追加' }));
+        await user.type(screen.getByLabelText('レンタカー利用料金(円)'), '6000');
+        const rental = within(screen.getByRole('region', { name: 'レンタカー 1' }));
+        const toyota = within(screen.getByRole('region', { name: 'トヨタシェア 1' }));
+        expect(rental.getByText('6,600円')).toBeInTheDocument();
+        await user.clear(screen.getByLabelText('ガソリン単価(円/L)'));
+        expect(rental.getByText('必要な項目を入力すると表示します。')).toBeInTheDocument();
+        expect(toyota.getByText('6,740円')).toBeInTheDocument();
+        expect(screen.queryByText(/入力済みで最安/)).not.toBeInTheDocument();
+        await user.type(screen.getByLabelText('ガソリン単価(円/L)'), '180');
+        expect(rental.getByText('6,600円')).toBeInTheDocument();
+        expect(toyota.getByText('最安との差額 140円')).toBeInTheDocument();
+    });
 });
