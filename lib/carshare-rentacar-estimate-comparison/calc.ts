@@ -1,8 +1,8 @@
 import type {
     CarShareDistanceChargeMode,
+    CarshareRentacarEstimateComparisonInput,
+    CarshareRentacarEstimateComparisonResult,
     CheaperService,
-    TimesCarEstimateComparisonInput,
-    TimesCarEstimateComparisonResult,
 } from './types';
 
 const timesCarDistanceChargePerKm = 20;
@@ -24,7 +24,9 @@ const calcRentalCarGasolineCost = (
     fuelEfficiencyKmPerLiter: number,
 ): number => Math.round((distanceKm / fuelEfficiencyKmPerLiter) * gasolinePricePerLiter);
 
-export const compareTimesCarEstimate = (input: TimesCarEstimateComparisonInput): TimesCarEstimateComparisonResult => {
+export const compareCarshareRentacarEstimate = (
+    input: CarshareRentacarEstimateComparisonInput,
+): CarshareRentacarEstimateComparisonResult => {
     const carShareDistanceCharge = calcCarShareDistanceCharge(input.distanceKm, input.carShareDistanceChargeMode);
     const rentalCarGasolineCost = calcRentalCarGasolineCost(
         input.distanceKm,

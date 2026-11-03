@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import type {
     CarShareDistanceChargeMode,
-    TimesCarEstimateComparisonInput,
-} from '@/lib/times-car-estimate-comparison/types';
+    CarshareRentacarEstimateComparisonInput,
+} from '@/lib/carshare-rentacar-estimate-comparison/types';
 
 const inputNumberSchema = z.union([z.number(), z.string().trim().min(1).transform(Number)]).pipe(z.number());
 
-const timesCarEstimateComparisonInputSchema = z.object({
+const carshareRentacarEstimateComparisonInputSchema = z.object({
     carShareUsageFee: inputNumberSchema.pipe(z.number().nonnegative()),
     rentalCarUsageFee: inputNumberSchema.pipe(z.number().nonnegative()),
     distanceKm: inputNumberSchema.pipe(z.number().nonnegative()),
@@ -15,14 +15,14 @@ const timesCarEstimateComparisonInputSchema = z.object({
     carShareDistanceChargeMode: z.enum(['after20km', 'allDistance']),
 });
 
-type TimesCarEstimateComparisonFormInput = {
-    [Key in Exclude<keyof TimesCarEstimateComparisonInput, 'carShareDistanceChargeMode'>]: string | number;
+type CarshareRentacarEstimateComparisonFormInput = {
+    [Key in Exclude<keyof CarshareRentacarEstimateComparisonInput, 'carShareDistanceChargeMode'>]: string | number;
 } & { carShareDistanceChargeMode: CarShareDistanceChargeMode };
 
 /** 空欄・非有限値・負数・燃費0では結果を表示しない。数値文字列は数値に変換する。 */
-export const parseTimesCarEstimateComparisonInput = (
-    input: TimesCarEstimateComparisonFormInput,
-): TimesCarEstimateComparisonInput | null => {
-    const result = timesCarEstimateComparisonInputSchema.safeParse(input);
+export const parseCarshareRentacarEstimateComparisonInput = (
+    input: CarshareRentacarEstimateComparisonFormInput,
+): CarshareRentacarEstimateComparisonInput | null => {
+    const result = carshareRentacarEstimateComparisonInputSchema.safeParse(input);
     return result.success ? result.data : null;
 };
