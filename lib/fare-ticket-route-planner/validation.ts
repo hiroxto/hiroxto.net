@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { Route } from '@/lib/fare-ticket-route-planner/types';
+import { z } from '@/lib/zod';
 
 interface RouteStationValidationInput {
     index: number;
