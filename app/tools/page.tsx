@@ -56,9 +56,9 @@ const tools = [
         icon: PhoneIcon,
     },
     {
-        href: '/tools/times-car-estimate-comparison',
-        title: 'タイムズカー/タイムズカーレンタル概算比較',
-        description: 'タイムズカーとタイムズカーレンタルの料金を入力値から概算比較するページ。',
+        href: '/tools/carshare-rentacar-estimate-comparison',
+        title: 'カーシェア・レンタカー概算比較',
+        description: '共通の走行条件から各カーシェア・レンタカーの概算料金を比較。',
         icon: CarIcon,
     },
     {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseTimesCarEstimateComparisonInput } from '@/lib/times-car-estimate-comparison/validation';
+import { parseCarshareRentacarEstimateComparisonInput } from '@/lib/carshare-rentacar-estimate-comparison/validation';
 
 const validInput = {
     carShareUsageFee: 1000,
@@ -10,10 +10,10 @@ const validInput = {
     carShareDistanceChargeMode: 'after20km' as const,
 };
 
-describe('parseTimesCarEstimateComparisonInput', () => {
+describe('parseCarshareRentacarEstimateComparisonInput', () => {
     it('数値文字列を数値へ変換して比較用の入力を返す', () => {
         expect(
-            parseTimesCarEstimateComparisonInput({
+            parseCarshareRentacarEstimateComparisonInput({
                 carShareUsageFee: ' 1000 ',
                 rentalCarUsageFee: '2000',
                 distanceKm: '100.5',
@@ -33,7 +33,7 @@ describe('parseTimesCarEstimateComparisonInput', () => {
 
     it('料金・距離・単価が0で燃費が正の場合は受け付ける', () => {
         expect(
-            parseTimesCarEstimateComparisonInput({
+            parseCarshareRentacarEstimateComparisonInput({
                 ...validInput,
                 carShareUsageFee: 0,
                 rentalCarUsageFee: '0',
@@ -70,11 +70,13 @@ describe('parseTimesCarEstimateComparisonInput', () => {
             -1,
             '-0.1',
         ])('不正な値 %s では比較用の入力を返さない', (value) => {
-            expect(parseTimesCarEstimateComparisonInput({ ...validInput, [field]: value })).toBeNull();
+            expect(parseCarshareRentacarEstimateComparisonInput({ ...validInput, [field]: value })).toBeNull();
         });
     });
 
     it.each([0, '0'])('燃費が %s の場合は比較用の入力を返さない', (value) => {
-        expect(parseTimesCarEstimateComparisonInput({ ...validInput, fuelEfficiencyKmPerLiter: value })).toBeNull();
+        expect(
+            parseCarshareRentacarEstimateComparisonInput({ ...validInput, fuelEfficiencyKmPerLiter: value }),
+        ).toBeNull();
     });
 });

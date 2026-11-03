@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { compareTimesCarEstimate } from './calc';
+import { compareCarshareRentacarEstimate } from './calc';
 
-describe('compareTimesCarEstimate', () => {
+describe('compareCarshareRentacarEstimate', () => {
     it('通常利用で20 kmを超えた場合は、超過分の距離料金をカーシェア総額に加える', () => {
         expect(
-            compareTimesCarEstimate({
+            compareCarshareRentacarEstimate({
                 carShareUsageFee: 5000,
                 rentalCarUsageFee: 6000,
                 distanceKm: 50,
@@ -22,7 +22,7 @@ describe('compareTimesCarEstimate', () => {
 
     it('全距離課金では、走行距離全体の距離料金をカーシェア総額に加える', () => {
         expect(
-            compareTimesCarEstimate({
+            compareCarshareRentacarEstimate({
                 carShareUsageFee: 5000,
                 rentalCarUsageFee: 6000,
                 distanceKm: 50,
@@ -40,7 +40,7 @@ describe('compareTimesCarEstimate', () => {
 
     it('ガソリン代に1円未満の端数が出た場合は四捨五入してレンタカー総額を返す', () => {
         expect(
-            compareTimesCarEstimate({
+            compareCarshareRentacarEstimate({
                 carShareUsageFee: 8000,
                 rentalCarUsageFee: 5000,
                 distanceKm: 100,
@@ -56,7 +56,7 @@ describe('compareTimesCarEstimate', () => {
 
     it('両サービスの総額が同じ場合は差額0円と同額判定を返す', () => {
         expect(
-            compareTimesCarEstimate({
+            compareCarshareRentacarEstimate({
                 carShareUsageFee: 3400,
                 rentalCarUsageFee: 4000,
                 distanceKm: 100,
