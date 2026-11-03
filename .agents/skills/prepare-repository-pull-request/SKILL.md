@@ -1,6 +1,6 @@
 ---
 name: prepare-repository-pull-request
-description: hiroxto.net でコミットや PR 作成を伴う作業に着手するとき、コミットを分割するとき、または PR のタイトル・本文を作成・更新するときに使用する。
+description: hiroxto.net でコミットや PR 作成を伴う作業に着手するとき、コミットを分割するとき、PR のタイトル・本文を作成・更新するとき、または PR 作成後の動作確認を進めるときに使用する。
 ---
 
 # コミットと PR の作成
@@ -24,6 +24,10 @@ PR のタイトル・本文の草案や、コミットの分割案だけを求�
 
 - UI を変更した場合はスクリーンショットを添付し、画面サイズとともに「動作確認」へ配置する。必要な画面サイズと操作は [plan-playwright-verification](../plan-playwright-verification/SKILL.md) に従う。
 - 箇条書きに補足を加える場合は、その項目の下にインデントした箇条書きで書く。
+
+## PR 作成後の動作確認を行う
+
+PR 作成後は [plan-playwright-verification](../plan-playwright-verification/SKILL.md) に従い、Preview URL での動作確認の要否を判断し、必要な確認を実行する。結果と未確認事項を PR 本文の「動作確認」に反映する。
 
 ## 作成・更新後の本文を確認する
 
