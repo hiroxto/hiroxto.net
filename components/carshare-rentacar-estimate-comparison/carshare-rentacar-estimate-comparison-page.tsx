@@ -87,7 +87,7 @@ export function CarshareRentacarEstimateComparisonPage() {
         <SiteSubpageFrame
             items={['tools', { label: 'カーシェア・レンタカー概算比較' }]}
             title="カーシェア・レンタカー概算比較"
-            description="走行条件をそろえて、選んだサービスの料金を比較できます。"
+            description="共通の走行条件から各カーシェア・レンタカーの概算料金を比較。"
         >
             <Stack gap="xl">
                 <Paper withBorder p="md" radius="sm" component="section" aria-label="共通の走行条件">

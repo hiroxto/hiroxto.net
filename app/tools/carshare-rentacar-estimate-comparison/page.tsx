@@ -3,7 +3,7 @@ import { CarshareRentacarEstimateComparisonPage } from '@/components/carshare-re
 import { siteOrigin } from '@/lib/metadata/site-origin';
 
 const title = 'カーシェア・レンタカー概算比較';
-const description = 'タイムズカーとタイムズカーレンタルの料金を入力値から概算比較するページ。';
+const description = '共通の走行条件から各カーシェア・レンタカーの概算料金を比較。';
 
 export const metadata: Metadata = {
     title,
