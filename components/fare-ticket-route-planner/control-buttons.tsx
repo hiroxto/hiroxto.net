@@ -2,7 +2,7 @@
 
 import { Button, Grid, Modal, Select } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -17,6 +17,7 @@ import {
     isSameCalendarDate,
 } from '@/components/fare-ticket-route-planner/control-buttons-ui';
 import styles from '@/components/fare-ticket-route-planner/fare-ticket-route-planner.module.css';
+import { MobileActions } from '@/components/fare-ticket-route-planner/mobile-actions';
 import { SoundButton } from '@/components/fare-ticket-route-planner/sound-button';
 import { useInputSettingStore } from '@/components/fare-ticket-route-planner/stores/input-setting-store';
 import { useRouteStateStore } from '@/components/fare-ticket-route-planner/stores/route-state-store';
@@ -143,6 +144,7 @@ function SaveRouteModal({
 }
 
 export function ControlButtons() {
+    const isMobile = useMediaQuery('(max-width: 47.99em)');
     const {
         setMonth,
         setDay,
@@ -256,15 +258,21 @@ export function ControlButtons() {
     return (
         <>
             <Grid columns={12} gap="xs">
-                {baseGrayButtons.map((definition) => (
-                    <GridActionButton key={definition.key} definition={definition} />
-                ))}
+                {baseGrayButtons
+                    .filter((definition) => !isMobile || definition.key !== 'add-route')
+                    .map((definition) => (
+                        <GridActionButton key={definition.key} definition={definition} />
+                    ))}
                 <Grid.Col span={3} />
                 <Grid.Col span={3} />
-                {secondaryButtons.map((definition) => (
-                    <GridActionButton key={definition.key} definition={definition} />
-                ))}
+                {secondaryButtons
+                    .filter((definition) => !isMobile || definition.key !== 'save')
+                    .map((definition) => (
+                        <GridActionButton key={definition.key} definition={definition} />
+                    ))}
             </Grid>
+
+            {isMobile && <MobileActions onAddRoute={() => addRoute(-1)} onSave={saveModalHandlers.open} />}
 
             <CalendarModal
                 modalState={{ opened: isOpenedCalendarModel, onClose: calendarModalHandlers.close }}
