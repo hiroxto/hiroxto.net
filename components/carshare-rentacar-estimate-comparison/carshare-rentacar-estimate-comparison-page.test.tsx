@@ -5,6 +5,60 @@ import { describe, expect, it } from 'vitest';
 import { CarshareRentacarEstimateComparisonPage } from './carshare-rentacar-estimate-comparison-page';
 
 describe('CarshareRentacarEstimateComparisonPage', () => {
+    it.each(['レンタカー', 'タイムズカー', 'トヨタシェア'])(
+        '%sのラベルをクリックして編集し、フォーカスを外すとそのカードだけ変更する',
+        async (service) => {
+            const user = userEvent.setup();
+            render(
+                <MantineProvider env="test">
+                    <CarshareRentacarEstimateComparisonPage />
+                </MantineProvider>,
+            );
+            await user.click(screen.getByRole('button', { name: `${service}を追加` }));
+            await user.click(screen.getByRole('button', { name: `${service}を追加` }));
+            const first = within(screen.getByRole('region', { name: `${service} 1` }));
+            await user.click(first.getByRole('button', { name: `${service} 1のラベルを編集` }));
+            const input = first.getByRole('textbox', { name: 'サービスのラベル' });
+            expect(input).toHaveFocus();
+            expect(input).toHaveValue(`${service} 1`);
+            await user.clear(input);
+            await user.type(input, '新宿駅前店');
+            expect(screen.getByRole('region', { name: `${service} 1` })).toBeInTheDocument();
+            await user.tab();
+            expect(screen.queryByRole('textbox', { name: 'サービスのラベル' })).not.toBeInTheDocument();
+            const renamed = within(screen.getByRole('region', { name: '新宿駅前店' }));
+            expect(renamed.getByRole('heading', { name: '新宿駅前店' })).toBeInTheDocument();
+            expect(screen.getByRole('region', { name: `${service} 2` })).toBeInTheDocument();
+            await user.click(screen.getByRole('button', { name: `${service}を追加` }));
+            expect(screen.getByRole('region', { name: `${service} 3` })).toBeInTheDocument();
+            await user.click(renamed.getByRole('button', { name: '新宿駅前店を削除' }));
+            expect(screen.queryByRole('region', { name: '新宿駅前店' })).not.toBeInTheDocument();
+        },
+    );
+
+    it.each(['', '   '])('ラベルを%jにしてフォーカスを外すと変更前のラベルを維持する', async (value) => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <CarshareRentacarEstimateComparisonPage />
+            </MantineProvider>,
+        );
+        await user.click(screen.getByRole('button', { name: 'レンタカーを追加' }));
+        await user.click(screen.getByRole('button', { name: 'レンタカー 1のラベルを編集' }));
+        const input = screen.getByRole('textbox', { name: 'サービスのラベル' });
+        await user.clear(input);
+        await user.type(input, '東京店');
+        await user.tab();
+        await user.click(screen.getByRole('button', { name: '東京店のラベルを編集' }));
+        const editing = screen.getByRole('textbox', { name: 'サービスのラベル' });
+        await user.clear(editing);
+        if (value) await user.type(editing, value);
+        await user.tab();
+        expect(screen.getByRole('heading', { name: '東京店' })).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: '東京店のラベルを編集' }));
+        expect(screen.getByRole('textbox', { name: 'サービスのラベル' })).toHaveValue('東京店');
+    });
+
     it('タイムズカーを複数追加すると料金と課金方式を個別に入力でき、一方を削除しても他方の入力が残る', async () => {
         const user = userEvent.setup();
         render(

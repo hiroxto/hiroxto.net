@@ -10,6 +10,7 @@ import {
     estimateService,
     type InputValue,
     type ServiceId,
+    serviceDetails,
     services,
 } from '@/lib/carshare-rentacar-estimate-comparison/service-estimate';
 
@@ -34,20 +35,23 @@ export function CarshareRentacarEstimateComparisonPage() {
 
     function addComparison(service: ServiceId) {
         const id = crypto.randomUUID();
-        setSelected((current) => [
-            ...current,
-            {
-                id,
-                service,
-                number:
-                    Math.max(0, ...current.filter((entry) => entry.service === service).map((entry) => entry.number)) +
-                    1,
-                usageFee: '',
-                allDistance: false,
-                toyotaPlan: '12',
-                toyotaHours: '',
-            },
-        ]);
+        setSelected((current) => {
+            const number =
+                Math.max(0, ...current.filter((entry) => entry.service === service).map((entry) => entry.number)) + 1;
+            return [
+                ...current,
+                {
+                    id,
+                    service,
+                    number,
+                    label: `${serviceDetails[service].label} ${number}`,
+                    usageFee: '',
+                    allDistance: false,
+                    toyotaPlan: '12',
+                    toyotaHours: '',
+                },
+            ];
+        });
     }
 
     function updateComparison(id: string, values: ComparisonEntryChanges) {
