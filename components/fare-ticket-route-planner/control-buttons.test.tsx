@@ -82,6 +82,33 @@ describe('ControlButtons', () => {
         await user.click(screen.getByRole('button', { name: '経路追加' }));
         expect(screen.getByRole('button', { name: 'やり直す' })).toBeDisabled();
     });
+
+    test('欄の値を元に戻すとUndoは無効で、続けた入力と以前の編集を順に戻せる', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <Setting />
+                <Note />
+                <ControlButtons />
+            </MantineProvider>,
+        );
+        const departure = screen.getByPlaceholderText('発駅');
+        await user.type(departure, '上');
+        await user.clear(departure);
+        await user.tab();
+        expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
+        await user.type(screen.getByPlaceholderText('備考'), '備考');
+        await user.type(departure, '上');
+        await user.clear(departure);
+        await user.type(departure, '東京');
+        await user.click(screen.getByRole('button', { name: '元に戻す' }));
+        expect(departure).toHaveValue('');
+        await user.click(screen.getByRole('button', { name: '元に戻す' }));
+        expect(screen.getByPlaceholderText('備考')).toHaveValue('');
+        expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
+        await user.click(screen.getByRole('button', { name: 'やり直す' }));
+        expect(screen.getByPlaceholderText('備考')).toHaveValue('備考');
+    });
     test('接続駅入力による行の自動追加も連続入力と一緒に戻せる', async () => {
         const user = userEvent.setup();
         render(

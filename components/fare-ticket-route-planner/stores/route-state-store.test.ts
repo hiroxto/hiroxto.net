@@ -219,4 +219,18 @@ describe('経路編集の履歴', () => {
         expect(store().past).toEqual([]);
         expect(store().future).toEqual([]);
     });
+    test('開始値に戻して欄を離れた編集を除き、以前の操作を一度で戻せる', () => {
+        const store = useRouteStateStore.getState;
+        store().setNotes('備考');
+        store().finishEditing();
+        store().setDeparture('上');
+        store().setDeparture('');
+        store().finishEditing();
+        expect(store().past).toHaveLength(1);
+        store().undo();
+        expect(store().notes).toBe('');
+        expect(store().past).toHaveLength(0);
+        store().redo();
+        expect(store().notes).toBe('備考');
+    });
 });
