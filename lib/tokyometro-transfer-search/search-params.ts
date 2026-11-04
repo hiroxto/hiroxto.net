@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import type { StationId } from '@/lib/tokyometro-core/data';
 import { isSameStation, stationIdSchema } from '@/lib/tokyometro-core/stations';
+import { z } from '@/lib/zod';
 import { allOutsideTransferIds, outsideTransferIdsSchema } from './outside-transfers';
 import { SEARCH_DURATION_LIMIT_MS } from './search';
 import { maximumOutsideTransferCountSchema, searchFormDurationSchema } from './validation';

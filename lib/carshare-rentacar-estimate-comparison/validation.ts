@@ -1,8 +1,8 @@
-import { z } from 'zod';
 import type {
     CarShareDistanceChargeMode,
     CarshareRentacarEstimateComparisonInput,
 } from '@/lib/carshare-rentacar-estimate-comparison/types';
+import { z } from '@/lib/zod';
 
 const inputNumberSchema = z.union([z.number(), z.string().trim().min(1).transform(Number)]).pipe(z.number());
 
