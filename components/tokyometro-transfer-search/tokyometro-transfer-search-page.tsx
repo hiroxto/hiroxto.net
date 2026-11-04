@@ -46,9 +46,12 @@ interface TokyoMetroTransferSearchPageProps {
     initialMaximumOutsideTransferCount: number | null;
     initialIncludeInsideTransfers: boolean;
     initialOutsideTransferIds: StationId[];
+    initialRequiredOutsideTransferIds?: StationId[];
     initialDurationLimitMs: number;
     queryError: string | null;
 }
+
+const noRequiredOutsideTransferIds: StationId[] = [];
 
 const stationOptions = stations.map((station) => ({
     value: station.id,
@@ -235,6 +238,7 @@ export function TokyoMetroTransferSearchPage({
     initialMaximumOutsideTransferCount,
     initialIncludeInsideTransfers,
     initialOutsideTransferIds,
+    initialRequiredOutsideTransferIds = noRequiredOutsideTransferIds,
     initialDurationLimitMs,
     queryError,
 }: TokyoMetroTransferSearchPageProps) {
@@ -246,6 +250,7 @@ export function TokyoMetroTransferSearchPage({
         initialMaximumOutsideTransferCount,
     );
     const [outsideTransferIds, setOutsideTransferIds] = useState(initialOutsideTransferIds);
+    const [requiredOutsideTransferIds, setRequiredOutsideTransferIds] = useState(initialRequiredOutsideTransferIds);
     const [formError, setFormError] = useState<string | null>(null);
     const [includeInsideTransfers, setIncludeInsideTransfers] = useState(initialIncludeInsideTransfers);
     const [searchError, setSearchError] = useState<string | null>(null);
@@ -263,6 +268,7 @@ export function TokyoMetroTransferSearchPage({
         setMaximumOutsideTransferCount(initialMaximumOutsideTransferCount);
         setIncludeInsideTransfers(initialIncludeInsideTransfers);
         setOutsideTransferIds(initialOutsideTransferIds);
+        setRequiredOutsideTransferIds(initialRequiredOutsideTransferIds);
         setFormError(null);
     }, [
         initialFrom,
@@ -270,6 +276,7 @@ export function TokyoMetroTransferSearchPage({
         initialMaximumOutsideTransferCount,
         initialIncludeInsideTransfers,
         initialOutsideTransferIds,
+        initialRequiredOutsideTransferIds,
         initialDurationLimitMs,
     ]);
 
@@ -292,6 +299,7 @@ export function TokyoMetroTransferSearchPage({
             maximumOutsideTransferCount: initialMaximumOutsideTransferCount,
             includeInsideTransfers: initialIncludeInsideTransfers,
             outsideTransferIds: initialOutsideTransferIds,
+            requiredOutsideTransferIds: initialRequiredOutsideTransferIds,
             durationLimitMs: initialDurationLimitMs,
         };
 
@@ -328,6 +336,7 @@ export function TokyoMetroTransferSearchPage({
         initialMaximumOutsideTransferCount,
         initialIncludeInsideTransfers,
         initialOutsideTransferIds,
+        initialRequiredOutsideTransferIds,
         initialDurationLimitMs,
         searchAttempt,
     ]);
@@ -342,6 +351,8 @@ export function TokyoMetroTransferSearchPage({
             durationLimitMs: submittedDurationLimitMs,
             stations: { fromStationId, toStationId },
             outsideTransferIds,
+            requiredOutsideTransferIds,
+            maximumOutsideTransferCount,
         });
         if (formResult.error != null) {
             setFormError(formResult.error);
@@ -356,7 +367,9 @@ export function TokyoMetroTransferSearchPage({
             maximumOutsideTransferCount === initialMaximumOutsideTransferCount &&
             includeInsideTransfers === initialIncludeInsideTransfers &&
             outsideTransferIds.length === initialOutsideTransferIds.length &&
-            outsideTransferIds.every((id) => initialOutsideTransferIds.includes(id))
+            outsideTransferIds.every((id) => initialOutsideTransferIds.includes(id)) &&
+            requiredOutsideTransferIds.length === initialRequiredOutsideTransferIds.length &&
+            requiredOutsideTransferIds.every((id) => initialRequiredOutsideTransferIds.includes(id))
         ) {
             setSearchAttempt((attempt) => attempt + 1);
             return;
@@ -383,6 +396,13 @@ export function TokyoMetroTransferSearchPage({
             query.set(
                 'outsideTransfers',
                 allOutsideTransferIds.filter((id) => outsideTransferIds.includes(id)).join(','),
+            );
+        }
+
+        if (requiredOutsideTransferIds.length > 0) {
+            query.set(
+                'requiredOutsideTransfers',
+                allOutsideTransferIds.filter((id) => requiredOutsideTransferIds.includes(id)).join(','),
             );
         }
 
@@ -539,6 +559,27 @@ export function TokyoMetroTransferSearchPage({
                                                     {areAllOutsideTransfersSelected ? '全解除' : '全選択'}
                                                 </Button>
                                             </Group>
+                                            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm" mt="sm">
+                                                {outsideTransferOptions.map((option) => (
+                                                    <Checkbox
+                                                        key={option.value}
+                                                        value={option.value}
+                                                        label={option.label}
+                                                    />
+                                                ))}
+                                            </SimpleGrid>
+                                        </Checkbox.Group>
+                                        <Checkbox.Group
+                                            label="必須の改札外乗換駅"
+                                            description="選択した全地点で改札外乗換する経路を検索します。通過や改札内乗換は含みません。利用する駅にも選択し、最大回数は必須駅の数以上にしてください。"
+                                            value={requiredOutsideTransferIds}
+                                            onChange={(values) =>
+                                                setRequiredOutsideTransferIds(
+                                                    allOutsideTransferIds.filter((id) => values.includes(id)),
+                                                )
+                                            }
+                                            mt="lg"
+                                        >
                                             <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm" mt="sm">
                                                 {outsideTransferOptions.map((option) => (
                                                     <Checkbox

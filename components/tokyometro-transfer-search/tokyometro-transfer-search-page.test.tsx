@@ -98,6 +98,69 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('TokyoMetroTransferSearchPage', () => {
+    it('必須地点の編集をURLへ保存し、復元した条件でWorkerを再検索する', async () => {
+        const user = userEvent.setup();
+        const props = {
+            initialFrom: 'inaricho' as const,
+            initialTo: 'iriya' as const,
+            initialMaximumOutsideTransferCount: 1,
+            initialIncludeInsideTransfers: true,
+            initialOutsideTransferIds: allOutsideTransferIds,
+            initialDurationLimitMs: 5000,
+            queryError: null,
+        };
+        const { rerender } = renderWithMantine(<TokyoMetroTransferSearchPage {...props} />);
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        const required = within(await screen.findByRole('group', { name: '必須の改札外乗換駅' }));
+        await user.click(required.getByRole('checkbox', { name: '上野' }));
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(pushMock).toHaveBeenCalledWith(
+            '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1&requiredOutsideTransfers=ueno',
+        );
+        workerRouteForRequest = (request) =>
+            request.requiredOutsideTransferIds?.includes('ueno')
+                ? { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } }
+                : inarichoToIriyaRoute;
+        rerender(<TokyoMetroTransferSearchPage {...props} initialRequiredOutsideTransferIds={['ueno']} />);
+        expect(await screen.findByText('209円')).toBeInTheDocument();
+        expect(required.getByRole('checkbox', { name: '上野' })).toBeChecked();
+        pushMock.mockClear();
+        await user.click(required.getByRole('checkbox', { name: '上野' }));
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(pushMock).toHaveBeenCalledWith(
+            '/tools/tokyometro-transfer-search?from=inaricho&to=iriya&maxOutsideTransfers=1',
+        );
+    });
+
+    it('必須地点の利用許可を外すと修正方法を表示して検索しない', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(
+            <TokyoMetroTransferSearchPage
+                initialFrom="inaricho"
+                initialTo="iriya"
+                initialMaximumOutsideTransferCount={1}
+                initialIncludeInsideTransfers={true}
+                initialOutsideTransferIds={allOutsideTransferIds}
+                initialRequiredOutsideTransferIds={['ueno']}
+                initialDurationLimitMs={5000}
+                queryError={null}
+            />,
+        );
+        await screen.findByRole('heading', { name: '検索結果' });
+        await user.click(screen.getByRole('button', { name: '詳細指定' }));
+        await user.click(
+            within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getByRole('checkbox', {
+                name: '上野',
+            }),
+        );
+        await user.click(screen.getByRole('button', { name: '検索' }));
+        expect(
+            screen.getByText('必須の改札外乗換駅は「利用する改札外乗換駅」でも選択してください'),
+        ).toBeInTheDocument();
+        expect(pushMock).not.toHaveBeenCalled();
+    });
+
     it.each([
         { from: 'asakusa', to: 'ueno', names: ['田原町', '稲荷町'] },
         { from: 'ueno', to: 'asakusa', names: ['稲荷町', '田原町'] },
@@ -249,8 +312,17 @@ describe('TokyoMetroTransferSearchPage', () => {
         );
         expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
-        expect(await screen.findAllByRole('checkbox')).toHaveLength(14);
-        for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).toBeChecked();
+        expect(
+            await within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).findAllByRole('checkbox'),
+        ).toHaveLength(14);
+        for (const checkbox of within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getAllByRole(
+            'checkbox',
+        ))
+            expect(checkbox).toBeChecked();
+        for (const checkbox of within(screen.getByRole('group', { name: '必須の改札外乗換駅' })).getAllByRole(
+            'checkbox',
+        ))
+            expect(checkbox).not.toBeChecked();
     });
 
     it('一括操作ボタンは全解除と全選択を切り替え、検索までは条件を適用しない', async () => {
@@ -270,19 +342,33 @@ describe('TokyoMetroTransferSearchPage', () => {
         workerRoute = { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } };
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
         await user.click(await screen.findByRole('button', { name: '全解除' }));
-        for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).not.toBeChecked();
+        for (const checkbox of within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getAllByRole(
+            'checkbox',
+        ))
+            expect(checkbox).not.toBeChecked();
         expect(screen.queryByRole('button', { name: '全解除' })).not.toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(screen.getByText('利用する改札外乗換駅を1つ以上選択してください')).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '全選択' }));
-        for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).toBeChecked();
+        for (const checkbox of within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getAllByRole(
+            'checkbox',
+        ))
+            expect(checkbox).toBeChecked();
         expect(screen.getByRole('button', { name: '全解除' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: '全選択' })).not.toBeInTheDocument();
         expect(pushMock).not.toHaveBeenCalled();
         expect(screen.getByText('178円')).toBeInTheDocument();
-        await user.click(screen.getByRole('checkbox', { name: '上野' }));
+        await user.click(
+            within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getByRole('checkbox', {
+                name: '上野',
+            }),
+        );
         await user.click(screen.getByRole('button', { name: '全選択' }));
-        expect(screen.getByRole('checkbox', { name: '上野' })).toBeChecked();
+        expect(
+            within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getByRole('checkbox', {
+                name: '上野',
+            }),
+        ).toBeChecked();
         expect(screen.getByRole('button', { name: '全解除' })).toBeInTheDocument();
     });
 
@@ -302,9 +388,21 @@ describe('TokyoMetroTransferSearchPage', () => {
         await screen.findByRole('heading', { name: '検索結果' });
         workerRoute = { ...inarichoToIriyaRoute, fare: { ic: 209, ticket: 210 } };
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
-        expect(await screen.findByRole('checkbox', { name: '上野' })).toBeChecked();
-        expect(screen.getByRole('checkbox', { name: '日比谷 / 有楽町' })).not.toBeChecked();
-        await user.click(screen.getByRole('checkbox', { name: '日比谷 / 有楽町' }));
+        expect(
+            await within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).findByRole('checkbox', {
+                name: '上野',
+            }),
+        ).toBeChecked();
+        expect(
+            within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getByRole('checkbox', {
+                name: '日比谷 / 有楽町',
+            }),
+        ).not.toBeChecked();
+        await user.click(
+            within(await screen.findByRole('group', { name: '利用する改札外乗換駅' })).getByRole('checkbox', {
+                name: '日比谷 / 有楽町',
+            }),
+        );
         expect(pushMock).not.toHaveBeenCalled();
         expect(screen.getByText('178円')).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
@@ -351,7 +449,10 @@ describe('TokyoMetroTransferSearchPage', () => {
             />,
         );
         await user.click(screen.getByRole('button', { name: '詳細指定' }));
-        for (const checkbox of await screen.findAllByRole('checkbox')) await user.click(checkbox);
+        for (const checkbox of await within(
+            await screen.findByRole('group', { name: '利用する改札外乗換駅' }),
+        ).findAllByRole('checkbox'))
+            await user.click(checkbox);
         await user.click(screen.getByRole('button', { name: '検索' }));
         expect(screen.getByText('利用する改札外乗換駅を1つ以上選択してください')).toBeInTheDocument();
         expect(pushMock).not.toHaveBeenCalled();

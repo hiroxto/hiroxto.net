@@ -12,6 +12,8 @@
  * 同駅の乗換は駅単位、異駅名の乗換は接続単位で選択する。IDは接続定義の先頭駅とし、両方向に適用する。
  * 選択した全地点を使うことは必須ではない。未選択地点での改札外乗換だけを除外し、
  * その駅の通過や、includeInsideTransfersがtrueの場合の改札内乗換は認める。
+ * requiredOutsideTransferIdsで全て実際に改札外乗換する地点を指定する。既定は空配列。通過・改札内乗換は充足としない。
+ * 必須地点は利用許可の部分集合で、指定した最大回数以内でなければエラーにする。異駅名接続は両方向に適用する。
  * 距離はすべて0.1km単位の整数で扱い、徒歩乗換の距離は加算しない。
  *
  * 1. 共通路線網・区間列挙（lib/tokyometro-core）を使い、探索用の集合を作る。
@@ -20,10 +22,11 @@
  *    こちらはnumberのビット演算を使うため、地点数を30以下に制限する。
  * 2. 選択した改札外乗換地点から、発着駅を含む地点を除外する。さらに、反対側の端点を通らずに
  *    発駅・着駅の双方から到達できる地点だけを残し、探索回数の上限を求める。
+ *    必須地点がこの集合に含まれなければ、経路なしの確定結果を返す。
  *    この到達判定は路線を区別しない必要条件であり、経路の存在を保証しない。
  *    探索回数の上限は、残った地点数とmaximumOutsideTransferCountの小さい方。回数未指定なら地点数を使う。
  * 3. 改札外乗換1回から上限まで順に候補を探す。各回数について、その個数の
- *    改札外乗換地点の組合せを列挙し、組合せに含む地点をすべて使う経路を深さ優先で探索する。
+ *    改札外乗換地点の組合せのうち指定された必須地点を全て含むものを列挙し、組合せに含む地点をすべて使う経路を深さ優先で探索する。
  *    同一路線で乗り続ける区間は、乗換駅または着駅までをMacroSegmentにまとめて扱う。
  *    区間は生成時に実乗車距離・終点駅ID順で整列し、未使用の必須地点を含む区間から走査する。
  *    駅の再訪、必須地点の通過による乗換機会の喪失、残りの必須駅への到達不能を除外する。
@@ -66,10 +69,11 @@ import { graph, stationIds, stationLineIds } from '@/lib/tokyometro-core/network
 import { getRideSegments, getTransfers, type RideSegment } from '@/lib/tokyometro-core/routing';
 import { isSameStation } from '@/lib/tokyometro-core/stations';
 import type { RouteLeg, RouteResult, TransferStep, TraversalStep } from '@/lib/tokyometro-core/types';
-import { allOutsideTransferIds, outsideTransferIdsSchema } from '@/lib/tokyometro-transfer-search/outside-transfers';
+import { allOutsideTransferIds } from '@/lib/tokyometro-transfer-search/outside-transfers';
 import {
     MAX_OUTSIDE_TRANSFER_COUNT,
     maximumOutsideTransferCountSchema,
+    outsideTransferConditionsSchema,
     searchBudgetSchema,
 } from '@/lib/tokyometro-transfer-search/validation';
 
@@ -469,6 +473,8 @@ const DISCOVERY_VISIT_LIMIT = 125_000;
 export type RouteSearchOptions = {
     /** 利用可能な改札外乗換のID。未指定は全地点、空配列・不正なIDはエラー。全選択地点の使用は必須ではない。 */
     outsideTransferIds?: readonly StationId[];
+    /** 全て実際に改札外乗換する地点。既定は空配列。利用許可・最大回数との矛盾はエラー。 */
+    requiredOutsideTransferIds?: readonly StationId[];
     /** 改札内乗換を候補に含めるか。既定はtrue。運賃計算には影響しない。 */
     includeInsideTransfers?: boolean;
     /** 検索全体で許可する訪問数。 */
@@ -484,8 +490,8 @@ export const isValidMaximumOutsideTransferCount = (value: number): boolean =>
 /**
  * 発着駅と改札外乗換回数の上限から、発見できた最大回数の経路を最大20件返す。
  * maximumOutsideTransferCountがnullなら、利用可能な改札外乗換地点数を上限にする。
- * optionsで改札外乗換地点の選択、改札内乗換の利用可否、探索予算を指定する。
- * 回数上限・予算・改札外乗換IDが不正、またはIDが空配列ならエラーにする。
+ * optionsで改札外乗換地点の利用許可と必須指定、改札内乗換の利用可否、探索予算を指定する。
+ * 回数上限・予算・改札外乗換IDが不正、利用許可が空、必須指定が利用許可や最大回数と矛盾する場合はエラーにする。
  * 上記の入力検証後、発着駅が同じ場合は探索せず、経路なしの確定結果を返す。
  * 探索打ち切り時の候補・最大回数・順位の確定状況はRouteSearchResultを参照する。
  */
@@ -500,7 +506,11 @@ export const searchRoutes = (
     }
 
     const outsideTransferIds = options.outsideTransferIds ?? allOutsideTransferIds;
-    const outsideTransferValidation = outsideTransferIdsSchema.safeParse(outsideTransferIds);
+    const outsideTransferValidation = outsideTransferConditionsSchema.safeParse({
+        outsideTransferIds,
+        requiredOutsideTransferIds: options.requiredOutsideTransferIds,
+        maximumOutsideTransferCount,
+    });
     if (!outsideTransferValidation.success) {
         throw new Error(outsideTransferValidation.error.issues[0].message);
     }
@@ -508,6 +518,12 @@ export const searchRoutes = (
     const selectedOutsideMask = outsideOpportunities.reduce(
         (mask, opportunity, index) =>
             selectedOutsideTransferIds.has(opportunity.stationIds[0]) ? mask | (1 << index) : mask,
+        0,
+    );
+
+    const requestedOutsideIds = new Set(outsideTransferValidation.data.requiredOutsideTransferIds);
+    const requestedOutsideMask = outsideOpportunities.reduce(
+        (mask, opportunity, index) => (requestedOutsideIds.has(opportunity.stationIds[0]) ? mask | (1 << index) : mask),
         0,
     );
 
@@ -539,6 +555,10 @@ export const searchRoutes = (
         selectedOutsideMask &
         getOutsideOpportunityMaskBetweenEndpoints(originStationId, destinationStationId) &
         ~unavailableOutsideMask;
+    // 発着駅や到達条件により必須地点が利用できなければ、探索せず不存在を確定できる。
+    if ((availableOutsideMask & requestedOutsideMask) !== requestedOutsideMask) {
+        return { routes: [], truncated: false, outsideTransferUpperBound: 0 };
+    }
     // 利用可能な改札外乗換地点の数。
     const availableOutsideCount = countBits(availableOutsideMask);
     // 利用可能な地点数と利用者の指定上限の小さい方。
@@ -585,7 +605,10 @@ export const searchRoutes = (
                 requiredOutsideMask > 0;
                 requiredOutsideMask = (requiredOutsideMask - 1) & availableOutsideMask
             ) {
-                if (countBits(requiredOutsideMask) !== targetOutsideCount) {
+                if (
+                    countBits(requiredOutsideMask) !== targetOutsideCount ||
+                    (requiredOutsideMask & requestedOutsideMask) !== requestedOutsideMask
+                ) {
                     continue;
                 }
 
