@@ -19,6 +19,7 @@ import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRi
 import { useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { RouteRow } from '@/components/tokyometro-transfer-route-planner/route-row';
+import { createHistory, type EditHistory, recordEdit, redoEdit, undoEdit } from '@/lib/edit-history/history';
 import { LINE_DEFINITIONS, STATION_NAMES, STATION_READINGS, type StationId } from '@/lib/tokyometro-core/data';
 import { formatDistance } from '@/lib/tokyometro-core/format';
 import { stationIdSchema, stations } from '@/lib/tokyometro-core/stations';
@@ -121,7 +122,9 @@ function DebugDetails({ result }: { result: RouteResult }) {
 }
 
 export function TokyoMetroTransferRoutePlannerPage() {
-    const [state, setState] = useState(createPlannerState);
+    // 確定した発着・経路をまとめて記録する。検索文字・表示設定・未承認の変更は履歴に含めない。
+    const [history, setHistory] = useState(() => createHistory(createPlannerState()));
+    const state = history.present;
     const [hideUnavailableStations, setHideUnavailableStations] = useState(true);
     const [searches, setSearches] = useState({ fromStationId: '', toStationId: '' });
     const [confirmReverse, setConfirmReverse] = useState(false);
@@ -135,7 +138,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
         (!lastRow || (lastRow.stationId != null && lastRow.stationId !== state.toStationId));
     const stationError = state.fromStationId && state.toStationId ? getPlannerStationError(state) : null;
     function apply(action: PlannerAction) {
-        setState((previous) => updatePlanner(previous, action));
+        setHistory((previous) => recordEdit(previous, updatePlanner(previous.present, action)));
     }
     function changeEndpoint(field: 'fromStationId' | 'toStationId', value: string | null) {
         const parsed = stationIdSchema.safeParse(value);
@@ -156,11 +159,20 @@ export function TokyoMetroTransferRoutePlannerPage() {
     }
     function cancelStationChange() {
         setPendingStations(null);
-        replaceState(state);
+        syncSearches(state);
+    }
+    function syncSearches(next: PlannerState) {
+        setSearches({ fromStationId: stationLabel(next.fromStationId), toStationId: stationLabel(next.toStationId) });
     }
     function replaceState(next: PlannerState) {
-        setState(next);
-        setSearches({ fromStationId: stationLabel(next.fromStationId), toStationId: stationLabel(next.toStationId) });
+        setHistory((previous) => recordEdit(previous, next));
+        syncSearches(next);
+    }
+    function restoreHistory(next: EditHistory<PlannerState>) {
+        setHistory(next);
+        syncSearches(next.present);
+        setPendingStations(null);
+        setConfirmReverse(false);
     }
     function reverse() {
         const next = reversePlanner(state);
@@ -204,6 +216,22 @@ export function TokyoMetroTransferRoutePlannerPage() {
                             ))}
                         </SimpleGrid>
                         <Group justify="flex-end">
+                            <Button
+                                variant="default"
+                                radius="sm"
+                                disabled={history.past.length === 0}
+                                onClick={() => restoreHistory(undoEdit(history))}
+                            >
+                                元に戻す
+                            </Button>
+                            <Button
+                                variant="default"
+                                radius="sm"
+                                disabled={history.future.length === 0}
+                                onClick={() => restoreHistory(redoEdit(history))}
+                            >
+                                やり直す
+                            </Button>
                             <Button
                                 variant="light"
                                 radius="sm"

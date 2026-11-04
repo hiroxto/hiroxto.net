@@ -144,24 +144,28 @@ function SaveRouteModal({
 
 export function ControlButtons() {
     const {
-        setMonth,
-        setDay,
+        setCalendarDate,
+        clearSetting,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
         setDateWithIndex,
-        enableDateOption,
         reverse,
-        resetStations,
         addRoute,
         deleteEmptyRoutes,
         deleteAllRoutes,
         resetNotes,
     } = useRouteStateStore(
         useShallow((state) => ({
-            setMonth: state.setMonth,
-            setDay: state.setDay,
+            setCalendarDate: state.setCalendarDate,
+            clearSetting: state.clearSetting,
+            undo: state.undo,
+            redo: state.redo,
+            canUndo: state.past.length > 0,
+            canRedo: state.future.length > 0,
             setDateWithIndex: state.setDateWithIndex,
-            enableDateOption: state.useDate,
             reverse: state.reverse,
-            resetStations: state.resetStations,
             addRoute: state.addRoute,
             deleteEmptyRoutes: state.deleteEmptyRoutes,
             deleteAllRoutes: state.deleteAllRoutes,
@@ -204,10 +208,7 @@ export function ControlButtons() {
     });
 
     const handleClearSetting = () => {
-        clearSettingModal.openModal(() => {
-            enableDateOption();
-            resetStations();
-        });
+        clearSettingModal.openModal(clearSetting);
     };
 
     const handleClearAllRoutes = () => clearAllRoutesModal.openModal(deleteAllRoutes);
@@ -228,8 +229,7 @@ export function ControlButtons() {
     const handleCalendarChange = (newValue: string | Date | null) => {
         const newValueDate = newValue == null ? null : new Date(newValue);
         if (calendarValue != null && newValueDate != null && isSameCalendarDate(calendarValue, newValueDate)) {
-            setMonth(String(newValueDate.getMonth() + 1));
-            setDay(String(newValueDate.getDate()));
+            setCalendarDate(String(newValueDate.getMonth() + 1), String(newValueDate.getDate()));
             calendarModalHandlers.close();
         }
 
@@ -256,6 +256,16 @@ export function ControlButtons() {
     return (
         <>
             <Grid columns={12} gap="xs">
+                <Grid.Col span={6}>
+                    <Button fullWidth radius="sm" variant="default" disabled={!canUndo} onClick={undo}>
+                        元に戻す
+                    </Button>
+                </Grid.Col>
+                <Grid.Col span={6}>
+                    <Button fullWidth radius="sm" variant="default" disabled={!canRedo} onClick={redo}>
+                        やり直す
+                    </Button>
+                </Grid.Col>
                 {baseGrayButtons.map((definition) => (
                     <GridActionButton key={definition.key} definition={definition} />
                 ))}
