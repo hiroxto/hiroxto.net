@@ -1,10 +1,109 @@
 import { MantineProvider } from '@mantine/core';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { CarshareRentacarEstimateComparisonPage } from './carshare-rentacar-estimate-comparison-page';
 
+import { useSavedComparisonStore } from './stores/saved-comparison-store';
+
 describe('CarshareRentacarEstimateComparisonPage', () => {
+    beforeEach(() => {
+        useSavedComparisonStore.setState({ comparisons: [] });
+    });
+    it('新規保存・上書き後に一覧から入力と料金を復元し、削除は確認後に実行する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <CarshareRentacarEstimateComparisonPage />
+            </MantineProvider>,
+        );
+        await user.type(screen.getByLabelText('走行距離(km)'), '50');
+        await user.click(screen.getByRole('button', { name: 'タイムズカーを追加' }));
+        await user.type(screen.getByLabelText('カーシェア利用料金(円)'), '5000');
+        await user.click(screen.getByRole('button', { name: '比較条件を保存' }));
+        await user.click(screen.getByRole('button', { name: '新規保存' }));
+        await user.clear(screen.getByLabelText('走行距離(km)'));
+        await user.type(screen.getByLabelText('走行距離(km)'), '100');
+        await user.click(screen.getByRole('button', { name: '比較条件を保存' }));
+        await user.click(screen.getByRole('button', { name: '上書き保存' }));
+        expect(useSavedComparisonStore.getState().comparisons).toHaveLength(1);
+        await user.clear(screen.getByLabelText('走行距離(km)'));
+        await user.type(screen.getByLabelText('ガソリン単価(円/L)'), '180');
+        await user.click(screen.getByRole('button', { name: '保存済みの比較条件' }));
+        await user.click(screen.getByRole('button', { name: '読み込む' }));
+        expect(screen.getByLabelText('走行距離(km)')).toHaveValue('100');
+        expect(screen.getByLabelText('ガソリン単価(円/L)')).toHaveValue('');
+        expect(screen.getByText('6,600円')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: '保存済みの比較条件' }));
+        await user.click(screen.getByRole('button', { name: '削除' }));
+        await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+        expect(useSavedComparisonStore.getState().comparisons).toHaveLength(1);
+        await user.click(screen.getByRole('button', { name: '削除' }));
+        await user.click(
+            within(screen.getByRole('dialog', { name: '比較条件の削除' })).getByRole('button', { name: '削除' }),
+        );
+        expect(screen.getByText('保存済みの比較条件はありません。')).toBeInTheDocument();
+    });
+
+    it('同じサービスの候補、ラベル、料金方式、トヨタのプランと時間を一覧から復元する', async () => {
+        useSavedComparisonStore.getState().saveComparison({
+            distanceKm: 50,
+            gasolinePrice: 180,
+            fuelEfficiency: 15,
+            selected: [
+                {
+                    id: 'first',
+                    service: 'timesCar',
+                    number: 1,
+                    label: '夜間',
+                    usageFee: 5000,
+                    allDistance: true,
+                    toyotaPlan: '12',
+                    toyotaHours: '',
+                },
+                {
+                    id: 'second',
+                    service: 'timesCar',
+                    number: 2,
+                    label: '昼間',
+                    usageFee: '',
+                    allDistance: false,
+                    toyotaPlan: '12',
+                    toyotaHours: '',
+                },
+                {
+                    id: 'toyota',
+                    service: 'toyotaShare',
+                    number: 1,
+                    label: '短時間',
+                    usageFee: '',
+                    allDistance: false,
+                    toyotaPlan: 'short',
+                    toyotaHours: 3,
+                },
+            ],
+        });
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <CarshareRentacarEstimateComparisonPage />
+            </MantineProvider>,
+        );
+        await user.click(screen.getByRole('button', { name: '保存済みの比較条件' }));
+        await user.click(screen.getByRole('button', { name: '読み込む' }));
+        expect(screen.getByLabelText('ガソリン単価(円/L)')).toHaveValue('180');
+        expect(screen.getByLabelText('燃費(km/L)')).toHaveValue('15');
+        const night = within(screen.getByRole('region', { name: '夜間' }));
+        expect(night.getByText('6,000円')).toBeInTheDocument();
+        expect(night.getByLabelText('ナイトパック等: 利用開始時から20円/km')).toBeChecked();
+        const day = within(screen.getByRole('region', { name: '昼間' }));
+        expect(day.getByLabelText('カーシェア利用料金(円)')).toHaveValue('');
+        expect(day.getByText('必要な項目を入力すると表示します。')).toBeInTheDocument();
+        const toyota = within(screen.getByRole('region', { name: '短時間' }));
+        expect(toyota.getByLabelText('利用時間(時間)')).toHaveValue('3');
+        expect(toyota.getByText('2,640円')).toBeInTheDocument();
+    });
+
     it.each(['レンタカー', 'タイムズカー', 'トヨタシェア'])(
         '%sのラベルをクリックして編集し、フォーカスを外すとそのカードだけ変更する',
         async (service) => {

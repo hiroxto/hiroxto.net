@@ -14,3 +14,10 @@ export interface ComparisonEntry {
 export type ComparisonEntryChanges = Partial<
     Pick<ComparisonEntry, 'label' | 'usageFee' | 'allDistance' | 'toyotaPlan' | 'toyotaHours'>
 >;
+
+export interface ComparisonSnapshot {
+    selected: ComparisonEntry[];
+    distanceKm: InputValue;
+    gasolinePrice: InputValue;
+    fuelEfficiency: InputValue;
+}

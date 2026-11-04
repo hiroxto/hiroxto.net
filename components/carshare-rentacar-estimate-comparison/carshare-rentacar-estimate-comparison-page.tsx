@@ -4,6 +4,7 @@ import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 import { ComparisonCard } from '@/components/carshare-rentacar-estimate-comparison/comparison-card';
 import { DrivingConditionsForm } from '@/components/carshare-rentacar-estimate-comparison/driving-conditions-form';
+import { SavedComparisonActions } from '@/components/carshare-rentacar-estimate-comparison/saved-comparison-actions';
 import type { ComparisonEntry, ComparisonEntryChanges } from '@/components/carshare-rentacar-estimate-comparison/types';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import {
@@ -65,6 +66,15 @@ export function CarshareRentacarEstimateComparisonPage() {
             description="共通の走行条件から各カーシェア・レンタカーの概算料金を比較。"
         >
             <Stack gap="xl">
+                <SavedComparisonActions
+                    comparison={{ selected, distanceKm, gasolinePrice, fuelEfficiency }}
+                    onLoad={(comparison) => {
+                        setSelected(comparison.selected);
+                        setDistanceKm(comparison.distanceKm);
+                        setGasolinePrice(comparison.gasolinePrice);
+                        setFuelEfficiency(comparison.fuelEfficiency);
+                    }}
+                />
                 <DrivingConditionsForm
                     distanceKm={distanceKm}
                     gasolinePrice={gasolinePrice}
