@@ -1,5 +1,5 @@
 import { MantineProvider } from '@mantine/core';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { DistanceCandidate } from '@/lib/carshare-rentacar-estimate-comparison/distance-comparison';
@@ -67,5 +67,33 @@ describe('DistanceComparisonChart', () => {
         await user.click(screen.getByRole('button', { name: '次の20区間' }));
         expect(list.textContent).not.toBe(first);
         expect(screen.getByRole('button', { name: '前の20区間' })).toBeEnabled();
+    });
+    it.each([
+        [0, 0.1, ['0', '0.1']],
+        [12.3, 12.4, ['12.3', '12.4']],
+    ])('範囲%s〜%skmでは両端だけを正しい横位置に表示する', (min, max, labels) => {
+        renderChart();
+        fireEvent.change(screen.getByLabelText('グラフの上限(km)'), { target: { value: String(max) } });
+        fireEvent.change(screen.getByLabelText('グラフの下限(km)'), { target: { value: String(min) } });
+        const chart = screen.getByRole('img', { name: '走行距離別の合計料金' });
+        const ticks = [...chart.querySelectorAll('text')].filter((text) => text.getAttribute('y') === '273');
+        expect(ticks.map((tick) => tick.textContent)).toEqual(labels);
+        expect(ticks.map((tick) => tick.getAttribute('x'))).toEqual(['70', '620']);
+    });
+    it('252候補の料金を描画でき、最高料金を縦軸に反映する', () => {
+        renderChart(
+            Array.from({ length: 252 }, (_, index) => ({
+                ...candidates[1],
+                id: `candidate-${index}`,
+                label: `候補${index}`,
+                usageFee: index === 251 ? 100000 : 100,
+            })),
+        );
+        const chart = screen.getByRole('img', { name: '走行距離別の合計料金' });
+        expect(chart.querySelectorAll('polyline')).toHaveLength(252);
+        // 最高料金は100000円 + (500km - 20km) * 20円 = 109600円。
+        expect(within(chart).getByText('109,600')).toBeInTheDocument();
+        const lastPoint = chart.querySelectorAll('polyline')[251].getAttribute('points')?.split(' ').at(-1);
+        expect(lastPoint).toBe('620,30');
     });
 });

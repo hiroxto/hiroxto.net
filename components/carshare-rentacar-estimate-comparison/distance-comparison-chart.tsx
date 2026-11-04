@@ -34,11 +34,17 @@ function FeeLines({
     const right = width - 20;
     const top = 30;
     const bottom = height - 46;
-    const highest = Math.max(4, ...points.flatMap(({ totals }) => totals));
+    let highest = 4;
+    for (const { totals } of points) {
+        for (const total of totals) highest = Math.max(highest, total);
+    }
     const yMax = Math.ceil(highest / 4) * 4;
     const x = (km: number) => left + ((km - range.minKm) / (range.maxKm - range.minKm)) * (right - left);
     const y = (yen: number) => bottom - (yen / yMax) * (bottom - top);
-    const xTickCount = width < 500 ? 2 : 4;
+    // 表示値と位置を一致させるため、目盛りは整数の0.1km単位で選ぶ。
+    const minTenth = Math.round(range.minKm * 10);
+    const maxTenth = Math.round(range.maxKm * 10);
+    const xTickCount = Math.min(width < 500 ? 2 : 4, maxTenth - minTenth);
 
     return (
         <Stack gap="sm">
@@ -76,7 +82,7 @@ function FeeLines({
                         );
                     })}
                     {Array.from({ length: xTickCount + 1 }, (_, index) => {
-                        const km = range.minKm + ((range.maxKm - range.minKm) * index) / xTickCount;
+                        const km = (minTenth + Math.round(((maxTenth - minTenth) * index) / xTickCount)) / 10;
                         return (
                             <text
                                 key={km}
