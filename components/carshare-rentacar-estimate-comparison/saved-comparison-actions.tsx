@@ -65,7 +65,14 @@ export function SavedComparisonActions({ comparison, onLoad }: SavedComparisonAc
                     </Group>
                 </Stack>
             </Modal>
-            <Modal opened={listOpened} onClose={() => setListOpened(false)} title="保存済みの比較条件" size="lg">
+            {/* 削除確認の表示中は一覧側でEscapeを処理せず、前面の確認だけを閉じる。 */}
+            <Modal
+                opened={listOpened}
+                onClose={() => setListOpened(false)}
+                closeOnEscape={deleteId === null}
+                title="保存済みの比較条件"
+                size="lg"
+            >
                 <Stack>
                     {comparisons.length === 0 ? (
                         <Text c="dimmed">保存済みの比較条件はありません。</Text>
