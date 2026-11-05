@@ -1,5 +1,5 @@
+import { LineChart } from '@mantine/charts';
 import { Alert, Box, Button, Group, List, NumberInput, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { useElementSize } from '@mantine/hooks';
 import { useMemo, useState } from 'react';
 import { numberInputProps } from '@/components/carshare-rentacar-estimate-comparison/number-input-props';
 import {
@@ -27,117 +27,47 @@ function FeeLines({
     range: DistanceRange;
     labels: Map<string, string>;
 }) {
-    const { ref, width: measuredWidth } = useElementSize();
-    const width = Math.max(240, measuredWidth || 640);
-    const height = 300;
-    const left = 70;
-    const right = width - 20;
-    const top = 30;
-    const bottom = height - 46;
-    let highest = 4;
-    for (const { totals } of points) {
-        for (const total of totals) highest = Math.max(highest, total);
-    }
-    const yMax = Math.ceil(highest / 4) * 4;
-    const x = (km: number) => left + ((km - range.minKm) / (range.maxKm - range.minKm)) * (right - left);
-    const y = (yen: number) => bottom - (yen / yMax) * (bottom - top);
-    // 表示値と位置を一致させるため、目盛りは整数の0.1km単位で選ぶ。
-    const minTenth = Math.round(range.minKm * 10);
-    const maxTenth = Math.round(range.maxKm * 10);
-    const xTickCount = Math.min(width < 500 ? 2 : 4, maxTenth - minTenth);
+    const data = points.map((point) => ({
+        distanceKm: point.distanceKm,
+        ...Object.fromEntries(candidates.map((candidate, index) => [candidate.id, point.totals[index]])),
+    }));
+    const series = candidates.map((candidate, index) => ({
+        name: candidate.id,
+        label: labels.get(candidate.id),
+        color: colors[index % colors.length],
+        strokeDasharray: index >= colors.length ? '7 4' : undefined,
+    }));
 
     return (
-        <Stack gap="sm">
-            <Box ref={ref} style={{ minWidth: 0 }}>
-                <svg
-                    role="img"
-                    aria-label="走行距離別の合計料金"
-                    viewBox={`0 0 ${width} ${height}`}
-                    width="100%"
-                    height={height}
-                    style={{ display: 'block', color: 'var(--mantine-color-text)' }}
-                >
-                    <title>走行距離別の合計料金</title>
-                    <desc>
-                        横軸は走行距離(km)、縦軸は合計料金(円)。距離以外の入力条件は固定しています。最安候補と同額帯は下の一覧で確認できます。
-                    </desc>
-                    <text x={left} y={16} fill="currentColor" fontSize="12">
-                        合計料金(円)
-                    </text>
-                    {Array.from({ length: 5 }, (_, index) => {
-                        const yen = (yMax * index) / 4;
-                        return (
-                            <g key={yen}>
-                                <line
-                                    x1={left}
-                                    x2={right}
-                                    y1={y(yen)}
-                                    y2={y(yen)}
-                                    stroke="var(--mantine-color-default-border)"
-                                />
-                                <text x={left - 8} y={y(yen) + 4} textAnchor="end" fill="currentColor" fontSize="12">
-                                    {yen.toLocaleString('ja-JP')}
-                                </text>
-                            </g>
-                        );
-                    })}
-                    {Array.from({ length: xTickCount + 1 }, (_, index) => {
-                        const km = (minTenth + Math.round(((maxTenth - minTenth) * index) / xTickCount)) / 10;
-                        return (
-                            <text
-                                key={km}
-                                x={x(km)}
-                                y={bottom + 19}
-                                textAnchor="middle"
-                                fill="currentColor"
-                                fontSize="12"
-                            >
-                                {distanceLabel(km)}
-                            </text>
-                        );
-                    })}
-                    <text x={(left + right) / 2} y={height - 3} textAnchor="middle" fill="currentColor" fontSize="12">
-                        走行距離(km)
-                    </text>
-                    {candidates.map((candidate, index) => (
-                        <polyline
-                            key={candidate.id}
-                            points={points.map((point) => `${x(point.distanceKm)},${y(point.totals[index])}`).join(' ')}
-                            fill="none"
-                            stroke={colors[index % colors.length]}
-                            strokeWidth={2.5}
-                            strokeDasharray={index >= colors.length ? '7 4' : undefined}
-                        >
-                            <title>{labels.get(candidate.id)}</title>
-                        </polyline>
-                    ))}
-                </svg>
-            </Box>
-            <List aria-label="グラフの凡例" listStyleType="none" spacing="xs">
-                {candidates.map((candidate, index) => (
-                    <List.Item
-                        key={candidate.id}
-                        icon={
-                            <svg aria-hidden="true" width="26" height="12">
-                                <line
-                                    x1="0"
-                                    x2="26"
-                                    y1="6"
-                                    y2="6"
-                                    stroke={colors[index % colors.length]}
-                                    strokeWidth="3"
-                                    strokeDasharray={index >= colors.length ? '7 4' : undefined}
-                                />
-                            </svg>
-                        }
-                    >
-                        <Text size="sm" style={{ overflowWrap: 'anywhere' }}>
-                            {labels.get(candidate.id)}
-                        </Text>
-                    </List.Item>
-                ))}
-            </List>
-        </Stack>
+        <Box component="figure" aria-label="走行距離別の合計料金" m={0} style={{ minWidth: 0 }}>
+            <LineChart
+                h={300}
+                data={data}
+                dataKey="distanceKm"
+                series={series}
+                curveType="linear"
+                withDots={false}
+                withLegend
+                xAxisLabel="走行距離(km)"
+                yAxisLabel="合計料金(円)"
+                xAxisProps={{
+                    type: 'number',
+                    domain: [range.minKm, range.maxKm],
+                    allowDataOverflow: true,
+                    // 0.1kmだけの範囲では中間目盛りを作らず、両端の値を区別する。
+                    ticks: Math.round((range.maxKm - range.minKm) * 10) === 1 ? [range.minKm, range.maxKm] : undefined,
+                    tickFormatter: distanceLabel,
+                }}
+                yAxisProps={{ domain: [0, 'auto'], width: 90 }}
+                valueFormatter={(value) => `${value.toLocaleString('ja-JP')}円`}
+                tooltipProps={{ labelFormatter: (value) => `${distanceLabel(Number(value))}km` }}
+                legendProps={{ wrapperStyle: { maxHeight: 80, overflowY: 'auto' } }}
+                styles={{ legendItemName: { overflowWrap: 'anywhere' }, legend: { flexWrap: 'wrap' } }}
+            />
+            <Text component="figcaption" size="xs" c="dimmed">
+                横軸は走行距離(km)、縦軸は合計料金(円)。距離以外の入力条件は固定しています。最安候補と同額帯は下の一覧で確認できます。
+            </Text>
+        </Box>
     );
 }
 

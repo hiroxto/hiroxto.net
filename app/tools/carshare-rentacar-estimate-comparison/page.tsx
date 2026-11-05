@@ -1,3 +1,4 @@
+import '@mantine/charts/styles.css';
 import type { Metadata } from 'next';
 import { CarshareRentacarEstimateComparisonPage } from '@/components/carshare-rentacar-estimate-comparison/carshare-rentacar-estimate-comparison-page';
 import { siteOrigin } from '@/lib/metadata/site-origin';

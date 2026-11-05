@@ -16,7 +16,7 @@ describe('CarshareRentacarEstimateComparisonPage', () => {
         await user.type(screen.getByLabelText('カーシェア利用料金(円)'), '5000');
         await user.click(screen.getByRole('button', { name: 'トヨタシェアを追加' }));
         const graph = within(screen.getByRole('region', { name: '距離別の料金比較' }));
-        expect(graph.getByRole('img', { name: '走行距離別の合計料金' })).toBeInTheDocument();
+        expect(graph.getByRole('figure', { name: '走行距離別の合計料金' })).toBeInTheDocument();
         expect(graph.getByText('最安: 1. タイムズカー 1')).toBeInTheDocument();
         await user.clear(screen.getByLabelText('カーシェア利用料金(円)'));
         await user.type(screen.getByLabelText('カーシェア利用料金(円)'), '10000');
