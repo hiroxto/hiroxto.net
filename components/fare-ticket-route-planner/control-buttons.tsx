@@ -3,6 +3,8 @@
 import { Button, Grid, Modal, Select } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
+import { ArrowUUpLeftIcon } from '@phosphor-icons/react/dist/csr/ArrowUUpLeft';
+import { ArrowUUpRightIcon } from '@phosphor-icons/react/dist/csr/ArrowUUpRight';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -257,12 +259,26 @@ export function ControlButtons() {
         <>
             <Grid columns={12} gap="xs">
                 <Grid.Col span={6}>
-                    <Button fullWidth radius="sm" variant="default" disabled={!canUndo} onClick={undo}>
+                    <Button
+                        fullWidth
+                        radius="sm"
+                        variant="default"
+                        disabled={!canUndo}
+                        onClick={undo}
+                        leftSection={<ArrowUUpLeftIcon size={18} aria-hidden="true" />}
+                    >
                         元に戻す
                     </Button>
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <Button fullWidth radius="sm" variant="default" disabled={!canRedo} onClick={redo}>
+                    <Button
+                        fullWidth
+                        radius="sm"
+                        variant="default"
+                        disabled={!canRedo}
+                        onClick={redo}
+                        leftSection={<ArrowUUpRightIcon size={18} aria-hidden="true" />}
+                    >
                         やり直す
                     </Button>
                 </Grid.Col>

@@ -16,6 +16,8 @@ import {
     Title,
 } from '@mantine/core';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRight';
+import { ArrowUUpLeftIcon } from '@phosphor-icons/react/dist/csr/ArrowUUpLeft';
+import { ArrowUUpRightIcon } from '@phosphor-icons/react/dist/csr/ArrowUUpRight';
 import { useState } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import { RouteRow } from '@/components/tokyometro-transfer-route-planner/route-row';
@@ -221,6 +223,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
                                 radius="sm"
                                 disabled={history.past.length === 0}
                                 onClick={() => restoreHistory(undoEdit(history))}
+                                leftSection={<ArrowUUpLeftIcon size={18} aria-hidden="true" />}
                             >
                                 元に戻す
                             </Button>
@@ -229,6 +232,7 @@ export function TokyoMetroTransferRoutePlannerPage() {
                                 radius="sm"
                                 disabled={history.future.length === 0}
                                 onClick={() => restoreHistory(redoEdit(history))}
+                                leftSection={<ArrowUUpRightIcon size={18} aria-hidden="true" />}
                             >
                                 やり直す
                             </Button>
