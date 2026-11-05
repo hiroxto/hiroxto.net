@@ -159,33 +159,6 @@ export function ClSoundPage() {
             <Stack gap="xl">
                 <section>
                     <Stack gap="md">
-                        <div>
-                            <Text fw={500} mb="xs">
-                                音量: {volume}%
-                            </Text>
-                            <Slider
-                                thumbLabel="音量"
-                                min={0}
-                                max={100}
-                                value={volume}
-                                label={(value) => `${value}%`}
-                                onChange={(value) => {
-                                    setVolume(value);
-                                    playbackRef.current?.setVolume(value);
-                                }}
-                                maw={400}
-                            />
-                        </div>
-                        <Text role="status" aria-live="polite">
-                            {playingTone == null
-                                ? '停止中'
-                                : `${playingTone === 'success' ? 'Success' : 'Alert'} Tone 再生中`}
-                        </Text>
-                        {hasPlaybackError && (
-                            <Text role="alert" c="red">
-                                音声を再生できませんでした。もう一度お試しください。
-                            </Text>
-                        )}
                         <Group>
                             <Button
                                 radius="sm"
@@ -206,6 +179,28 @@ export function ClSoundPage() {
                                 Play Alert Tone
                             </Button>
                         </Group>
+                        <div>
+                            <Text fw={500} mb="xs">
+                                音量: {volume}%
+                            </Text>
+                            <Slider
+                                thumbLabel="音量"
+                                min={0}
+                                max={100}
+                                value={volume}
+                                label={(value) => `${value}%`}
+                                onChange={(value) => {
+                                    setVolume(value);
+                                    playbackRef.current?.setVolume(value);
+                                }}
+                                maw={400}
+                            />
+                        </div>
+                        {hasPlaybackError && (
+                            <Text role="alert" c="red">
+                                音声を再生できませんでした。もう一度お試しください。
+                            </Text>
+                        )}
                     </Stack>
                 </section>
 

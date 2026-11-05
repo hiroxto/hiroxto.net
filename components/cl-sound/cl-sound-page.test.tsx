@@ -115,6 +115,19 @@ describe('ClSoundPage', () => {
         FakeAudioContext.failCreateOscillator = false;
     });
 
+    it('再生ボタンを音量調整より前に配置し、停止中の状態表示を出さない', () => {
+        renderWithMantine(<ClSoundPage />);
+
+        const slider = screen.getByRole('slider', { name: '音量' });
+        for (const name of ['Play Success Tone', 'Play Alert Tone']) {
+            const button = screen.getByRole('button', { name });
+            expect(button.compareDocumentPosition(slider) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+        }
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByText('停止中')).not.toBeInTheDocument();
+        expectButtonsDisabled(false);
+    });
+
     it('成功音を1500Hzで0.5秒再生し、終了後に再操作できる', async () => {
         const user = userEvent.setup();
         renderWithMantine(<ClSoundPage />);
@@ -125,12 +138,12 @@ describe('ClSoundPage', () => {
         expect(context.oscillators).toMatchObject([
             { type: 'sine', frequency: { value: 1500 }, startedAt: 10, stoppedAt: 10.5 },
         ]);
-        expect(screen.getByRole('status')).toHaveTextContent('Success Tone 再生中');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
         expectButtonsDisabled(true);
 
         endTone(context, 0);
 
-        expect(screen.getByRole('status')).toHaveTextContent('停止中');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
         expectButtonsDisabled(false);
         expect(context.state).toBe('closed');
         expect(context.gain.connectedDestination).toBeNull();
@@ -149,17 +162,17 @@ describe('ClSoundPage', () => {
             { type: 'sine', frequency: { value: 750 }, startedAt: 10, stoppedAt: 10.2 },
             { type: 'sine', frequency: { value: 750 }, startedAt: 10.4, stoppedAt: 10.6 },
         ]);
-        expect(screen.getByRole('status')).toHaveTextContent('Alert Tone 再生中');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
         expectButtonsDisabled(true);
 
         endTone(context, 0);
         expectButtonsDisabled(true);
-        expect(screen.getByRole('status')).toHaveTextContent('Alert Tone 再生中');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
         expect(context.state).toBe('running');
 
         endTone(context, 1);
         expectButtonsDisabled(false);
-        expect(screen.getByRole('status')).toHaveTextContent('停止中');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
         expect(context.state).toBe('closed');
     });
 
@@ -242,7 +255,7 @@ describe('ClSoundPage', () => {
         vi.stubGlobal('AudioContext', FakeAudioContext);
         await user.click(screen.getByRole('button', { name: 'Play Alert Tone' }));
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-        expect(screen.getByRole('status')).toHaveTextContent('Alert Tone 再生中');
+        expectButtonsDisabled(true);
     });
 
     it('音声の準備に失敗したらリソースを解放し再操作できる', async () => {
