@@ -21,6 +21,19 @@ vi.hoisted(() => {
     );
 });
 
+function mockViewport(isMobile: boolean) {
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+        matches: isMobile && query === '(max-width: 47.99em)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+    }));
+}
+
 function renderControls() {
     return render(
         <MantineProvider env="test">
@@ -115,6 +128,20 @@ describe('ControlButtons', () => {
         expect(useRouteStateStore.getState().routes[1]).toMatchObject({ line: '', station: '' });
     });
 
+    test('狭い画面の固定操作から経路を追加し、同名の操作は重複しない', async () => {
+        mockViewport(true);
+        const user = userEvent.setup();
+        renderControls();
+
+        const actions = within(await screen.findByRole('group', { name: '経路の固定操作' }));
+        await user.click(actions.getByRole('button', { name: '経路追加' }));
+
+        expect(useRouteStateStore.getState().routes).toHaveLength(2);
+        expect(useRouteStateStore.getState().routes[1]).toMatchObject({ line: '', station: '' });
+        expect(screen.getAllByRole('button', { name: '経路追加' })).toHaveLength(1);
+        expect(screen.getAllByRole('button', { name: '保存・更新' })).toHaveLength(1);
+    });
+
     test('空経路クリアボタンで路線と接続駅が空の行を除外する', async () => {
         const user = userEvent.setup();
         useRouteStateStore.setState({
@@ -164,7 +191,8 @@ describe('ControlButtons', () => {
         });
     });
 
-    test('保存・更新モーダルから新規保存できる', async () => {
+    test.each([false, true])('狭幅=%sで保存・更新モーダルから新規保存できる', async (isMobile) => {
+        mockViewport(isMobile);
         const user = userEvent.setup();
         useRouteStateStore.setState({
             month: '1',
@@ -181,7 +209,8 @@ describe('ControlButtons', () => {
 
         renderControls();
 
-        await user.click(screen.getByRole('button', { name: '保存・更新' }));
+        const controls = isMobile ? within(await screen.findByRole('group', { name: '経路の固定操作' })) : screen;
+        await user.click(controls.getByRole('button', { name: '保存・更新' }));
         await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '新規保存' }));
 
         expect(useSavedRouteStore.getState().routes).toHaveLength(1);
@@ -199,7 +228,8 @@ describe('ControlButtons', () => {
         });
     });
 
-    test('保存済み経路を選んで更新すると、その経路の設定だけを変更する', async () => {
+    test.each([false, true])('狭幅=%sで保存済み経路を更新すると、その経路の設定だけを変更する', async (isMobile) => {
+        mockViewport(isMobile);
         const user = userEvent.setup();
         const savedRoute = {
             month: '1',
@@ -227,7 +257,8 @@ describe('ControlButtons', () => {
         });
         renderControls();
 
-        await user.click(screen.getByRole('button', { name: '保存・更新' }));
+        const controls = isMobile ? within(await screen.findByRole('group', { name: '経路の固定操作' })) : screen;
+        await user.click(controls.getByRole('button', { name: '保存・更新' }));
         const dialog = within(await screen.findByRole('dialog'));
         expect(dialog.getByRole('button', { name: '更新' })).toBeDisabled();
         await user.click(dialog.getByRole('combobox', { name: '更新先を選択' }));

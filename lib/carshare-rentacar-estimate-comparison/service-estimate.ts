@@ -15,6 +15,17 @@ const parseNumber = (value: InputValue): number | null => {
     return Number.isFinite(number) && number >= 0 ? number : null;
 };
 
+interface ServiceEstimateInput {
+    service: ServiceId;
+    distanceKm: InputValue;
+    gasolinePrice: InputValue;
+    fuelEfficiency: InputValue;
+    usageFee: InputValue;
+    allDistance: boolean;
+    toyotaPlan: ToyotaPlan;
+    toyotaHours: InputValue;
+}
+
 /**
  * 比較画面の試作向け概算。空欄・非有限値・負数は未計算とし、同一サービスの複数の比較対象も、それぞれ独立して計算する。
  * 共通の走行距離を使い、レンタカーのみ共通のガソリン単価と燃費（正数）を必要とする。
@@ -26,38 +37,40 @@ const parseNumber = (value: InputValue): number | null => {
  * 出典: https://mobility.toyota.jp/r-toyotashare/price/ （2026-11-03確認）
  * 金額は円単位に四捨五入する。
  */
-export const estimateService = (input: {
-    service: ServiceId;
-    distanceKm: InputValue;
-    gasolinePrice: InputValue;
-    fuelEfficiency: InputValue;
-    usageFee: InputValue;
-    allDistance: boolean;
-    toyotaPlan: ToyotaPlan;
-    toyotaHours: InputValue;
-}): { usageFee: number; runningCost: number; total: number } | null => {
-    const distance = parseNumber(input.distanceKm);
-    if (distance === null) return null;
+export const prepareServiceEstimate = (input: Omit<ServiceEstimateInput, 'distanceKm'>) => {
     let usageFee = parseNumber(input.usageFee);
-    let runningCost: number;
+    let runningCostAt: (distanceKm: number) => number;
     if (input.service === 'toyotaShare') {
         if (input.toyotaPlan === 'short') {
             const hours = parseNumber(input.toyotaHours);
             if (hours === null || hours <= 0 || hours > 6) return null;
             usageFee = Math.ceil((hours * 60) / 15) * 220;
-            runningCost = 0;
+            runningCostAt = () => 0;
         } else {
             usageFee = { '6': 5610, '12': 5940, '24': 7810 }[input.toyotaPlan];
-            runningCost = Math.round(distance * 16);
+            runningCostAt = (distance) => Math.round(distance * 16);
         }
     } else if (input.service === 'timesCar') {
-        runningCost = Math.round((input.allDistance ? distance : Math.max(distance - 20, 0)) * 20);
+        runningCostAt = (distance) => Math.round((input.allDistance ? distance : Math.max(distance - 20, 0)) * 20);
     } else {
         const gasolinePrice = parseNumber(input.gasolinePrice);
         const fuelEfficiency = parseNumber(input.fuelEfficiency);
         if (gasolinePrice === null || fuelEfficiency === null || fuelEfficiency === 0) return null;
-        runningCost = Math.round((distance / fuelEfficiency) * gasolinePrice);
+        runningCostAt = (distance) => Math.round((distance / fuelEfficiency) * gasolinePrice);
     }
     if (usageFee === null) return null;
-    return { usageFee: Math.round(usageFee), runningCost, total: Math.round(usageFee + runningCost) };
+
+    // 距離以外の入力を検証済みの見積もり。呼び出し元で有効な距離を渡す。
+    const fee = usageFee;
+    return (distanceKm: number) => {
+        const runningCost = runningCostAt(distanceKm);
+        return { usageFee: Math.round(fee), runningCost, total: Math.round(fee + runningCost) };
+    };
+};
+
+export const estimateService = (input: ServiceEstimateInput) => {
+    const distance = parseNumber(input.distanceKm);
+    if (distance === null) return null;
+    const estimateAt = prepareServiceEstimate(input);
+    return estimateAt === null ? null : estimateAt(distance);
 };

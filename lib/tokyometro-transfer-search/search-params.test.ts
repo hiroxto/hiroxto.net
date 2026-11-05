@@ -238,3 +238,36 @@ describe('異駅名の同一駅を発着に指定した場合', () => {
         );
     });
 });
+
+describe('必須改札外乗換のURL条件', () => {
+    it('既存URLは必須地点なしで復元する', () => {
+        expect(parseTokyoMetroTransferSearchParams({ from: 'inaricho', to: 'iriya' })).toMatchObject({
+            requiredOutsideTransferIds: [],
+            error: null,
+        });
+    });
+    it('必須接続IDを復元し重複を除去する', () => {
+        expect(parseTokyoMetroTransferSearchParams({ requiredOutsideTransfers: 'ueno,hibiya,ueno' })).toMatchObject({
+            requiredOutsideTransferIds: ['ueno', 'hibiya'],
+            error: null,
+        });
+    });
+    it.each(['invalid', ['ueno', 'hibiya']])('不正または複数指定の必須地点を拒否する: %s', (value) => {
+        expect(parseTokyoMetroTransferSearchParams({ requiredOutsideTransfers: value }).error).not.toBeNull();
+    });
+    it('空文字は必須地点なしとして扱う', () => {
+        expect(parseTokyoMetroTransferSearchParams({ requiredOutsideTransfers: '' })).toMatchObject({
+            requiredOutsideTransferIds: [],
+            error: null,
+        });
+    });
+    it('必須地点と利用許可・最大回数の矛盾を拒否する', () => {
+        expect(
+            parseTokyoMetroTransferSearchParams({ outsideTransfers: 'ueno', requiredOutsideTransfers: 'hibiya' }).error,
+        ).not.toBeNull();
+        expect(
+            parseTokyoMetroTransferSearchParams({ maxOutsideTransfers: '1', requiredOutsideTransfers: 'ueno,hibiya' })
+                .error,
+        ).not.toBeNull();
+    });
+});

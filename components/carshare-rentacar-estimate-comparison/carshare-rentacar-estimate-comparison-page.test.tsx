@@ -104,6 +104,26 @@ describe('CarshareRentacarEstimateComparisonPage', () => {
         expect(toyota.getByText('2,640円')).toBeInTheDocument();
     });
 
+    it('走行距離が空欄でも条件を入力した候補をグラフに表示し、料金の変更を反映する', async () => {
+        const user = userEvent.setup();
+        render(
+            <MantineProvider env="test">
+                <CarshareRentacarEstimateComparisonPage />
+            </MantineProvider>,
+        );
+        await user.click(screen.getByRole('button', { name: 'タイムズカーを追加' }));
+        await user.type(screen.getByLabelText('カーシェア利用料金(円)'), '5000');
+        await user.click(screen.getByRole('button', { name: 'トヨタシェアを追加' }));
+        const graph = within(screen.getByRole('region', { name: '距離別の料金比較' }));
+        expect(graph.getByRole('figure', { name: '走行距離別の合計料金' })).toBeInTheDocument();
+        expect(graph.getByText('最安: 1. タイムズカー 1')).toBeInTheDocument();
+        await user.clear(screen.getByLabelText('カーシェア利用料金(円)'));
+        await user.type(screen.getByLabelText('カーシェア利用料金(円)'), '10000');
+        expect(graph.getByText('この範囲内では最安候補の切替はありません。')).toBeInTheDocument();
+        expect(graph.getByText('最安: 2. トヨタシェア 1')).toBeInTheDocument();
+        expect(screen.getByLabelText('走行距離(km)')).toHaveValue('');
+    });
+
     it.each(['レンタカー', 'タイムズカー', 'トヨタシェア'])(
         '%sのラベルをクリックして編集し、フォーカスを外すとそのカードだけ変更する',
         async (service) => {

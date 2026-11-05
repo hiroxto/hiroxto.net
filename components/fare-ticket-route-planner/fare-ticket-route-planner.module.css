@@ -35,3 +35,26 @@
 .note {
     width: 83.333333%;
 }
+
+.mobileActionsSpace {
+    height: calc(4.75rem + 1px + env(safe-area-inset-bottom));
+}
+
+.mobileActions {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    border: 0;
+    border-top: 1px solid var(--mantine-color-default-border);
+    background: var(--mantine-color-body);
+}
+
+.mobileActionButton {
+    height: 2.75rem;
+}

@@ -8,6 +8,10 @@ describe('calcTrainNumberType', () => {
         expect(calcTrainNumberType('6010')).toBe('臨特急客');
     });
 
+    it.each(['５０９４', '5０9４'])('全角・混在数字「%s」から高速貨Bを返す', (value) => {
+        expect(calcTrainNumberType(value)).toBe('高速貨B');
+    });
+
     it('貨物列車と臨時旅客列車の番号から列車種別を返す', () => {
         expect(calcTrainNumberType('5094')).toBe('高速貨B');
         expect(calcTrainNumberType('8050')).toBe('臨高速貨A');
@@ -56,7 +60,7 @@ describe('calcTrainNumberType', () => {
         expect(calcTrainNumberType('9190')).toBe('臨専貨B');
     });
 
-    it.each(['', '0', '0001', 'A12', '12 ', '10000', '1.5', '-1', '１２', '1e2'])(
+    it.each(['', '0', '0001', 'A12', '12 ', '10000', '1.5', '-1', '①', '1e2'])(
         '不正な列車番号「%s」では種別を返さない',
         (value) => {
             expect(calcTrainNumberType(value)).toBeNull();

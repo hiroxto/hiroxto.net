@@ -3,7 +3,11 @@ import type { StationId } from '@/lib/tokyometro-core/data';
 import { isSameStation, stationIdSchema } from '@/lib/tokyometro-core/stations';
 import { allOutsideTransferIds, outsideTransferIdsSchema } from './outside-transfers';
 import { SEARCH_DURATION_LIMIT_MS } from './search';
-import { maximumOutsideTransferCountSchema, searchFormDurationSchema } from './validation';
+import {
+    maximumOutsideTransferCountSchema,
+    outsideTransferConditionsSchema,
+    searchFormDurationSchema,
+} from './validation';
 
 export type TokyoMetroTransferSearchParams = Record<string, string | string[] | undefined>;
 
@@ -13,6 +17,7 @@ export interface TokyoMetroTransferSearchQuery {
     maximumOutsideTransferCount: number | null;
     includeInsideTransfers: boolean;
     outsideTransferIds: StationId[];
+    requiredOutsideTransferIds: StationId[];
     durationLimitMs: number;
     error: string | null;
 }
@@ -27,34 +32,50 @@ const tokyoMetroTransferSearchParamsSchema = z
         to: searchParamSchema,
         maxOutsideTransfers: searchParamSchema,
         includeInsideTransfers: searchParamSchema,
+        requiredOutsideTransfers: z.string({ error: '必須の改札外乗換駅の指定は1つの文字列にしてください' }).optional(),
         outsideTransfers: z.string({ error: '改札外乗換駅の指定は1つの文字列にしてください' }).optional(),
     })
-    .transform(({ from, to, maxOutsideTransfers, includeInsideTransfers, outsideTransfers, durationLimitMs }) => {
-        const fromValue = typeof from === 'string' ? from : null;
-        const toValue = typeof to === 'string' ? to : null;
-        const maximumOutsideTransferCountValue = typeof maxOutsideTransfers === 'string' ? maxOutsideTransfers : null;
-        const hasCompleteStationPair = fromValue != null && toValue != null;
-        let outsideTransferIds: string[] = allOutsideTransferIds;
+    .transform(
+        ({
+            from,
+            to,
+            maxOutsideTransfers,
+            includeInsideTransfers,
+            outsideTransfers,
+            requiredOutsideTransfers,
+            durationLimitMs,
+        }) => {
+            const fromValue = typeof from === 'string' ? from : null;
+            const toValue = typeof to === 'string' ? to : null;
+            const maximumOutsideTransferCountValue =
+                typeof maxOutsideTransfers === 'string' ? maxOutsideTransfers : null;
+            const hasCompleteStationPair = fromValue != null && toValue != null;
+            let outsideTransferIds: string[] = allOutsideTransferIds;
 
-        if (outsideTransfers !== undefined) {
-            outsideTransferIds = outsideTransfers === '' ? [] : [...new Set(outsideTransfers.split(','))];
-        }
+            if (outsideTransfers !== undefined) {
+                outsideTransferIds = outsideTransfers === '' ? [] : [...new Set(outsideTransfers.split(','))];
+            }
 
-        return {
-            durationLimitMs: durationLimitMs === undefined ? SEARCH_DURATION_LIMIT_MS : Number(durationLimitMs),
-            outsideTransferIds,
-            includeInsideTransfers: typeof includeInsideTransfers === 'string' ? includeInsideTransfers : 'true',
-            maximumOutsideTransferCount:
-                maximumOutsideTransferCountValue == null ? null : Number(maximumOutsideTransferCountValue),
-            fromStationId: hasCompleteStationPair ? fromValue : null,
-            toStationId: hasCompleteStationPair ? toValue : null,
-        };
-    })
+            return {
+                durationLimitMs: durationLimitMs === undefined ? SEARCH_DURATION_LIMIT_MS : Number(durationLimitMs),
+                outsideTransferIds,
+                requiredOutsideTransferIds: requiredOutsideTransfers
+                    ? [...new Set(requiredOutsideTransfers.split(','))]
+                    : [],
+                includeInsideTransfers: typeof includeInsideTransfers === 'string' ? includeInsideTransfers : 'true',
+                maximumOutsideTransferCount:
+                    maximumOutsideTransferCountValue == null ? null : Number(maximumOutsideTransferCountValue),
+                fromStationId: hasCompleteStationPair ? fromValue : null,
+                toStationId: hasCompleteStationPair ? toValue : null,
+            };
+        },
+    )
     .pipe(
         z
             .object({
                 durationLimitMs: searchFormDurationSchema,
                 outsideTransferIds: outsideTransferIdsSchema,
+                requiredOutsideTransferIds: outsideTransferConditionsSchema.shape.requiredOutsideTransferIds.unwrap(),
                 maximumOutsideTransferCount: maximumOutsideTransferCountSchema.nullable(),
                 includeInsideTransfers: z
                     .enum(['true', 'false'], { error: '改札内乗換の指定はtrueまたはfalseにしてください' })
@@ -65,7 +86,8 @@ const tokyoMetroTransferSearchParamsSchema = z
             .refine(
                 ({ fromStationId, toStationId }) => fromStationId == null || !isSameStation(fromStationId, toStationId),
                 sameStationMessage,
-            ),
+            )
+            .and(outsideTransferConditionsSchema),
     );
 
 const emptyQuery: TokyoMetroTransferSearchQuery = {
@@ -74,6 +96,7 @@ const emptyQuery: TokyoMetroTransferSearchQuery = {
     maximumOutsideTransferCount: null,
     includeInsideTransfers: true,
     outsideTransferIds: allOutsideTransferIds,
+    requiredOutsideTransferIds: [],
     durationLimitMs: SEARCH_DURATION_LIMIT_MS,
     error: null,
 };
@@ -85,6 +108,8 @@ const emptyQuery: TokyoMetroTransferSearchQuery = {
  * 既定値のURLではdurationLimitMsを省略する。
  * outsideTransfersは乗換IDのカンマ区切り。未指定は全て利用し、空・不正なID・複数指定はエラーとする。
  * 同じIDの重複は除去する。全地点選択時のURLではoutsideTransfersを省略する。
+ * requiredOutsideTransfersは必須の接続IDのカンマ区切り。未指定・空文字は必須なし、空配列のURLでは省略する。
+ * 不正ID・複数指定・利用許可や最大回数との矛盾はエラーにする。同じIDの重複は除去する。
  * includeInsideTransfersはtrue/falseで指定し、未指定・複数指定では既定のONとして扱う。
  * OFFでは改札内乗換を探索対象から除外し、ONのURLではこのパラメータを省略する。
  */

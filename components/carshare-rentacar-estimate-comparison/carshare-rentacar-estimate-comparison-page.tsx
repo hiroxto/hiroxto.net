@@ -3,6 +3,7 @@
 import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 import { ComparisonCard } from '@/components/carshare-rentacar-estimate-comparison/comparison-card';
+import { DistanceComparisonChart } from '@/components/carshare-rentacar-estimate-comparison/distance-comparison-chart';
 import { DrivingConditionsForm } from '@/components/carshare-rentacar-estimate-comparison/driving-conditions-form';
 import { SavedComparisonActions } from '@/components/carshare-rentacar-estimate-comparison/saved-comparison-actions';
 import type { ComparisonEntry, ComparisonEntryChanges } from '@/components/carshare-rentacar-estimate-comparison/types';
@@ -122,6 +123,11 @@ export function CarshareRentacarEstimateComparisonPage() {
                         </SimpleGrid>
                     </Stack>
                 </section>
+                <DistanceComparisonChart
+                    candidates={selected}
+                    gasolinePrice={gasolinePrice}
+                    fuelEfficiency={fuelEfficiency}
+                />
             </Stack>
         </SiteSubpageFrame>
     );
