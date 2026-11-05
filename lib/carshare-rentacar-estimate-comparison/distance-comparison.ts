@@ -1,8 +1,8 @@
-import { estimateService, type InputValue } from '@/lib/carshare-rentacar-estimate-comparison/service-estimate';
+import { type InputValue, prepareServiceEstimate } from '@/lib/carshare-rentacar-estimate-comparison/service-estimate';
 
 export type DistanceCandidate = Omit<
-    Parameters<typeof estimateService>[0],
-    'distanceKm' | 'gasolinePrice' | 'fuelEfficiency'
+    Parameters<typeof prepareServiceEstimate>[0],
+    'gasolinePrice' | 'fuelEfficiency'
 > & { id: string; label: string };
 
 export interface DistanceRange {
@@ -41,8 +41,8 @@ export const parseDistanceRange = (min: InputValue, max: InputValue): DistanceRa
 };
 
 /**
- * 距離以外の入力を固定し、既存のestimateService（円単位の四捨五入を含む）で比較する。
- * 距離0で計算できる候補のみ対象とし、共通の走行距離の未入力には影響されない。
+ * 距離以外の料金条件を候補ごとに一度検証し、通常の見積もりと同じ計算式・円単位の丸めで比較する。
+ * 料金条件を検証できた候補のみ対象とし、共通の走行距離の未入力には影響されない。
  * 整数の十分の一kmを列挙し、両端を含む全0.1km地点で最安候補のID集合を比較する。
  * 同額帯への出入り、単一点だけの同額も区間として保持する。2候補未満では最安区間を返さない。
  * 区間端点は標本地点であり、連続的な料金曲線の厳密な交点ではない。
@@ -62,9 +62,13 @@ export const compareDistances = (input: {
     const { gasolinePrice, fuelEfficiency, range } = input;
     const candidates: DistanceCandidate[] = [];
     const incompleteCandidateIds: string[] = [];
+    const estimatesAt: NonNullable<ReturnType<typeof prepareServiceEstimate>>[] = [];
     for (const candidate of input.candidates) {
-        if (estimateService({ ...candidate, gasolinePrice, fuelEfficiency, distanceKm: 0 })) candidates.push(candidate);
-        else incompleteCandidateIds.push(candidate.id);
+        const estimateAt = prepareServiceEstimate({ ...candidate, gasolinePrice, fuelEfficiency });
+        if (estimateAt) {
+            candidates.push(candidate);
+            estimatesAt.push(estimateAt);
+        } else incompleteCandidateIds.push(candidate.id);
     }
     const points: DistancePoint[] = [];
     const bands: CheapestDistanceBand[] = [];
@@ -74,17 +78,26 @@ export const compareDistances = (input: {
     const minTenth = Math.round(range.minKm * 10);
     const maxTenth = Math.round(range.maxKm * 10);
     const drawingStep = Math.max(1, Math.ceil((maxTenth - minTenth) / 500));
+    const totals: number[] = [];
+    const candidateIds: string[] = [];
     for (let tenth = minTenth; tenth <= maxTenth; tenth++) {
         const distanceKm = tenth / 10;
-        const totals = candidates.map(
-            // biome-ignore lint/style/noNonNullAssertion: 距離0で入力条件を検証済みで、列挙する距離は全て有効。
-            (candidate) => estimateService({ ...candidate, gasolinePrice, fuelEfficiency, distanceKm })!.total,
-        );
-        if ((tenth - minTenth) % drawingStep === 0 || tenth === maxTenth || tenth === 200)
-            points.push({ distanceKm, totals });
+        const isDrawingPoint = (tenth - minTenth) % drawingStep === 0 || tenth === maxTenth || tenth === 200;
+        if (!isDrawingPoint && candidates.length < 2) continue;
+
+        let lowest = Infinity;
+        for (let index = 0; index < estimatesAt.length; index++) {
+            const total = estimatesAt[index](distanceKm).total;
+            totals[index] = total;
+            lowest = Math.min(lowest, total);
+        }
+        if (isDrawingPoint) points.push({ distanceKm, totals: [...totals] });
         if (candidates.length < 2) continue;
-        const lowest = Math.min(...totals);
-        const candidateIds = candidates.filter((_, index) => totals[index] === lowest).map(({ id }) => id);
+
+        candidateIds.length = 0;
+        for (let index = 0; index < candidates.length; index++) {
+            if (totals[index] === lowest) candidateIds.push(candidates[index].id);
+        }
         const previous = bands.at(-1);
         if (
             previous &&
@@ -92,7 +105,7 @@ export const compareDistances = (input: {
             previous.candidateIds.every((id, index) => id === candidateIds[index])
         )
             previous.endKm = distanceKm;
-        else bands.push({ startKm: distanceKm, endKm: distanceKm, candidateIds });
+        else bands.push({ startKm: distanceKm, endKm: distanceKm, candidateIds: [...candidateIds] });
     }
     return { candidates, incompleteCandidateIds, points, bands };
 };
