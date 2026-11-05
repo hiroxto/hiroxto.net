@@ -168,13 +168,9 @@ export function DistanceComparisonChart({
                     <>
                         {result.bands.length === 1 ? (
                             <Text size="sm">この範囲内では最安候補の切替はありません。</Text>
-                        ) : (
-                            <Text size="sm">
-                                この範囲内の切替は{(result.bands.length - 1).toLocaleString('ja-JP')}件です。
-                            </Text>
-                        )}
+                        ) : null}
                         <List aria-label="距離ごとの最安候補" spacing="sm" listStyleType="none">
-                            {result.bands.slice(firstBand, firstBand + bandsPerPage).map((band, index) => (
+                            {result.bands.slice(firstBand, firstBand + bandsPerPage).map((band) => (
                                 <List.Item key={band.startKm}>
                                     <Stack gap={2}>
                                         <Text size="sm" fw={600}>
@@ -186,11 +182,6 @@ export function DistanceComparisonChart({
                                             {band.candidateIds.length > 1 ? '同額で最安' : '最安'}:{' '}
                                             {band.candidateIds.map((id) => labels.get(id)).join('、')}
                                         </Text>
-                                        {firstBand + index > 0 ? (
-                                            <Text size="xs" c="dimmed">
-                                                切替地点: {distanceLabel(band.startKm)}km
-                                            </Text>
-                                        ) : null}
                                     </Stack>
                                 </List.Item>
                             ))}

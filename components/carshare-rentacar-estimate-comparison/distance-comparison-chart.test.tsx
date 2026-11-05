@@ -27,7 +27,7 @@ describe('DistanceComparisonChart', () => {
         });
     });
     afterEach(() => vi.restoreAllMocks());
-    it('範囲を変更すると同額帯と全ての切替地点を更新し、無効な範囲は描画しない', async () => {
+    it('範囲を変更すると同額帯と最安候補の区間を更新し、無効な範囲は描画しない', async () => {
         const user = userEvent.setup();
         renderChart();
         await user.clear(screen.getByLabelText('グラフの上限(km)'));
@@ -36,7 +36,7 @@ describe('DistanceComparisonChart', () => {
         expect(bands.getAllByRole('listitem')).toHaveLength(3);
         expect(bands.getByText('1.5〜2.4km')).toBeInTheDocument();
         expect(bands.getByText('同額で最安: 1. A、2. B')).toBeInTheDocument();
-        expect(bands.getByText('切替地点: 2.5km')).toBeInTheDocument();
+        expect(bands.getByText('2.5〜5km')).toBeInTheDocument();
         await user.clear(screen.getByLabelText('グラフの下限(km)'));
         await user.type(screen.getByLabelText('グラフの下限(km)'), '6');
         expect(screen.getByRole('alert')).toHaveTextContent('上限は下限より大きく');
