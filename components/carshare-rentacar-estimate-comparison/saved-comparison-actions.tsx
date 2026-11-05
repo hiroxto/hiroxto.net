@@ -33,9 +33,6 @@ export function SavedComparisonActions({ comparison, onLoad }: SavedComparisonAc
             </Group>
             <Modal opened={saveOpened} onClose={() => setSaveOpened(false)} title="比較条件の保存">
                 <Stack>
-                    <Text size="sm">
-                        共通の走行条件と比較候補を、このブラウザに保存します。空欄のままでも保存できます。
-                    </Text>
                     {active ? (
                         <Text size="sm">
                             読み込み中:{' '}
