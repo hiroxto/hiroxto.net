@@ -172,3 +172,21 @@ describe('異駅名乗換と分岐を含む小規模グラフ', () => {
         });
     });
 });
+
+it.each([
+    ['tokyo', 'shibuya'],
+    ['shibuya', 'tokyo'],
+] as const)('必須の異駅名接続IDは%sから%sの両方向に適用する', (from, to) => {
+    const result = searchRoutes(from, to, 1, { requiredOutsideTransferIds: ['mitsukoshimae'] });
+    expect(result.truncated).toBe(false);
+    expect(result.routes).toHaveLength(1);
+    expect(result.routes[0].actualDistanceTenths).toBe(12);
+    expect(
+        result.routes[0].transfers.map((transfer) => [transfer.fromStationId, transfer.toStationId, transfer.type]),
+    ).toEqual(from === 'tokyo' ? [['mitsukoshimae', 'ginza', 'outside']] : [['ginza', 'mitsukoshimae', 'outside']]);
+});
+it('到達可能でも全必須接続の実乗換が不可能なら経路なしを確定する', () => {
+    expect(
+        searchRoutes('tokyo', 'shibuya', null, { requiredOutsideTransferIds: ['otemachi', 'mitsukoshimae'] }),
+    ).toEqual({ routes: [], truncated: false, outsideTransferUpperBound: 0 });
+});
