@@ -4,10 +4,12 @@ import {
     Accordion,
     Alert,
     Badge,
+    Box,
     Button,
     Checkbox,
     Divider,
     Group,
+    Input,
     NumberInput,
     type OptionsFilter,
     Paper,
@@ -21,7 +23,7 @@ import {
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRight';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { type CSSProperties, type FormEvent, useEffect, useState, useTransition } from 'react';
+import { type CSSProperties, type FormEvent, useEffect, useId, useState, useTransition } from 'react';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import {
     LINE_DEFINITIONS,
@@ -243,6 +245,7 @@ export function TokyoMetroTransferSearchPage({
     queryError,
 }: TokyoMetroTransferSearchPageProps) {
     const router = useRouter();
+    const outsideTransfersId = useId();
     const [durationLimitMs, setDurationLimitMs] = useState<number | string>(initialDurationLimitMs);
     const [fromStationId, setFromStationId] = useState<string | null>(initialFrom);
     const [toStationId, setToStationId] = useState<string | null>(initialTo);
@@ -534,62 +537,85 @@ export function TokyoMetroTransferSearchPage({
                                             radius="sm"
                                             mb="lg"
                                         />
-                                        <Checkbox.Group
+                                        <Input.Wrapper
+                                            id={outsideTransfersId}
                                             label="利用する改札外乗換駅"
+                                            labelElement="div"
                                             description="利用する駅を1つ以上選択してください。選択を外しても通過や改札内乗換は制限しません。"
-                                            value={outsideTransferIds}
-                                            onChange={(values) =>
-                                                setOutsideTransferIds(
-                                                    allOutsideTransferIds.filter((id) => values.includes(id)),
-                                                )
-                                            }
+                                            role="group"
+                                            aria-labelledby={`${outsideTransfersId}-label`}
+                                            aria-describedby={`${outsideTransfersId}-description ${outsideTransfersId}-required-description`}
                                         >
+                                            <Text
+                                                id={`${outsideTransfersId}-required-description`}
+                                                size="xs"
+                                                c="dimmed"
+                                            >
+                                                必須にした全地点で改札外乗換する経路を検索します。通過や改札内乗換は含みません。最大回数は必須駅の数以上にしてください。利用を外すと、その駅の必須指定も解除します。
+                                            </Text>
                                             <Group justify="flex-end" mt="sm">
                                                 <Button
                                                     type="button"
                                                     variant="default"
                                                     size="xs"
                                                     radius="sm"
-                                                    onClick={() =>
+                                                    onClick={() => {
                                                         setOutsideTransferIds(
                                                             areAllOutsideTransfersSelected ? [] : allOutsideTransferIds,
-                                                        )
-                                                    }
+                                                        );
+                                                        if (areAllOutsideTransfersSelected) {
+                                                            setRequiredOutsideTransferIds([]);
+                                                        }
+                                                    }}
                                                 >
                                                     {areAllOutsideTransfersSelected ? '全解除' : '全選択'}
                                                 </Button>
                                             </Group>
                                             <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm" mt="sm">
                                                 {outsideTransferOptions.map((option) => (
-                                                    <Checkbox
-                                                        key={option.value}
-                                                        value={option.value}
-                                                        label={option.label}
-                                                    />
+                                                    <Stack key={option.value} gap="xs">
+                                                        <Checkbox
+                                                            value={option.value}
+                                                            label={option.label}
+                                                            checked={outsideTransferIds.includes(option.value)}
+                                                            onChange={(event) => {
+                                                                const checked = event.currentTarget.checked;
+                                                                setOutsideTransferIds((ids) =>
+                                                                    checked
+                                                                        ? [...ids, option.value]
+                                                                        : ids.filter((id) => id !== option.value),
+                                                                );
+                                                                // 利用を外した駅の必須指定も解除し、操作による矛盾を防ぐ。
+                                                                if (!checked) {
+                                                                    setRequiredOutsideTransferIds((ids) =>
+                                                                        ids.filter((id) => id !== option.value),
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Box pl="lg">
+                                                            <Checkbox
+                                                                value={option.value}
+                                                                label="必須"
+                                                                aria-label={`${option.label}での改札外乗換を必須にする`}
+                                                                checked={requiredOutsideTransferIds.includes(
+                                                                    option.value,
+                                                                )}
+                                                                disabled={!outsideTransferIds.includes(option.value)}
+                                                                onChange={(event) => {
+                                                                    const checked = event.currentTarget.checked;
+                                                                    setRequiredOutsideTransferIds((ids) =>
+                                                                        checked
+                                                                            ? [...ids, option.value]
+                                                                            : ids.filter((id) => id !== option.value),
+                                                                    );
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    </Stack>
                                                 ))}
                                             </SimpleGrid>
-                                        </Checkbox.Group>
-                                        <Checkbox.Group
-                                            label="必須の改札外乗換駅"
-                                            description="選択した全地点で改札外乗換する経路を検索します。通過や改札内乗換は含みません。利用する駅にも選択し、最大回数は必須駅の数以上にしてください。"
-                                            value={requiredOutsideTransferIds}
-                                            onChange={(values) =>
-                                                setRequiredOutsideTransferIds(
-                                                    allOutsideTransferIds.filter((id) => values.includes(id)),
-                                                )
-                                            }
-                                            mt="lg"
-                                        >
-                                            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm" mt="sm">
-                                                {outsideTransferOptions.map((option) => (
-                                                    <Checkbox
-                                                        key={option.value}
-                                                        value={option.value}
-                                                        label={option.label}
-                                                    />
-                                                ))}
-                                            </SimpleGrid>
-                                        </Checkbox.Group>
+                                        </Input.Wrapper>
                                     </Accordion.Panel>
                                 </Accordion.Item>
                             </Accordion>
