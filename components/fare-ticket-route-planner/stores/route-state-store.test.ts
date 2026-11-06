@@ -11,6 +11,9 @@ describe('useRouteStateStore', () => {
             destination: '',
             routes: [{ id: 'initial', line: '', station: '' }],
             notes: '',
+            past: [],
+            future: [],
+            editGroup: null,
         });
     });
 
@@ -85,5 +88,149 @@ describe('useRouteStateStore', () => {
 
         expect(useRouteStateStore.getState().routes).toHaveLength(1);
         expect(useRouteStateStore.getState().routes[0]?.line).toBe('');
+    });
+});
+
+describe('経路編集の履歴', () => {
+    beforeEach(() => {
+        useRouteStateStore.setState({
+            month: '',
+            day: '',
+            dateOption: 'use',
+            departure: '',
+            destination: '',
+            routes: [{ id: 'one', line: '', station: '' }],
+            notes: '',
+            past: [],
+            future: [],
+            editGroup: null,
+        });
+    });
+    test('同じ欄の連続入力を一度で戻し、確定後の入力は別操作として戻す', () => {
+        const store = useRouteStateStore.getState;
+        store().setDeparture('東');
+        store().setDeparture('東京');
+        store().finishEditing();
+        store().setDeparture('東京駅');
+        store().undo();
+        expect(store().departure).toBe('東京');
+        store().undo();
+        expect(store().departure).toBe('');
+        store().redo();
+        expect(store().departure).toBe('東京');
+        store().redo();
+        expect(store().departure).toBe('東京駅');
+    });
+    test('読み込みと逆転を戻すと日付・備考・発着・経路をまとめて復元する', () => {
+        const store = useRouteStateStore.getState;
+        const loaded = {
+            month: '11',
+            day: '5',
+            dateOption: 'skip' as const,
+            departure: '東京',
+            destination: '博多',
+            routes: [{ id: 'saved', line: '新幹線', station: '' }],
+            notes: '保存した備考',
+        };
+        store().reconstruct(loaded);
+        store().reverse();
+        store().undo();
+        expect(store()).toMatchObject(loaded);
+        store().undo();
+        expect(store()).toMatchObject({
+            month: '',
+            day: '',
+            dateOption: 'use',
+            departure: '',
+            destination: '',
+            notes: '',
+            routes: [{ id: 'one', line: '', station: '' }],
+        });
+        store().redo();
+        expect(store()).toMatchObject(loaded);
+        store().redo();
+        expect(store()).toMatchObject({ ...loaded, departure: '博多', destination: '東京' });
+    });
+    test('同値の変更は履歴を増やさずRedoを残し、新しい変更でRedoを破棄する', () => {
+        const store = useRouteStateStore.getState;
+        store().setNotes('備考');
+        store().addRoute(-1);
+        store().undo();
+        store().setNotes('備考');
+        expect(store().past).toHaveLength(1);
+        expect(store().future).toHaveLength(1);
+        store().setDestination('大阪');
+        expect(store().future).toHaveLength(0);
+        store().redo();
+        expect(store().destination).toBe('大阪');
+    });
+    test('行の追加・編集・削除を順に戻し直せる', () => {
+        const store = useRouteStateStore.getState;
+        store().addRoute(-1);
+        store().updateLine(1, '東海');
+        store().updateLine(1, '東海道線');
+        store().deleteRoute(1);
+        store().undo();
+        expect(store().routes[1]?.line).toBe('東海道線');
+        store().undo();
+        expect(store().routes[1]?.line).toBe('');
+        store().undo();
+        expect(store().routes).toHaveLength(1);
+        store().redo();
+        store().redo();
+        store().redo();
+        expect(store().routes).toHaveLength(1);
+    });
+    test('日付の一括指定と日付省略をそれぞれ一操作で戻す', () => {
+        const store = useRouteStateStore.getState;
+        store().setCalendarDate('12', '31');
+        store().skipDate();
+        store().undo();
+        expect(store()).toMatchObject({ month: '12', day: '31', dateOption: 'use' });
+        store().undo();
+        expect(store()).toMatchObject({ month: '', day: '', dateOption: 'use' });
+        store().redo();
+        store().redo();
+        expect(store()).toMatchObject({ month: '', day: '', dateOption: 'skip' });
+    });
+    test('空の設定と経路をクリアしても戻す操作を追加しない', () => {
+        const store = useRouteStateStore.getState;
+        store().deleteAllRoutes();
+        store().deleteEmptyRoutes();
+        store().clearSetting();
+        store().resetNotes();
+        expect(store().past).toEqual([]);
+        expect(store().routes).toEqual([{ id: 'one', line: '', station: '' }]);
+    });
+    test('保存するのは現在の入力だけで履歴は保存しない', async () => {
+        const store = useRouteStateStore.getState;
+        store().setNotes('保存する備考');
+        const persisted = JSON.parse(window.localStorage.getItem('route-state') ?? '{}');
+        expect(persisted.state).toEqual({
+            month: '',
+            day: '',
+            dateOption: 'use',
+            departure: '',
+            destination: '',
+            routes: [{ id: 'one', line: '', station: '' }],
+            notes: '保存する備考',
+        });
+        await useRouteStateStore.persist.rehydrate();
+        expect(store().past).toEqual([]);
+        expect(store().future).toEqual([]);
+    });
+    test('開始値に戻して欄を離れた編集を除き、以前の操作を一度で戻せる', () => {
+        const store = useRouteStateStore.getState;
+        store().setNotes('備考');
+        store().finishEditing();
+        store().setDeparture('上');
+        store().setDeparture('');
+        store().finishEditing();
+        expect(store().past).toHaveLength(1);
+        store().undo();
+        expect(store().notes).toBe('');
+        expect(store().past).toHaveLength(0);
+        store().redo();
+        expect(store().notes).toBe('備考');
     });
 });

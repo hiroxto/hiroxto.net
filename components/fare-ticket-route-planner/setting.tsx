@@ -34,6 +34,7 @@ export function Setting() {
                                     radius="sm"
                                     placeholder="月"
                                     value={month}
+                                    onBlur={() => useRouteStateStore.getState().finishEditing()}
                                     onChange={(event) => setMonth(event.target.value)}
                                     disabled={dateOption !== 'use'}
                                 />
@@ -45,6 +46,7 @@ export function Setting() {
                                     radius="sm"
                                     placeholder="日"
                                     value={day}
+                                    onBlur={() => useRouteStateStore.getState().finishEditing()}
                                     onChange={(event) => setDay(event.target.value)}
                                     disabled={dateOption !== 'use'}
                                 />
@@ -58,6 +60,7 @@ export function Setting() {
                             radius="sm"
                             placeholder="発駅"
                             value={departure}
+                            onBlur={() => useRouteStateStore.getState().finishEditing()}
                             onChange={(event) => setDeparture(event.target.value)}
                         />
                     </Input.Wrapper>
@@ -68,6 +71,7 @@ export function Setting() {
                             radius="sm"
                             placeholder="着駅"
                             value={destination}
+                            onBlur={() => useRouteStateStore.getState().finishEditing()}
                             onChange={(event) => setDestination(event.target.value)}
                         />
                     </Input.Wrapper>

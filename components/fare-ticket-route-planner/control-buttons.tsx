@@ -3,6 +3,8 @@
 import { Button, Grid, Modal, Select } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { ArrowUUpLeftIcon } from '@phosphor-icons/react/dist/csr/ArrowUUpLeft';
+import { ArrowUUpRightIcon } from '@phosphor-icons/react/dist/csr/ArrowUUpRight';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -146,24 +148,28 @@ function SaveRouteModal({
 export function ControlButtons() {
     const isMobile = useMediaQuery('(max-width: 47.99em)');
     const {
-        setMonth,
-        setDay,
+        setCalendarDate,
+        clearSetting,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
         setDateWithIndex,
-        enableDateOption,
         reverse,
-        resetStations,
         addRoute,
         deleteEmptyRoutes,
         deleteAllRoutes,
         resetNotes,
     } = useRouteStateStore(
         useShallow((state) => ({
-            setMonth: state.setMonth,
-            setDay: state.setDay,
+            setCalendarDate: state.setCalendarDate,
+            clearSetting: state.clearSetting,
+            undo: state.undo,
+            redo: state.redo,
+            canUndo: state.past.length > 0,
+            canRedo: state.future.length > 0,
             setDateWithIndex: state.setDateWithIndex,
-            enableDateOption: state.useDate,
             reverse: state.reverse,
-            resetStations: state.resetStations,
             addRoute: state.addRoute,
             deleteEmptyRoutes: state.deleteEmptyRoutes,
             deleteAllRoutes: state.deleteAllRoutes,
@@ -206,10 +212,7 @@ export function ControlButtons() {
     });
 
     const handleClearSetting = () => {
-        clearSettingModal.openModal(() => {
-            enableDateOption();
-            resetStations();
-        });
+        clearSettingModal.openModal(clearSetting);
     };
 
     const handleClearAllRoutes = () => clearAllRoutesModal.openModal(deleteAllRoutes);
@@ -230,8 +233,7 @@ export function ControlButtons() {
     const handleCalendarChange = (newValue: string | Date | null) => {
         const newValueDate = newValue == null ? null : new Date(newValue);
         if (calendarValue != null && newValueDate != null && isSameCalendarDate(calendarValue, newValueDate)) {
-            setMonth(String(newValueDate.getMonth() + 1));
-            setDay(String(newValueDate.getDate()));
+            setCalendarDate(String(newValueDate.getMonth() + 1), String(newValueDate.getDate()));
             calendarModalHandlers.close();
         }
 
@@ -258,6 +260,30 @@ export function ControlButtons() {
     return (
         <>
             <Grid columns={12} gap="xs">
+                <Grid.Col span={6}>
+                    <SoundButton
+                        fullWidth
+                        soundType="click"
+                        variant="default"
+                        disabled={!canUndo}
+                        onClick={undo}
+                        leftSection={<ArrowUUpLeftIcon size={18} aria-hidden="true" />}
+                    >
+                        元に戻す
+                    </SoundButton>
+                </Grid.Col>
+                <Grid.Col span={6}>
+                    <SoundButton
+                        fullWidth
+                        soundType="click"
+                        variant="default"
+                        disabled={!canRedo}
+                        onClick={redo}
+                        leftSection={<ArrowUUpRightIcon size={18} aria-hidden="true" />}
+                    >
+                        やり直す
+                    </SoundButton>
+                </Grid.Col>
                 {baseGrayButtons
                     .filter((definition) => !isMobile || definition.key !== 'add-route')
                     .map((definition) => (
