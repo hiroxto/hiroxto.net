@@ -72,6 +72,7 @@ describe('ControlButtons', () => {
     });
 
     test('文字入力は欄ごとにまとめ、欄を離れた後の編集と削除をボタンで戻せる', async () => {
+        const playSound = vi.spyOn(Audio.prototype, 'play');
         const user = userEvent.setup();
         render(
             <MantineProvider env="test">
@@ -86,11 +87,15 @@ describe('ControlButtons', () => {
         await user.type(screen.getByPlaceholderText('発駅'), '東京');
         await user.type(screen.getByPlaceholderText('備考'), '往復');
         await user.type(screen.getByPlaceholderText('発駅'), '駅');
+        playSound.mockClear();
         await user.click(screen.getByRole('button', { name: '元に戻す' }));
+        expect(playSound).toHaveBeenCalledTimes(1);
         expect(screen.getByPlaceholderText('発駅')).toHaveValue('東京');
         await user.click(screen.getByRole('button', { name: '元に戻す' }));
         expect(screen.getByPlaceholderText('備考')).toHaveValue('');
+        playSound.mockClear();
         await user.click(screen.getByRole('button', { name: 'やり直す' }));
+        expect(playSound).toHaveBeenCalledTimes(1);
         expect(screen.getByPlaceholderText('備考')).toHaveValue('往復');
         await user.click(screen.getByRole('button', { name: '経路追加' }));
         expect(screen.getByRole('button', { name: 'やり直す' })).toBeDisabled();

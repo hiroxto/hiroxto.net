@@ -261,28 +261,28 @@ export function ControlButtons() {
         <>
             <Grid columns={12} gap="xs">
                 <Grid.Col span={6}>
-                    <Button
+                    <SoundButton
                         fullWidth
-                        radius="sm"
+                        soundType="click"
                         variant="default"
                         disabled={!canUndo}
                         onClick={undo}
                         leftSection={<ArrowUUpLeftIcon size={18} aria-hidden="true" />}
                     >
                         元に戻す
-                    </Button>
+                    </SoundButton>
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <Button
+                    <SoundButton
                         fullWidth
-                        radius="sm"
+                        soundType="click"
                         variant="default"
                         disabled={!canRedo}
                         onClick={redo}
                         leftSection={<ArrowUUpRightIcon size={18} aria-hidden="true" />}
                     >
                         やり直す
-                    </Button>
+                    </SoundButton>
                 </Grid.Col>
                 {baseGrayButtons
                     .filter((definition) => !isMobile || definition.key !== 'add-route')
