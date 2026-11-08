@@ -8,7 +8,7 @@ import {
     Card,
     Group,
     Loader,
-    Select,
+    NativeSelect,
     SimpleGrid,
     Stack,
     Tabs,
@@ -382,23 +382,14 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                 value={token}
                                 onChange={(event) => setToken(event.currentTarget.value)}
                             />
-                            <Select
-                                comboboxProps={{ radius: 'sm' }}
-                                styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                            <NativeSelect
                                 labelProps={{ fw: 500 }}
                                 radius="sm"
                                 label="自動取得間隔"
-                                data={AUTO_FETCH_INTERVAL_OPTIONS.map((option) => ({
-                                    value: option.value,
-                                    label: option.label,
-                                }))}
+                                data={[...AUTO_FETCH_INTERVAL_OPTIONS]}
                                 value={autoFetchIntervalSeconds.toString()}
-                                onChange={(value) => {
-                                    if (value == null) {
-                                        return;
-                                    }
-
-                                    const nextIntervalSeconds = Number(value);
+                                onChange={(event) => {
+                                    const nextIntervalSeconds = Number(event.currentTarget.value);
                                     setAutoFetchIntervalSeconds(nextIntervalSeconds);
 
                                     if (autoFetchEnabled) {
@@ -406,7 +397,6 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                         resetAutoFetchStability();
                                     }
                                 }}
-                                allowDeselect={false}
                             />
                             <Stack gap={2}>
                                 <Text lh={1.2}>自動取得状態: {autoFetchEnabled ? '有効' : '無効'}</Text>
