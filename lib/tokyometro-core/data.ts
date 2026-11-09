@@ -2,7 +2,7 @@
  * 東京メトロの検索・経路作成で共用するマスターデータの仕様。
  * 駅・路線のIDは各辞書のキーで定義し、路線網と乗換接続から同じIDを参照する。
  * 距離はすべて0.1km単位の整数。営業キロと運賃計算キロ程は別データとして保持する。
- * 接続は往復で利用する。乗換のない同一路線の本線・支線は同じ路線IDで表す。
+ * 接続は双方向に使う。乗換を挟まずにつながる本線と支線には、同じ路線IDを使う。
  * 検索の探索条件や経路作成の入力制約はここでは定義せず、それぞれの機能で扱う。
  */
 
@@ -347,7 +347,7 @@ export const FARE_CALCULATION_DISTANCE_OVERRIDES = [
     ['shibuya', 'omote-sando', 13],
 ] as const satisfies ReadonlyArray<readonly [StationId, StationId, number]>;
 
-/** 本線または支線一つの路線IDと、隣接駅順の駅・営業キロ。 */
+/** 本線または支線の路線IDと、駅順に並べた駅ID・直前の駅からの営業キロ。 */
 type LinePathDefinition = {
     /** この経路が属する路線。本線・支線は同じ路線IDを使う。 */
     lineId: LineId;
@@ -357,7 +357,7 @@ type LinePathDefinition = {
 
 /**
  * 路線網を構成する本線・支線の一覧。各要素は{lineId, stations}。
- * stationsは駅順の[駅ID, 直前駅からの営業キロ]で、距離は0.1km単位、先頭駅の距離は0。
+ * stationsには[駅ID, 直前の駅からの営業キロ]を駅順に並べる。距離は0.1km単位とし、先頭駅は0とする。
  * 隣接する要素を双方向に接続する。同じlineIdの経路は分岐駅を共有する一つの路線として扱う。
  * 配列内の駅順は接続駅の表示順にも使う。丸ノ内線は本線を先、支線を後に定義する。
  */
@@ -642,7 +642,7 @@ export const SAME_STATION_OUTSIDE_TRANSFERS = [
 /**
  * 同じ駅で改札内・改札外の両方を利用できる路線ペア。各要素は[駅ID, 路線ID1, 路線ID2]。
  * 方向を区別せず、SAME_STATION_OUTSIDE_TRANSFERSの該当ペアに改札内乗換を追加する。
- * 候補列挙は改札外を優先する。大手町駅の公式設備案内に基づく。
+ * 乗換候補を並べるときは改札外を先にする。この定義は大手町駅の公式設備案内に基づく。
  * https://www.tokyometro.jp/station/otemachi/accessibility/index.html
  */
 export const SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS = [

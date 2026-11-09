@@ -216,7 +216,7 @@ export function evaluateAutoFetchStability(
     state: AutoFetchStabilityState,
     currentCount: number,
 ): AutoFetchStabilityEvaluation {
-    // 初回は比較値を保存し、変動がない回数には加えない。
+    // 初回は比較値を保存し、同じ値が続いた回数は0とする。
     if (state.previousCount == null) {
         return {
             previousCount: currentCount,
