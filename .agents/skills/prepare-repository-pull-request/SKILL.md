@@ -15,7 +15,9 @@ PR のタイトル・本文の草案や、コミットの分割案だけを求�
 
 - 実装とその関連テストは同じコミットにまとめてよい。説明文書や開発規則も、変更の目的が異なる場合に分ける。
 - メッセージは `fix: 入力フォームのエラー表示を修正` のように、短い Conventional Commits 形式と簡潔な日本語を使う。
-- 接頭辞は `feat:`、`fix:`、`delete:`、`style:`、`docs:`、`chore:`、`test:`、`ci:` から選ぶ。削除が主目的なら `delete:` を優先する。スコープや `BREAKING CHANGE` は不要。
+- 接頭辞は `feat:`、`fix:`、`refactor:`、`perf:`、`delete:`、`revert:`、`style:`、`docs:`、`chore:`、`test:`、`ci:` から選ぶ。スコープや `BREAKING CHANGE` は不要。
+- 動作を変えずに実装を整理するときは `refactor:`、性能改善が主目的のときは `perf:` を使う。
+- 過去のコミットを取り消す場合は `revert:` を優先する。削除が主目的なら `delete:` を使う。
 
 ## テンプレートに沿って本文を作る
 
