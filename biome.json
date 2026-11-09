@@ -213,6 +213,11 @@
             }
         }
     },
+    "markdown": {
+        "formatter": {
+            "enabled": false
+        }
+    },
     "javascript": {
         "formatter": {
             "quoteStyle": "single",
