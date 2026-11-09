@@ -35,7 +35,7 @@
         "wrangler": "^4.68.1"
     },
     "dependencies": {
-        "@hookform/resolvers": "^5.2.2",
+        "@hookform/resolvers": "^7.0.0",
         "@mantine/charts": "9.7.5",
         "@mantine/core": "^9.7.0",
         "@mantine/dates": "^9.7.0",
