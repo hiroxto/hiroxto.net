@@ -2,7 +2,7 @@
  * 東京メトロの共通路線網の仕様。
  * LINE_PATHSの隣接駅を実乗車距離付きで双方向に接続し、同一路線の本線・支線を統合する。
  * 異駅名乗換は定義された路線ペアを双方向に接続する。同駅乗換は駅間グラフには含めない。
- * 同駅の異なる所属路線間は原則改札内とし、マスターデータで指定された例外を適用する。
+ * 同じ駅で異なる路線に乗り換える場合は、原則として改札内とする。例外はマスターデータで指定する。
  * 改札内外の両方が使える場合は改札外を先に返す。徒歩乗換の距離は0として扱う。
  * 検索条件、訪問履歴、探索予算、経路作成の入力状態はこのモジュールでは扱わない。
  * 以下のグラフ・集合は共通マスターから初期化して共有する。呼出側は変更しない。
@@ -152,7 +152,7 @@ export const getSameStationTransferTypes = (
     return outsideTransferKeys.has(key) ? ['outside'] : ['inside'];
 };
 
-/** 複数路線が所属する駅と異駅名乗換の両端駅。乗車区間の終点候補に使う。 */
+/** 複数の路線が乗り入れる駅と、異駅名乗換の両端の駅。乗車区間の終点候補に使う。 */
 export const transferStationIds = new Set<StationId>([
     ...[...stationLineIds].filter(([, lineIds]) => lineIds.size > 1).map(([stationId]) => stationId),
     ...CROSS_STATION_TRANSFERS.flatMap(({ fromStationId, toStationId }) => [fromStationId, toStationId]),

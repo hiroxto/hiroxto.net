@@ -2,7 +2,7 @@
  * 駅選択・検証の共通仕様。
  * 駅一覧はSTATION_NAMESの定義順を維持し、所属路線はLINE_PATHSの登録順に重複なく並べる。
  * 駅IDはSTATION_NAMESに登録されたキーだけを受け付ける。発着駅の組合せは各機能で検証する。
- * 同じ駅IDと、CROSS_STATION_TRANSFERSの異駅名乗換駅同士は同一駅として扱う。
+ * 2駅のIDが同じ場合や、CROSS_STATION_TRANSFERSに定義した異駅名乗換の両端に当たる場合は、同一駅として扱う。
  */
 import { z } from 'zod';
 import { CROSS_STATION_TRANSFERS, STATION_NAMES, type StationId } from '@/lib/tokyometro-core/data';
@@ -25,7 +25,7 @@ export const stations: StationOption[] = stationIds.map((id) => ({
 export const isStationId = (value: string): value is StationId => stationIdSchema.safeParse(value).success;
 
 /**
- * 同じ駅ID、または異駅名乗換の両端駅かを方向によらず判定する。未指定の駅は対象外。
+ * 指定された2駅のIDが同じか、異駅名乗換の両端に当たるかを判定する。駅の順序は問わず、未指定の駅は対象外とする。
  * 異駅名の組合せは旅客営業規程第45条第2項の乗換駅一覧に対応する。
  * https://www.tokyometro.jp/ticket/terms/pdf/ryokyaku_eigyo_260119.pdf
  */
