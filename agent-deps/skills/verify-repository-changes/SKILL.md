@@ -5,7 +5,7 @@ description: hiroxto.net でテストを設計・修正するとき、または�
 
 # テストと変更後の検証
 
-変更内容に応じてテストを設計し、変更後に検証する。ブラウザでの確認は [plan-playwright-verification](../plan-playwright-verification/SKILL.md) に従う。
+変更内容に応じてテストを設計し、変更後に検証する。ブラウザでの確認は `plan-playwright-verification` に従う。
 
 ## 変更に合うテストを選ぶ
 

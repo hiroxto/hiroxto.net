@@ -23,12 +23,12 @@ PR のタイトル・本文の草案や、コミットの分割案だけを求�
 
 対象ブランチと比較先ブランチの間の差分とコミットを確認し、[PR テンプレート](../../../.github/PULL_REQUEST_TEMPLATE.md) を読む。タイトルは変更内容を簡潔に表す。本文はテンプレートの見出しと確認項目を保ち、変更の概要、確認内容、関連 Issue があればそのリンクを書く。
 
-- UI を変更した場合はスクリーンショットを添付し、確認に使った画面サイズとともに「動作確認」に載せる。確認する画面サイズと操作は [plan-playwright-verification](../plan-playwright-verification/SKILL.md) に従う。
+- UI を変更した場合はスクリーンショットを添付し、確認に使った画面サイズとともに「動作確認」に載せる。確認する画面サイズと操作は `plan-playwright-verification` に従う。
 - 箇条書きに補足を加える場合は、その項目の子項目として書く。
 
 ## PR 作成後の動作確認を行う
 
-PR 作成後は [plan-playwright-verification](../plan-playwright-verification/SKILL.md) に従い、Preview URL での動作確認の要否を判断し、必要な確認を実行する。結果と未確認事項を PR 本文の「動作確認」に反映する。
+PR 作成後は `plan-playwright-verification` に従い、Preview URL での動作確認の要否を判断し、必要な確認を実行する。結果と未確認事項を PR 本文の「動作確認」に反映する。
 
 ## 作成・更新後の本文を確認する
 
