@@ -8,16 +8,16 @@
 
 | 作業 | 参照先 |
 | --- | --- |
-| テストの設計・修正、変更後の検証 | [verify-repository-changes](.agents/skills/verify-repository-changes/SKILL.md) |
-| Playwright による確認の要否・範囲の判断、計画・実行 | [plan-playwright-verification](.agents/skills/plan-playwright-verification/SKILL.md) |
-| コミットや PR 作成を伴う作業への着手、PR 本文の作成・更新 | [prepare-repository-pull-request](.agents/skills/prepare-repository-pull-request/SKILL.md) |
+| テストの設計・修正、変更後の検証 | [verify-repository-changes](agent-deps/skills/verify-repository-changes/SKILL.md) |
+| Playwright による確認の要否・範囲の判断、計画・実行 | [plan-playwright-verification](agent-deps/skills/plan-playwright-verification/SKILL.md) |
+| コミットや PR 作成を伴う作業への着手、PR 本文の作成・更新 | [prepare-repository-pull-request](agent-deps/skills/prepare-repository-pull-request/SKILL.md) |
 
 ## 技術構成と開発コマンド
 
 - Next.js App Router / TypeScript
 - UI は Mantine を優先し、Tailwind CSS v4 は補助用途に使う。
 - 状態管理は Zustand、テストは Vitest + Testing Library + jsdom、整形・Lint は Biome を使う。
-- Cloudflare Workers へ OpenNext でデプロイする。ローカルの Node.js は mise で管理する。
+- Cloudflare Workers へ OpenNext でデプロイする。ローカルの Node.js と apm は mise で管理する。
 
 | コマンド | 用途 |
 | --- | --- |
@@ -66,6 +66,10 @@
 - `lib/train-number/gen/*.ts` は直接編集しない。
 - `lib/train-number/content/*.md` を更新したら、`npm run generate:train-number-content` で再生成する。
 - 生成結果の差分は `npm run check:train-number-content` で確認する。
+- `.claude/skills/` と `.agents/skills/` は直接編集しない。スキルは `agent-deps/skills/` で編集する。
+- `agent-deps/skills/` を更新したら、`apm install` で再生成する。
+- 生成結果の差分は `apm audit --ci --no-policy` で確認する。
+- スキルから別のスキルを参照するときは、相対リンクを使わずにスキル名を書く。`apm install` は、スキル間の相対リンクを Git で管理しない `apm_modules/` へのリンクに書き換える。
 
 <!-- BEGIN:nextjs-agent-rules -->
 
