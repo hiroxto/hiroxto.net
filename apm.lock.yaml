@@ -1,0 +1,205 @@
+lockfile_version: '1'
+apm_version: 0.35.0
+dependencies:
+- repo_url: _local/agent-deps
+  name: hiroxto-net-agent-deps
+  version: 1.0.0
+  package_type: skill_bundle
+  deployed_files:
+  - .agents/skills/plan-playwright-verification
+  - .agents/skills/plan-playwright-verification/SKILL.md
+  - .agents/skills/plan-playwright-verification/agents/openai.yaml
+  - .agents/skills/prepare-repository-pull-request
+  - .agents/skills/prepare-repository-pull-request/SKILL.md
+  - .agents/skills/prepare-repository-pull-request/agents/openai.yaml
+  - .agents/skills/verify-repository-changes
+  - .agents/skills/verify-repository-changes/SKILL.md
+  - .agents/skills/verify-repository-changes/agents/openai.yaml
+  - .claude/skills/plan-playwright-verification
+  - .claude/skills/plan-playwright-verification/SKILL.md
+  - .claude/skills/plan-playwright-verification/agents/openai.yaml
+  - .claude/skills/prepare-repository-pull-request
+  - .claude/skills/prepare-repository-pull-request/SKILL.md
+  - .claude/skills/prepare-repository-pull-request/agents/openai.yaml
+  - .claude/skills/verify-repository-changes
+  - .claude/skills/verify-repository-changes/SKILL.md
+  - .claude/skills/verify-repository-changes/agents/openai.yaml
+  deployed_file_hashes:
+    .agents/skills/plan-playwright-verification/SKILL.md: sha256:1abe441de31f8c092f1a6509a6ad57d2bdb590d12dcb53e66bdde1461a58dbe4
+    .agents/skills/plan-playwright-verification/agents/openai.yaml: sha256:b73e14cc5282da270ace1010cd6ae87f2d6130fc0831faca4015ddcbb5197695
+    .agents/skills/prepare-repository-pull-request/SKILL.md: sha256:929747bb73b517c81c3552c3c82cdbec6b37a2b60bb259093cd11fd65a992e12
+    .agents/skills/prepare-repository-pull-request/agents/openai.yaml: sha256:147106321201d600ddfd1e8cf1b0e786326b9ac5f0259201154fc6ddbd1e3227
+    .agents/skills/verify-repository-changes/SKILL.md: sha256:7fdd86f448b0b4fe80ad9afa4bc5e41f002d32d46fd255466c0995fa60f5ed39
+    .agents/skills/verify-repository-changes/agents/openai.yaml: sha256:4f12c467fad95698f671a6f2efe6220aa2dc058b5c136625ca272032dc87020b
+    .claude/skills/plan-playwright-verification/SKILL.md: sha256:1abe441de31f8c092f1a6509a6ad57d2bdb590d12dcb53e66bdde1461a58dbe4
+    .claude/skills/plan-playwright-verification/agents/openai.yaml: sha256:b73e14cc5282da270ace1010cd6ae87f2d6130fc0831faca4015ddcbb5197695
+    .claude/skills/prepare-repository-pull-request/SKILL.md: sha256:929747bb73b517c81c3552c3c82cdbec6b37a2b60bb259093cd11fd65a992e12
+    .claude/skills/prepare-repository-pull-request/agents/openai.yaml: sha256:147106321201d600ddfd1e8cf1b0e786326b9ac5f0259201154fc6ddbd1e3227
+    .claude/skills/verify-repository-changes/SKILL.md: sha256:7fdd86f448b0b4fe80ad9afa4bc5e41f002d32d46fd255466c0995fa60f5ed39
+    .claude/skills/verify-repository-changes/agents/openai.yaml: sha256:4f12c467fad95698f671a6f2efe6220aa2dc058b5c136625ca272032dc87020b
+  source: local
+  local_path: ./agent-deps
+  content_hash: sha256:ddbf6513cffce1650e024ea9e72f9933037b1f3d601d92ad3ab287eeaa09ea64
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/skills/plan-playwright-verification
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/plan-playwright-verification/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:1abe441de31f8c092f1a6509a6ad57d2bdb590d12dcb53e66bdde1461a58dbe4
+- kind: project-relative
+  target: claude
+  value: .claude/skills/plan-playwright-verification/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:b73e14cc5282da270ace1010cd6ae87f2d6130fc0831faca4015ddcbb5197695
+- kind: project-relative
+  target: claude
+  value: .claude/skills/prepare-repository-pull-request
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/prepare-repository-pull-request/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:929747bb73b517c81c3552c3c82cdbec6b37a2b60bb259093cd11fd65a992e12
+- kind: project-relative
+  target: claude
+  value: .claude/skills/prepare-repository-pull-request/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:147106321201d600ddfd1e8cf1b0e786326b9ac5f0259201154fc6ddbd1e3227
+- kind: project-relative
+  target: claude
+  value: .claude/skills/verify-repository-changes
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/verify-repository-changes/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:7fdd86f448b0b4fe80ad9afa4bc5e41f002d32d46fd255466c0995fa60f5ed39
+- kind: project-relative
+  target: claude
+  value: .claude/skills/verify-repository-changes/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:4f12c467fad95698f671a6f2efe6220aa2dc058b5c136625ca272032dc87020b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/plan-playwright-verification
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/plan-playwright-verification/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:1abe441de31f8c092f1a6509a6ad57d2bdb590d12dcb53e66bdde1461a58dbe4
+- kind: project-relative
+  target: codex
+  value: .agents/skills/plan-playwright-verification/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:b73e14cc5282da270ace1010cd6ae87f2d6130fc0831faca4015ddcbb5197695
+- kind: project-relative
+  target: codex
+  value: .agents/skills/prepare-repository-pull-request
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/prepare-repository-pull-request/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:929747bb73b517c81c3552c3c82cdbec6b37a2b60bb259093cd11fd65a992e12
+- kind: project-relative
+  target: codex
+  value: .agents/skills/prepare-repository-pull-request/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:147106321201d600ddfd1e8cf1b0e786326b9ac5f0259201154fc6ddbd1e3227
+- kind: project-relative
+  target: codex
+  value: .agents/skills/verify-repository-changes
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/verify-repository-changes/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:7fdd86f448b0b4fe80ad9afa4bc5e41f002d32d46fd255466c0995fa60f5ed39
+- kind: project-relative
+  target: codex
+  value: .agents/skills/verify-repository-changes/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-deps
+  active_owner: ./agent-deps
+  content_hash: sha256:4f12c467fad95698f671a6f2efe6220aa2dc058b5c136625ca272032dc87020b
