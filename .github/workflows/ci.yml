@@ -181,3 +181,17 @@ jobs:
 
             - name: Check generated content
               run: npm run check:train-number-content
+
+    check-agent-deps:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Setup mise
+              uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+
+            - name: Check agent deps
+              run: apm audit --ci --no-policy
