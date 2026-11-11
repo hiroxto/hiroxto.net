@@ -144,3 +144,6 @@ next-env.d.ts
 .wrangler/
 
 /.codex/hooks.json
+
+# APM dependencies
+apm_modules/
