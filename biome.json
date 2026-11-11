@@ -6,7 +6,7 @@
         "useIgnoreFile": true
     },
     "files": {
-        "includes": ["**", "!lib/train-number/gen/*.ts"]
+        "includes": ["**", "!lib/train-number/gen/*.ts", "!apm.lock.yaml"]
     },
     "formatter": {
         "enabled": true,
