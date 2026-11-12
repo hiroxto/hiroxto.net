@@ -644,6 +644,8 @@ export const SAME_STATION_OUTSIDE_TRANSFERS = [
  * 方向を区別せず、SAME_STATION_OUTSIDE_TRANSFERSの該当ペアに改札内乗換を追加する。
  * 乗換候補を並べるときは改札外を先にする。この定義は大手町駅の公式設備案内に基づく。
  * https://www.tokyometro.jp/station/otemachi/accessibility/index.html
+ * 旅客営業規程第83条第3項は池袋・新宿三丁目でも改札口を通らない乗換を認めるが、両駅はこの表に含めず、改札外乗換だけとして扱う。
+ * https://www.tokyometro.jp/ticket/terms/pdf/ryokyaku_eigyo_260614.pdf
  */
 export const SAME_STATION_INSIDE_AND_OUTSIDE_TRANSFERS = [
     ['otemachi', 'marunouchi', 'tozai'],
