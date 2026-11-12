@@ -27,7 +27,7 @@ export const isStationId = (value: string): value is StationId => stationIdSchem
 /**
  * 指定された2駅のIDが同じか、異駅名乗換の両端に当たるかを判定する。駅の順序は問わず、未指定の駅は対象外とする。
  * 異駅名の組合せは旅客営業規程第45条第2項の乗換駅一覧に対応する。
- * https://www.tokyometro.jp/ticket/terms/pdf/ryokyaku_eigyo_260119.pdf
+ * https://www.tokyometro.jp/ticket/terms/pdf/ryokyaku_eigyo_260614.pdf
  */
 export const isSameStation = (first: StationId | null, second: StationId | null): boolean =>
     first != null &&
