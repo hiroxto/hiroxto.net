@@ -10,17 +10,19 @@ import { lineToStations, stationToLines } from '@/lib/fare-ticket-route-planner/
 import { getRouteStationError } from '@/lib/fare-ticket-route-planner/validation';
 
 export function RouteEditor() {
-    const { routes, addRoute, updateLine, updateStation, deleteRoute, departure, destination } = useRouteStateStore(
-        useShallow((state) => ({
-            routes: state.routes,
-            addRoute: state.addRoute,
-            updateLine: state.updateLine,
-            updateStation: state.updateStation,
-            deleteRoute: state.deleteRoute,
-            departure: state.departure,
-            destination: state.destination,
-        })),
-    );
+    const { routes, addRoute, updateLine, updateStation, deleteRoute, departure, destination, finishEditing } =
+        useRouteStateStore(
+            useShallow((state) => ({
+                routes: state.routes,
+                addRoute: state.addRoute,
+                updateLine: state.updateLine,
+                updateStation: state.updateStation,
+                deleteRoute: state.deleteRoute,
+                departure: state.departure,
+                destination: state.destination,
+                finishEditing: state.finishEditing,
+            })),
+        );
     const useComplete = useInputSettingStore((state) => state.useComplete);
 
     const handleKeyDown = (index: number, event: KeyboardEvent<HTMLInputElement>) => {
@@ -72,10 +74,10 @@ export function RouteEditor() {
                         stationError={stationError}
                         lineCompletes={getLineCompletes(index)}
                         stationCompletes={getStationCompletes(index)}
-                        onAddRoute={addRoute}
                         onUpdateLine={updateLine}
                         onUpdateStation={updateStation}
                         onDeleteRoute={deleteRoute}
+                        onFinishEditing={finishEditing}
                         onHandleKeyDown={handleKeyDown}
                         isLastRow={index === routes.length - 1}
                     />

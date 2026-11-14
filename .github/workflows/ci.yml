@@ -11,173 +11,173 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-                with:
-                    persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
-            -   name: Setup mise
-                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+            - name: Setup mise
+              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
 
-            -   name: Cache npm
-                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-                with:
-                    path: |
-                        ~/.npm
-                        node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
-                    restore-keys: |
-                        ${{ runner.os }}-node-
+            - name: Cache npm
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: |
+                      ~/.npm
+                      node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
 
-            -   name: Install safe-chain
-                run: |
-                    installer="$RUNNER_TEMP/install-safe-chain.sh"
-                    curl -fsSL https://github.com/AikidoSec/safe-chain/releases/download/1.5.27/install-safe-chain.sh -o "$installer"
-                    echo "600ebddcb3aaf1fd53653a8d7985df44528722c0f5ee7eb9fff86f26a1a4e5a8  $installer" | sha256sum -c -
-                    sh "$installer" --ci
+            - name: Install safe-chain
+              run: |
+                  installer="$RUNNER_TEMP/install-safe-chain.sh"
+                  curl -fsSL https://github.com/AikidoSec/safe-chain/releases/download/1.5.27/install-safe-chain.sh -o "$installer"
+                  echo "600ebddcb3aaf1fd53653a8d7985df44528722c0f5ee7eb9fff86f26a1a4e5a8  $installer" | sha256sum -c -
+                  sh "$installer" --ci
 
-            -   name: Install dependencies
-                run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
     test:
         needs: install
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-                with:
-                    persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
-            -   name: Setup mise
-                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+            - name: Setup mise
+              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
 
-            -   name: Restore dependencies
-                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-                with:
-                    path: |
-                        ~/.npm
-                        node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
-                    fail-on-cache-miss: true
+            - name: Restore dependencies
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: |
+                      ~/.npm
+                      node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
+                  fail-on-cache-miss: true
 
-            -   name: Run Test
-                run: npm run test
+            - name: Run Test
+              run: npm run test
 
     lint:
         needs: install
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-                with:
-                    persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
-            -   name: Setup mise
-                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+            - name: Setup mise
+              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
 
-            -   name: Restore dependencies
-                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-                with:
-                    path: |
-                        ~/.npm
-                        node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
-                    fail-on-cache-miss: true
+            - name: Restore dependencies
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: |
+                      ~/.npm
+                      node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
+                  fail-on-cache-miss: true
 
-            -   name: Run lint
-                run: npm run lint
+            - name: Run lint
+              run: npm run lint
 
     format:
         needs: install
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-                with:
-                    persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
-            -   name: Setup mise
-                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+            - name: Setup mise
+              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
 
-            -   name: Restore dependencies
-                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-                with:
-                    path: |
-                        ~/.npm
-                        node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
-                    fail-on-cache-miss: true
+            - name: Restore dependencies
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: |
+                      ~/.npm
+                      node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
+                  fail-on-cache-miss: true
 
-            -   name: Run format
-                run: npm run format
+            - name: Run format
+              run: npm run format
 
     type-check:
         needs: install
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-                with:
-                    persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
-            -   name: Setup mise
-                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+            - name: Setup mise
+              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
 
-            -   name: Restore dependencies
-                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-                with:
-                    path: |
-                        ~/.npm
-                        node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
-                    fail-on-cache-miss: true
+            - name: Restore dependencies
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: |
+                      ~/.npm
+                      node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
+                  fail-on-cache-miss: true
 
-            -   name: Type Check
-                run: npm run check
+            - name: Type Check
+              run: npm run check
 
     build:
         needs: install
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-                with:
-                    persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
-            -   name: Setup mise
-                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+            - name: Setup mise
+              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
 
-            -   name: Restore dependencies
-                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-                with:
-                    path: |
-                        ~/.npm
-                        node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
-                    fail-on-cache-miss: true
+            - name: Restore dependencies
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: |
+                      ~/.npm
+                      node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
+                  fail-on-cache-miss: true
 
-            -   name: Run build
-                run: npm run build:cf
+            - name: Run build
+              run: npm run build:cf
 
     check-generated-content:
         needs: install
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-                with:
-                    persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
-            -   name: Setup mise
-                uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+            - name: Setup mise
+              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
 
-            -   name: Restore dependencies
-                uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-                with:
-                    path: |
-                        ~/.npm
-                        node_modules
-                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
-                    fail-on-cache-miss: true
+            - name: Restore dependencies
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: |
+                      ~/.npm
+                      node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', 'mise.toml', '.node-version', 'package.json') }}
+                  fail-on-cache-miss: true
 
-            -   name: Check generated content
-                run: npm run check:train-number-content
+            - name: Check generated content
+              run: npm run check:train-number-content

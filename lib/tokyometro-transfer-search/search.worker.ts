@@ -11,6 +11,7 @@ workerScope.onmessage = ({ data }: MessageEvent<RouteSearchRequest>) => {
         const result = searchRoutes(data.originStationId, data.destinationStationId, data.maximumOutsideTransferCount, {
             includeInsideTransfers: data.includeInsideTransfers,
             outsideTransferIds: data.outsideTransferIds,
+            requiredOutsideTransferIds: data.requiredOutsideTransferIds,
             durationLimitMs: data.durationLimitMs,
         });
         workerScope.postMessage({

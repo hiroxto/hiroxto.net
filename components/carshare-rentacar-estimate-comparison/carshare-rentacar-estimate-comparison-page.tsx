@@ -3,13 +3,16 @@
 import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 import { ComparisonCard } from '@/components/carshare-rentacar-estimate-comparison/comparison-card';
+import { DistanceComparisonChart } from '@/components/carshare-rentacar-estimate-comparison/distance-comparison-chart';
 import { DrivingConditionsForm } from '@/components/carshare-rentacar-estimate-comparison/driving-conditions-form';
+import { SavedComparisonActions } from '@/components/carshare-rentacar-estimate-comparison/saved-comparison-actions';
 import type { ComparisonEntry, ComparisonEntryChanges } from '@/components/carshare-rentacar-estimate-comparison/types';
 import { SiteSubpageFrame } from '@/components/common/site-subpage-frame';
 import {
     estimateService,
     type InputValue,
     type ServiceId,
+    serviceDetails,
     services,
 } from '@/lib/carshare-rentacar-estimate-comparison/service-estimate';
 
@@ -34,20 +37,23 @@ export function CarshareRentacarEstimateComparisonPage() {
 
     function addComparison(service: ServiceId) {
         const id = crypto.randomUUID();
-        setSelected((current) => [
-            ...current,
-            {
-                id,
-                service,
-                number:
-                    Math.max(0, ...current.filter((entry) => entry.service === service).map((entry) => entry.number)) +
-                    1,
-                usageFee: '',
-                allDistance: false,
-                toyotaPlan: '12',
-                toyotaHours: '',
-            },
-        ]);
+        setSelected((current) => {
+            const number =
+                Math.max(0, ...current.filter((entry) => entry.service === service).map((entry) => entry.number)) + 1;
+            return [
+                ...current,
+                {
+                    id,
+                    service,
+                    number,
+                    label: `${serviceDetails[service].label} ${number}`,
+                    usageFee: '',
+                    allDistance: false,
+                    toyotaPlan: '12',
+                    toyotaHours: '',
+                },
+            ];
+        });
     }
 
     function updateComparison(id: string, values: ComparisonEntryChanges) {
@@ -61,6 +67,15 @@ export function CarshareRentacarEstimateComparisonPage() {
             description="共通の走行条件から各カーシェア・レンタカーの概算料金を比較。"
         >
             <Stack gap="xl">
+                <SavedComparisonActions
+                    comparison={{ selected, distanceKm, gasolinePrice, fuelEfficiency }}
+                    onLoad={(comparison) => {
+                        setSelected(comparison.selected);
+                        setDistanceKm(comparison.distanceKm);
+                        setGasolinePrice(comparison.gasolinePrice);
+                        setFuelEfficiency(comparison.fuelEfficiency);
+                    }}
+                />
                 <DrivingConditionsForm
                     distanceKm={distanceKm}
                     gasolinePrice={gasolinePrice}
@@ -108,6 +123,11 @@ export function CarshareRentacarEstimateComparisonPage() {
                         </SimpleGrid>
                     </Stack>
                 </section>
+                <DistanceComparisonChart
+                    candidates={selected}
+                    gasolinePrice={gasolinePrice}
+                    fuelEfficiency={fuelEfficiency}
+                />
             </Stack>
         </SiteSubpageFrame>
     );

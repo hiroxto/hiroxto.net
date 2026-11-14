@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "type": "module",
-    "packageManager": "npm@12.2.1",
+    "packageManager": "npm@12.2.2",
     "scripts": {
         "dev": "next dev --hostname 0.0.0.0",
         "build": "next build",
@@ -27,7 +27,7 @@
         "@testing-library/user-event": "^14.6.1",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
-        "jsdom": "^30.0.0",
+        "jsdom": "^31.0.0",
         "postcss": "^8.5.8",
         "tailwindcss": "^4.2.1",
         "typescript": "^7.0.0",
@@ -35,7 +35,8 @@
         "wrangler": "^4.68.1"
     },
     "dependencies": {
-        "@hookform/resolvers": "^5.2.2",
+        "@hookform/resolvers": "^7.0.0",
+        "@mantine/charts": "9.8.0",
         "@mantine/core": "^9.7.0",
         "@mantine/dates": "^9.7.0",
         "@mantine/hooks": "^9.7.0",
@@ -49,6 +50,7 @@
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
         "react-hook-form": "^7.71.2",
+        "recharts": "3.10.1",
         "zod": "^4.3.6",
         "zustand": "^5.0.11"
     }

@@ -138,3 +138,68 @@ describe('小規模グラフの全経路との比較', () => {
         ]);
     });
 });
+
+describe('必須改札外乗換を満たす探索', () => {
+    it('大手町を必須にすると通過・改札内だけの経路を除いて順位を付ける', () => {
+        const result = searchRoutes('tokyo', 'asakusa', 1, { requiredOutsideTransferIds: ['otemachi'] });
+        expect(result.truncated).toBe(false);
+        expect(
+            result.routes.map((route) => ({
+                distance: route.actualDistanceTenths,
+                outside: route.transfers
+                    .filter((transfer) => transfer.type === 'outside')
+                    .map((transfer) => transfer.fromStationId),
+            })),
+        ).toEqual([{ distance: 33, outside: ['otemachi'] }]);
+    });
+    it('複数の必須地点はすべて実際に改札外乗換する', () => {
+        const result = searchRoutes('tokyo', 'asakusa', null, {
+            requiredOutsideTransferIds: ['otemachi', 'mitsukoshimae'],
+        });
+        expect(result.truncated).toBe(false);
+        expect(
+            result.routes.map((route) => route.transfers.map((transfer) => [transfer.fromStationId, transfer.type])),
+        ).toEqual([
+            [
+                ['otemachi', 'outside'],
+                ['mitsukoshimae', 'outside'],
+            ],
+            [
+                ['mitsukoshimae', 'outside'],
+                ['otemachi', 'outside'],
+            ],
+        ]);
+    });
+    it('必須地点が発駅なら経路なしを確定する', () => {
+        expect(searchRoutes('otemachi', 'asakusa', null, { requiredOutsideTransferIds: ['otemachi'] })).toEqual({
+            routes: [],
+            truncated: false,
+            outsideTransferUpperBound: 0,
+        });
+    });
+    it.each([{ visitLimit: 0 }, { durationLimitMs: 0 }])('予算%sで未発見の場合は不存在とせず未確定を返す', (budget) => {
+        expect(searchRoutes('tokyo', 'asakusa', 1, { requiredOutsideTransferIds: ['otemachi'], ...budget })).toEqual({
+            routes: [],
+            truncated: true,
+            outsideTransferUpperBound: 1,
+        });
+    });
+    it('必須地点の明示的な空配列は既存の探索結果を変えない', () => {
+        expect(searchRoutes('tokyo', 'asakusa', 1, { requiredOutsideTransferIds: [] })).toEqual(
+            searchRoutes('tokyo', 'asakusa', 1),
+        );
+    });
+    it('利用許可以外の必須地点は入力エラーにする', () => {
+        expect(() =>
+            searchRoutes('tokyo', 'asakusa', null, {
+                outsideTransferIds: ['mitsukoshimae'],
+                requiredOutsideTransferIds: ['otemachi'],
+            }),
+        ).toThrow('必須の改札外乗換駅は「利用する改札外乗換駅」でも選択してください');
+    });
+    it('最大回数より多い必須地点は入力エラーにする', () => {
+        expect(() =>
+            searchRoutes('tokyo', 'asakusa', 1, { requiredOutsideTransferIds: ['otemachi', 'mitsukoshimae'] }),
+        ).toThrow('必須の改札外乗換駅の数が最大回数を超えています。最大回数を増やすか必須駅を減らしてください');
+    });
+});

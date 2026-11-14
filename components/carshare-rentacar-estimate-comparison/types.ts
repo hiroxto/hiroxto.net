@@ -4,6 +4,7 @@ export interface ComparisonEntry {
     id: string;
     service: ServiceId;
     number: number;
+    label: string;
     usageFee: InputValue;
     allDistance: boolean;
     toyotaPlan: ToyotaPlan;
@@ -11,5 +12,12 @@ export interface ComparisonEntry {
 }
 
 export type ComparisonEntryChanges = Partial<
-    Pick<ComparisonEntry, 'usageFee' | 'allDistance' | 'toyotaPlan' | 'toyotaHours'>
+    Pick<ComparisonEntry, 'label' | 'usageFee' | 'allDistance' | 'toyotaPlan' | 'toyotaHours'>
 >;
+
+export interface ComparisonSnapshot {
+    selected: ComparisonEntry[];
+    distanceKm: InputValue;
+    gasolinePrice: InputValue;
+    fuelEfficiency: InputValue;
+}

@@ -45,6 +45,8 @@ describe('parseTokyoMetroTransferSearchForm', () => {
                 durationLimitMs: 5000,
                 stations: { fromStationId: 'tokyo', toStationId: 'asakusa' },
                 outsideTransferIds: ['ueno'],
+                requiredOutsideTransferIds: [],
+                maximumOutsideTransferCount: null,
             },
         });
     });
@@ -100,5 +102,32 @@ describe('異駅名の同一駅を発着に指定した場合', () => {
             parseTokyoMetroTransferSearchForm({ ...validForm, stations: { fromStationId: from, toStationId: to } })
                 .error,
         ).toBe('乗車駅と降車駅には異なる駅を指定してください');
+    });
+});
+
+describe('必須改札外乗換のフォーム検証', () => {
+    it('必須地点数と最大回数が等しい場合は受け付ける', () => {
+        expect(
+            parseTokyoMetroTransferSearchForm({
+                ...validForm,
+                requiredOutsideTransferIds: ['ueno'],
+                maximumOutsideTransferCount: 1,
+            }).error,
+        ).toBeNull();
+    });
+    it('利用許可から外した必須地点は拒否する', () => {
+        expect(
+            parseTokyoMetroTransferSearchForm({ ...validForm, requiredOutsideTransferIds: ['hibiya'] }).error,
+        ).not.toBeNull();
+    });
+    it('必須地点数が最大回数を超える場合は拒否する', () => {
+        expect(
+            parseTokyoMetroTransferSearchForm({
+                ...validForm,
+                outsideTransferIds: ['ueno', 'hibiya'],
+                requiredOutsideTransferIds: ['ueno', 'hibiya'],
+                maximumOutsideTransferCount: 1,
+            }).error,
+        ).not.toBeNull();
     });
 });

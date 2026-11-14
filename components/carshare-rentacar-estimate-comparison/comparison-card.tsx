@@ -1,4 +1,5 @@
-import { Anchor, Button, Group, Paper, Stack, Title } from '@mantine/core';
+import { Anchor, Button, Group, Paper, Stack, TextInput, Title, UnstyledButton } from '@mantine/core';
+import { useState } from 'react';
 import { EstimateResult } from '@/components/carshare-rentacar-estimate-comparison/estimate-result';
 import { ToyotaShareForm } from '@/components/carshare-rentacar-estimate-comparison/toyota-share-form';
 import type { ComparisonEntry, ComparisonEntryChanges } from '@/components/carshare-rentacar-estimate-comparison/types';
@@ -16,7 +17,17 @@ interface ComparisonCardProps {
 
 export function ComparisonCard({ entry, result, lowest, hasTiedLowest, onChange, onRemove }: ComparisonCardProps) {
     const service = serviceDetails[entry.service];
-    const label = `${service.label} ${entry.number}`;
+    const { label } = entry;
+    const [draftLabel, setDraftLabel] = useState<string | null>(null);
+
+    function finishEditingLabel() {
+        // 空欄・空白のみで確定した場合は、変更前のラベルを維持する。
+        if (draftLabel !== null && draftLabel.trim() !== '') {
+            onChange({ label: draftLabel });
+        }
+        setDraftLabel(null);
+    }
+
     return (
         <Paper
             component="section"
@@ -28,9 +39,27 @@ export function ComparisonCard({ entry, result, lowest, hasTiedLowest, onChange,
         >
             <Stack gap="md" style={{ flex: 1 }}>
                 <Group justify="space-between" align="start">
-                    <Title order={3} size="h4">
-                        {label}
-                    </Title>
+                    {draftLabel !== null ? (
+                        <TextInput
+                            aria-label="サービスのラベル"
+                            ref={(input) => input?.focus()}
+                            value={draftLabel}
+                            onChange={(event) => setDraftLabel(event.currentTarget.value)}
+                            onBlur={finishEditingLabel}
+                            style={{ flex: 1, minWidth: 0 }}
+                        />
+                    ) : (
+                        <Title order={3} size="h4" aria-label={label} style={{ flex: 1, minWidth: 0 }}>
+                            <UnstyledButton
+                                aria-label={`${label}のラベルを編集`}
+                                title="クリックしてラベルを編集"
+                                onClick={() => setDraftLabel(label)}
+                                style={{ font: 'inherit', overflowWrap: 'anywhere' }}
+                            >
+                                {label}
+                            </UnstyledButton>
+                        </Title>
+                    )}
                     <Button
                         size="compact-xs"
                         variant="subtle"

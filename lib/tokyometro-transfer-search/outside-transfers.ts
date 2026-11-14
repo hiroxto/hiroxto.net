@@ -6,7 +6,7 @@ import {
 } from '@/lib/tokyometro-core/data';
 import { z } from '@/lib/zod';
 
-/** 同駅の乗換は駅単位、異駅名の乗換は接続単位で選択する。IDは接続の先頭駅とする。 */
+/** 同駅の乗換は駅IDで、異駅名の乗換は接続定義の始点駅のIDで選択する。 */
 export const outsideTransferOptions = [
     ...[...new Set(SAME_STATION_OUTSIDE_TRANSFERS.map(([stationId]) => stationId))].map((stationId) => ({
         value: stationId,

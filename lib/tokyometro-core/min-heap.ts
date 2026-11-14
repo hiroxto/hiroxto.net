@@ -1,7 +1,7 @@
 /**
  * 比較関数で最小となる要素を取り出す二分ヒープの仕様。
- * compare(a, b)が負ならaを優先し、pushで追加、popで最小要素を削除して返す。
- * 空のpopはundefined。同順位の取り出し順は保証しない。追加・取り出しはO(log n)。
+ * compare(a, b)が負ならaを優先する。pushで要素を追加し、popで最小要素を取り除いて返す。
+ * ヒープが空のときにpopを呼ぶとundefinedを返す。同順位の取り出し順は保証しない。追加・取り出しはO(log n)。
  */
 export const createMinHeap = <T>(compare: (first: T, second: T) => number) => {
     const values: T[] = [];

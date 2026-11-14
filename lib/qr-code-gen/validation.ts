@@ -9,7 +9,7 @@ export type QrCodeErrorCorrectionLevel = z.infer<typeof qrCodeErrorCorrectionLev
  * https://www.qrcode.com/en/about/version.html
  * qrcode.reactへ単一文字列を渡す場合と同じく、数字、英数字、UTF-8バイトの順でモードを判定する。
  * 英数字は数字・英大文字・空白・$%*+-./:に限る。漢字モードは使用しない。
- * 数字・英数字は文字数、バイトモードはUTF-8のバイト数を上限と比較する。
+ * 数字モードと英数字モードでは文字数を、バイトモードではUTF-8のバイト数を上限と比較する。
  */
 const maximumCapacity = {
     L: { numeric: 7089, alphanumeric: 4296, bytes: 2953 },
