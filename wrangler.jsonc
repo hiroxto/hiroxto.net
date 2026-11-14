@@ -5,7 +5,13 @@
     "compatibility_date": "2026-06-16",
     "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
     "observability": {
-        "enabled": true
+        "enabled": true,
+        "traces": {
+            "enabled": true
+        },
+        "issues": {
+            "enabled": true
+        }
     },
     "workers_dev": false,
     "preview_urls": true,
@@ -24,5 +30,16 @@
             "binding": "WORKER_SELF_REFERENCE",
             "service": "hiroxto-net-v2"
         }
-    ]
+    ],
+    "previews": {
+        "observability": {
+            "enabled": true,
+            "traces": {
+                "enabled": true
+            },
+            "issues": {
+                "enabled": true
+            }
+        }
+    }
 }
