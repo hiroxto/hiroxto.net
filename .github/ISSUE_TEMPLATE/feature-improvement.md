@@ -1,6 +1,7 @@
 ---
 name: 機能改善
 about: 既存機能の改善や機能の追加を提案する
+labels: enhancement
 ---
 
 <!--
