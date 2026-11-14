@@ -24,5 +24,10 @@
             "binding": "WORKER_SELF_REFERENCE",
             "service": "hiroxto-net-v2"
         }
-    ]
+    ],
+    "previews": {
+        "observability": {
+            "enabled": true
+        }
+    }
 }
