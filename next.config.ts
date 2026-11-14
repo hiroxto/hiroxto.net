@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
         return [
             {
                 source: '/:path*',
-                headers: [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }],
+                headers: [
+                    { key: 'X-Frame-Options', value: 'DENY' },
+                    { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+                ],
             },
         ];
     },
