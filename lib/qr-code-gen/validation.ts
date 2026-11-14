@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 
 const qrCodeErrorCorrectionLevelSchema = z.enum(['L', 'M', 'Q', 'H']);
 

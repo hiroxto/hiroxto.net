@@ -4,10 +4,11 @@
  * 駅IDはSTATION_NAMESに登録されたキーだけを受け付ける。発着駅の組合せは各機能で検証する。
  * 2駅のIDが同じ場合や、CROSS_STATION_TRANSFERSに定義した異駅名乗換の両端に当たる場合は、同一駅として扱う。
  */
-import { z } from 'zod';
+
 import { CROSS_STATION_TRANSFERS, STATION_NAMES, type StationId } from '@/lib/tokyometro-core/data';
 import { stationIds, stationLineIds } from '@/lib/tokyometro-core/network';
 import type { StationOption } from '@/lib/tokyometro-core/types';
+import { z } from '@/lib/zod';
 
 /** マスターに登録された駅IDだけを許可する共通の検証規則。 */
 export const stationIdSchema = z.enum(Object.keys(STATION_NAMES) as StationId[], {

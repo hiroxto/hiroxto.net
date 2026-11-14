@@ -1,10 +1,10 @@
-import { z } from 'zod';
 import {
     CROSS_STATION_TRANSFERS,
     SAME_STATION_OUTSIDE_TRANSFERS,
     STATION_NAMES,
     type StationId,
 } from '@/lib/tokyometro-core/data';
+import { z } from '@/lib/zod';
 
 /** 同駅の乗換は駅IDで、異駅名の乗換は接続定義の始点駅のIDで選択する。 */
 export const outsideTransferOptions = [

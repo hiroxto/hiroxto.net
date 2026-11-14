@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import { isSameStation, stationIdSchema } from '@/lib/tokyometro-core/stations';
 import { outsideTransferIdSchema, outsideTransferIdsSchema } from '@/lib/tokyometro-transfer-search/outside-transfers';
+import { z } from '@/lib/zod';
 
 /** 利用者が指定できる改札外乗換回数の上限。 */
 export const MAX_OUTSIDE_TRANSFER_COUNT = 14;

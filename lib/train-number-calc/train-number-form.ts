@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 
 /** 全角数字だけ半角化して検証し、計算に使う半角数字を返す。入力欄の文字列は変更しない。 */
 export const trainNumberValueSchema = z
