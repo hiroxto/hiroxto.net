@@ -1,5 +1,6 @@
 # Worker が生成する HTML などの応答は next.config.ts で設定する。
 /*
     X-Frame-Options: DENY
+    X-Content-Type-Options: nosniff
     Strict-Transport-Security: max-age=31536000
     Referrer-Policy: strict-origin-when-cross-origin
