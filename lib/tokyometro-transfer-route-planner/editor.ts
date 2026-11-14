@@ -38,7 +38,7 @@ export const createPlannerState = (
     toStationId: StationId | null = null,
 ): PlannerState => prepareNextRow({ fromStationId, toStationId, rows: [] });
 
-/** 入力済み経路を保持できる発着変更だけを返す。nullなら元の入力を残して破棄確認する。 */
+/** 入力済み経路を保持できる場合は、発着駅を変更した後の入力状態を返す。nullなら元の入力を残し、経路を破棄するか確認する。 */
 export const tryChangePlannerStations = (
     state: PlannerState,
     fromStationId: StationId | null,

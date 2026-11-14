@@ -67,7 +67,7 @@ const searchFormSchema = z
 
 /**
  * 探索時間、発着駅、改札外乗換の利用許可・必須地点・最大回数の順に検証し、成功時は検索条件を返す。
- * 同じ駅IDと異駅名乗換駅同士の発着は同一駅として検証エラーにする。
+ * 発着駅のIDが同じ場合や、発着駅が異駅名乗換の両端に当たる場合は、同一駅として検証エラーにする。
  */
 export const parseTokyoMetroTransferSearchForm = (input: {
     durationLimitMs: number;

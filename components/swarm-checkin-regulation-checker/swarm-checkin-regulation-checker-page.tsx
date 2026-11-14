@@ -8,7 +8,7 @@ import {
     Card,
     Group,
     Loader,
-    Select,
+    NativeSelect,
     SimpleGrid,
     Stack,
     Tabs,
@@ -107,13 +107,14 @@ export const SwarmCheckinRegulationCheckerPage = () => {
 
     /**
      * チェックイン履歴を取得し、取得方法に応じて次回の自動取得日時を更新する。
-     * `manual` は画面の取得ボタンによる操作。結果は表示するが、変動がない回数には加えない。
+     * `manual` は画面の取得ボタンによる操作。結果を表示し、自動取得の比較値が変わらなかった連続回数は更新しない。
      * 自動取得が有効なら、操作時刻から interval 秒後に次回の取得を予定する。
      * 取得結果が非規制から規制中に変わった場合は、規制解除日時から interval 秒後に変更する。
      *
-     * `auto` はタイマーによる取得。取得件数を前回と比較し、3 回続けて変動がなければ自動取得を停止する。
+     * `auto` はタイマーによる取得。規制判定に使った期間別の件数の最大値を前回の自動取得と比較する。
+     * この値が 3 回続けて変わらなければ、自動取得を停止する。
      * 続行する場合、規制中は規制解除日時から、非規制なら取得完了時刻から interval 秒後に次回取得する。
-     * 取得に失敗した場合は自動取得を無効にし、連続した再試行を防ぐ。
+     * 自動取得に失敗した場合は自動取得を無効にし、連続した再試行を防ぐ。
      */
     const pullCheckins = useCallback(
         async (trigger: 'manual' | 'auto', triggeredAt: Date) => {
@@ -129,7 +130,7 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                 setComparisonNow(fetchedAt);
 
                 if (trigger === 'auto') {
-                    /** 自動取得の結果だけで、変動がない回数を更新する。 */
+                    /** 自動取得の結果だけで、比較値が変わらなかった連続回数を更新する。 */
                     const nextState = resolveAutoFetchSuccess(
                         { previousCount: autoFetchCachedCount, unchangedCount: autoFetchUnchangedCount },
                         nextResult,
@@ -382,23 +383,14 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                 value={token}
                                 onChange={(event) => setToken(event.currentTarget.value)}
                             />
-                            <Select
-                                comboboxProps={{ radius: 'sm' }}
-                                styles={{ option: { borderRadius: 'var(--mantine-radius-sm)' } }}
+                            <NativeSelect
                                 labelProps={{ fw: 500 }}
                                 radius="sm"
                                 label="自動取得間隔"
-                                data={AUTO_FETCH_INTERVAL_OPTIONS.map((option) => ({
-                                    value: option.value,
-                                    label: option.label,
-                                }))}
+                                data={[...AUTO_FETCH_INTERVAL_OPTIONS]}
                                 value={autoFetchIntervalSeconds.toString()}
-                                onChange={(value) => {
-                                    if (value == null) {
-                                        return;
-                                    }
-
-                                    const nextIntervalSeconds = Number(value);
+                                onChange={(event) => {
+                                    const nextIntervalSeconds = Number(event.currentTarget.value);
                                     setAutoFetchIntervalSeconds(nextIntervalSeconds);
 
                                     if (autoFetchEnabled) {
@@ -406,7 +398,6 @@ export const SwarmCheckinRegulationCheckerPage = () => {
                                         resetAutoFetchStability();
                                     }
                                 }}
-                                allowDeselect={false}
                             />
                             <Stack gap={2}>
                                 <Text lh={1.2}>自動取得状態: {autoFetchEnabled ? '有効' : '無効'}</Text>
