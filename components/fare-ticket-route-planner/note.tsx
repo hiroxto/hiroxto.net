@@ -21,6 +21,7 @@ export function Note() {
                 radius="sm"
                 placeholder="備考"
                 value={notes}
+                onBlur={() => useRouteStateStore.getState().finishEditing()}
                 onChange={(event) => setNotes(event.target.value)}
                 className={styles.note}
             />

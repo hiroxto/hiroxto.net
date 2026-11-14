@@ -11,9 +11,9 @@ interface RouteRowProps {
     stationError: string | null;
     lineCompletes: string[];
     stationCompletes: string[];
-    onAddRoute: (index: number) => void;
     onUpdateLine: (index: number, line: string) => void;
-    onUpdateStation: (index: number, station: string) => void;
+    onUpdateStation: (index: number, station: string, appendIfLast?: boolean) => void;
+    onFinishEditing: () => void;
     onDeleteRoute: (index: number) => void;
     onHandleKeyDown: (index: number, event: KeyboardEvent<HTMLInputElement>) => void;
     isLastRow: boolean;
@@ -26,9 +26,9 @@ export function RouteRow({
     stationError,
     lineCompletes,
     stationCompletes,
-    onAddRoute,
     onUpdateLine,
     onUpdateStation,
+    onFinishEditing,
     onDeleteRoute,
     onHandleKeyDown,
     isLastRow,
@@ -51,6 +51,7 @@ export function RouteRow({
                         value={route.line}
                         data={lineCompletes}
                         onChange={(value) => onUpdateLine(index, value)}
+                        onBlur={onFinishEditing}
                         onKeyDown={(event) => onHandleKeyDown(index, event)}
                     />
                 ) : (
@@ -60,6 +61,7 @@ export function RouteRow({
                             placeholder="路線"
                             value={route.line}
                             onChange={(event) => onUpdateLine(index, event.target.value)}
+                            onBlur={onFinishEditing}
                             onKeyDown={(event) => onHandleKeyDown(index, event)}
                         />
                     </Input.Wrapper>
@@ -79,11 +81,9 @@ export function RouteRow({
                         data={stationCompletes}
                         error={stationError}
                         onChange={(value) => {
-                            onUpdateStation(index, value);
-                            if (value.trim() !== '' && isLastRow) {
-                                onAddRoute(-1);
-                            }
+                            onUpdateStation(index, value, isLastRow);
                         }}
+                        onBlur={onFinishEditing}
                         onKeyDown={(event) => onHandleKeyDown(index, event)}
                     />
                 ) : (
@@ -94,6 +94,7 @@ export function RouteRow({
                             value={route.station}
                             error={stationError != null}
                             onChange={(event) => onUpdateStation(index, event.target.value)}
+                            onBlur={onFinishEditing}
                             onKeyDown={(event) => onHandleKeyDown(index, event)}
                         />
                     </Input.Wrapper>
