@@ -1,0 +1,3 @@
+# Worker が生成する HTML などの応答は next.config.ts で設定する。
+/*
+    Strict-Transport-Security: max-age=31536000
