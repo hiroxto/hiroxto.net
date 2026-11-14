@@ -17,7 +17,7 @@
         "generate:train-number-content": "node ./scripts/generate-train-number-content.ts",
         "check:train-number-content": "npm run generate:train-number-content && git diff --exit-code -- lib/train-number/gen/*.ts",
         "deploy": "opennextjs-cloudflare deploy",
-        "build:cf": "opennextjs-cloudflare build"
+        "build:cf": "opennextjs-cloudflare build && opennextjs-cloudflare populateCache local"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.3.13",
