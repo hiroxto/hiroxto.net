@@ -20,9 +20,20 @@ OG URL とサイトマップの URL は、ローカル・プレビュー環境�
 
 ## 静的生成とキャッシュ
 
-ページはビルド時に静的生成する。OpenNext の増分キャッシュとキャッシュ割り込みは使用せず、
-ページへのアクセスは NextServer で処理する。静的ファイルは Workers Static Assets から配信する。
+ページはビルド時に静的生成し、OpenNext の増分キャッシュとキャッシュ割り込みを使って、
+Workers Static Assets に配置したキャッシュから返す。キャッシュにあるページは NextServer を読み込まずに返す。
+`searchParams` を使う `/tools/tokyometro-transfer-search` は動的描画のため、NextServer で処理する。
+静的ファイルは Workers Static Assets から配信する。
 メタ情報の生成でリクエストヘッダーを参照すると動的描画になるため、URL の基準には
 `lib/metadata/site-origin.ts` の固定値を使用する。
 
-コンテンツの更新には再ビルドとデプロイが必要。ISR による再検証は使用しない。
+このキャッシュには次の制約がある。
+
+- 読み取り専用で、ISR や `revalidatePath` などの再検証には対応しない。コンテンツの更新には再ビルドとデプロイが必要。
+- `'use cache'` には対応しない。使うと、キャッシュの取得のたびに例外が発生し、エラーログが記録される。
+
+キャッシュは `npm run build:cf` の中で `.open-next/assets/cdn-cgi/_next_cache` に配置する。
+このため、Workers Builds のビルドコマンドは `npm run build:cf` にする必要がある。
+`npx opennextjs-cloudflare build` などに変えるとキャッシュが配置されないが、`wrangler deploy` は成功する。
+この場合、すべてのページが NextServer で処理され、Workers Logs には要求のたびに
+`StaticAssetsIncrementalCache: Failed to set to read-only cache` のエラーが記録される。
