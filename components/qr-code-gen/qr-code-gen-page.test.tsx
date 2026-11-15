@@ -65,6 +65,23 @@ describe('QrCodeGenPage', () => {
         expect(container.querySelector('canvas')).not.toBeInTheDocument();
     });
 
+    it('マージンは初期値で4モジュールのクワイエットゾーンを含み、4未満には下げられない', async () => {
+        const user = userEvent.setup();
+        renderWithMantine(<QrCodeGenPage />);
+
+        await user.click(screen.getByLabelText('SVG'));
+        // 空文字のQRコードは21x21モジュールのため、両側に4モジュールずつ加えた29モジュールになる。
+        expect(screen.getByRole('img')).toHaveAttribute('viewBox', '0 0 29 29');
+
+        const [, marginSlider] = screen.getAllByRole('slider');
+        expect(marginSlider).toHaveAttribute('aria-valuemin', '4');
+        marginSlider.focus();
+        await user.keyboard('{End}{Home}{ArrowLeft}');
+
+        expect(marginSlider).toHaveAttribute('aria-valuenow', '4');
+        expect(screen.getByRole('img')).toHaveAttribute('viewBox', '0 0 29 29');
+    });
+
     it('容量を超えた入力をエラー表示し、入力を修正するとプレビューが戻る', async () => {
         const user = userEvent.setup();
         const { container } = renderWithMantine(<QrCodeGenPage />);

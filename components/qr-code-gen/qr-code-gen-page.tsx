@@ -13,6 +13,9 @@ import { getQrCodeValidationError, type QrCodeErrorCorrectionLevel } from '@/lib
 type QrCodeRenderAs = 'svg' | 'canvas';
 type CopyStatus = 'idle' | 'copied' | 'failed';
 
+// QRコードの規格で必要なクワイエットゾーンの幅をマージンの下限にする。単位はモジュール。https://www.qrcode.com/en/howto/code.html
+const minimumMarginModules = 4;
+
 function downloadFile(href: string, fileName: string) {
     const anchor = document.createElement('a');
     anchor.href = href;
@@ -53,7 +56,7 @@ function serializeSvg(svg: SVGSVGElement): string {
 export function QrCodeGenPage() {
     const [value, setValue] = useState('');
     const [size, setSize] = useState(250);
-    const [margin, setMargin] = useState(0);
+    const [margin, setMargin] = useState(minimumMarginModules);
     const [level, setLevel] = useState<QrCodeErrorCorrectionLevel>('H');
     const [renderAs, setRenderAs] = useState<QrCodeRenderAs>('canvas');
     const [backGround, setBackGround] = useState('#ffffff');
@@ -174,7 +177,7 @@ export function QrCodeGenPage() {
                                 <Text size="sm" c="dimmed" mb={6}>
                                     {margin}
                                 </Text>
-                                <Slider min={0} max={500} value={margin} onChange={setMargin} />
+                                <Slider min={minimumMarginModules} max={500} value={margin} onChange={setMargin} />
                             </div>
 
                             <div>
