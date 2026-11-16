@@ -40,5 +40,6 @@ Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
     value: {
         writeText: vi.fn().mockResolvedValue(undefined),
+        write: vi.fn().mockResolvedValue(undefined),
     },
 });
