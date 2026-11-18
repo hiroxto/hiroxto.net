@@ -7,7 +7,7 @@ export class FoursquareClient {
         const endpoint = new URL('https://api.foursquare.com/v2/users/self/checkins');
         endpoint.searchParams.set('oauth_token', this.token);
         endpoint.searchParams.set('limit', '200');
-        endpoint.searchParams.set('v', '20221016');
+        endpoint.searchParams.set('v', '20261117');
         endpoint.searchParams.set('lang', 'ja');
 
         const response = await fetch(endpoint, {

@@ -30,7 +30,7 @@ describe('FoursquareClient', () => {
         expect(endpoint.pathname).toBe('/v2/users/self/checkins');
         expect(endpoint.searchParams.get('oauth_token')).toBe('test-token');
         expect(endpoint.searchParams.get('limit')).toBe('200');
-        expect(endpoint.searchParams.get('v')).toBe('20221016');
+        expect(endpoint.searchParams.get('v')).toBe('20261117');
         expect(endpoint.searchParams.get('lang')).toBe('ja');
         expect(options).toMatchObject({ method: 'GET' });
     });
