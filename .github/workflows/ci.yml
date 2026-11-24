@@ -16,7 +16,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup mise
-              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+              uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
               with:
                   # 既定のキャッシュキーはmise設定ファイルのハッシュだけで決まり、idiomatic_version_file_enable_toolsで読み込む.node-versionやpackage.jsonでバージョンが上がっても古いキャッシュが使われるため、これらのハッシュをキーに含める
                   # Renovateがmise.lockの更新に対応していないため、mise.lockは使わずにキャッシュキーで対処する
@@ -52,7 +52,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup mise
-              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+              uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
               with:
                   cache_key: *mise-cache-key
 
@@ -78,7 +78,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup mise
-              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+              uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
               with:
                   cache_key: *mise-cache-key
 
@@ -104,7 +104,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup mise
-              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+              uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
               with:
                   cache_key: *mise-cache-key
 
@@ -130,7 +130,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup mise
-              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+              uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
               with:
                   cache_key: *mise-cache-key
 
@@ -156,7 +156,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup mise
-              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+              uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
               with:
                   cache_key: *mise-cache-key
 
@@ -182,7 +182,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup mise
-              uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+              uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
               with:
                   cache_key: *mise-cache-key
 
